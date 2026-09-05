@@ -1,0 +1,434 @@
+/*
+ * CompressX — Micro-Animations, Page Transitions & UI Polish
+ * Covers: padding system, icon badges, nav animations, page-enter/exit
+ */
+
+/* ═══════════════════════════════════════════════════════════════
+   1. GLOBAL SPACING / PADDING FIXES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Inner body: safe bottom padding so content never hides behind nav */
+.app-body {
+  padding: 14px 14px 90px 14px;
+  scroll-behavior: smooth;
+}
+
+/* Glass cards — consistent breathing room */
+.glass-card {
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+/* Page title block top spacing */
+.page-title-block {
+  padding: 2px 0 10px 0;
+  margin-bottom: 12px;
+}
+
+/* Header height + icon alignment */
+.mobile-app-header {
+  height: 54px;
+  padding: 0 14px;
+  gap: 4px;
+}
+
+.mobile-header-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+
+.mobile-header-btn:hover  { background: var(--surface-hover); }
+.mobile-header-btn:active { transform: scale(0.9); }
+
+/* Bottom nav padding */
+.bottom-nav-bar {
+  height: 64px;
+  padding: 0 8px;
+}
+
+/* Section gap inside cards */
+.section-gap { margin-bottom: 18px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   2. BOTTOM NAV — ICON VISUALIZATION & ACTIVE STATE
+   ═══════════════════════════════════════════════════════════════ */
+
+.bottom-nav-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 60px;
+  height: 100%;
+  color: var(--text-secondary);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  text-decoration: none;
+  transition: color 0.18s ease, transform 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav-item i {
+  font-size: 1.2rem;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+              color 0.18s ease,
+              filter 0.18s ease;
+}
+
+/* Active nav item — icon bounce + pill indicator */
+.bottom-nav-item.active {
+  color: var(--primary);
+}
+
+.bottom-nav-item.active i {
+  transform: scale(1.22) translateY(-2px);
+  filter: drop-shadow(0 0 6px rgba(99,102,241,0.7));
+}
+
+/* Active pill indicator above the icon */
+.bottom-nav-item::before {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 26px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--primary);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.2s ease;
+  opacity: 0;
+}
+
+.bottom-nav-item.active::before {
+  transform: translateX(-50%) scaleX(1);
+  opacity: 1;
+}
+
+/* Hover lift for non-active nav items */
+.bottom-nav-item:not(.active):hover i {
+  transform: scale(1.1) translateY(-2px);
+  color: var(--text);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   3. ICON VISUALIZATION — WRAPPER SYSTEM
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Generic icon badge wrapper */
+.icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.18s ease;
+}
+
+.icon-badge:hover {
+  transform: scale(1.1);
+}
+
+/* Color variants */
+.icon-badge-primary  { background: var(--primary-light);  color: var(--primary); }
+.icon-badge-accent   { background: var(--accent-light);   color: var(--accent);  }
+.icon-badge-success  { background: var(--success-light);  color: var(--success); }
+.icon-badge-warning  { background: var(--warning-light);  color: var(--warning); }
+.icon-badge-danger   { background: var(--danger-light);   color: var(--danger);  }
+
+/* Tool card icons */
+.tool-icon {
+  font-size: 1.35rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease;
+}
+
+.tool-icon:hover {
+  transform: scale(1.12) rotate(-3deg);
+}
+
+/* Stat card icon */
+.stat-icon-wrapper {
+  border-radius: 12px;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.stat-card:hover .stat-icon-wrapper {
+  transform: scale(1.1) rotate(-4deg);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   4. MICRO-ANIMATIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* --- Keyframes --- */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(1);    opacity: 0.6; }
+  60%  { transform: scale(1.18); opacity: 0; }
+  100% { transform: scale(1.18); opacity: 0; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes spinSlow {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bounceIn {
+  0%   { transform: scale(0.6);  opacity: 0; }
+  55%  { transform: scale(1.12); opacity: 1; }
+  70%  { transform: scale(0.96); }
+  100% { transform: scale(1); }
+}
+
+/* --- Apply to cards on page load --- */
+.glass-card {
+  animation: fadeInUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Stagger card children */
+.glass-card:nth-child(1) { animation-delay: 0.04s; }
+.glass-card:nth-child(2) { animation-delay: 0.08s; }
+.glass-card:nth-child(3) { animation-delay: 0.12s; }
+.glass-card:nth-child(4) { animation-delay: 0.16s; }
+.glass-card:nth-child(5) { animation-delay: 0.20s; }
+
+/* Cards hover lift */
+.glass-card {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s ease;
+}
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glass-shadow-hover);
+}
+
+/* Button press & hover */
+.btn {
+  transition: background 0.18s ease,
+              transform 0.12s ease,
+              box-shadow 0.18s ease,
+              color 0.18s ease;
+}
+.btn:hover  { transform: translateY(-1px); }
+.btn:active { transform: scale(0.96) translateY(0); }
+
+/* Primary button glow pulse on hover */
+.btn-primary:hover {
+  box-shadow: 0 6px 20px var(--primary-glow), 0 0 0 3px rgba(99,102,241,0.15);
+}
+
+/* Chip bounce */
+.chip, .action-chip {
+  transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.chip:active, .action-chip:active {
+  transform: scale(0.93);
+}
+
+/* Filter chip active animation */
+.chip.active {
+  animation: bounceIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Stat card number count-in */
+.stat-val {
+  transition: color 0.3s ease;
+}
+
+/* Dropzone hover glow */
+.dropzone {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dropzone:hover, .dropzone.drag-over {
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.2), 0 8px 24px rgba(99,102,241,0.15);
+  transform: scale(1.01);
+}
+
+/* Toast slide up */
+.toast {
+  animation: toastSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Skeleton shimmer for loading states */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-hover) 25%,
+    var(--surface-border) 50%,
+    var(--surface-hover) 75%
+  );
+  background-size: 200% auto;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 8px;
+}
+.skeleton-text  { height: 12px; margin: 6px 0; border-radius: 6px; }
+.skeleton-block { height: 60px; border-radius: 12px; }
+
+/* Pulse ring for status dots / online indicator */
+.pulse-ring {
+  position: relative;
+}
+.pulse-ring::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   5. PAGE TRANSITIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Page enters with a fade+rise */
+.page-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Full page transition on navigation */
+.app-body {
+  animation: pageEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Nav-out overlay (injected by JS before navigation) */
+.page-transition-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99998;
+  background: var(--bg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+.page-transition-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   6. ASSISTANT PANEL POLISH
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Chat bubble entrance */
+.chat-bubble {
+  animation: slideInRight 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.chat-bubble-user {
+  animation: slideInLeft 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Assistant input bar — better padding & rounded */
+.assistant-input-form {
+  padding: 10px 12px;
+  gap: 8px;
+}
+.assistant-input {
+  padding: 9px 16px;
+  border-radius: 50px;
+  font-size: 0.84rem;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.assistant-input:focus {
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.18);
+}
+
+/* Quick action chips in assistant */
+.action-chip {
+  animation: fadeInScale 0.2s ease both;
+}
+.action-chip:nth-child(1) { animation-delay: 0.04s; }
+.action-chip:nth-child(2) { animation-delay: 0.08s; }
+.action-chip:nth-child(3) { animation-delay: 0.12s; }
+.action-chip:nth-child(4) { animation-delay: 0.16s; }
+
+/* ═══════════════════════════════════════════════════════════════
+   7. MODAL ANIMATION
+   ═══════════════════════════════════════════════════════════════ */
+
+.modal-overlay {
+  animation: fadeInScale 0.2s ease both;
+}
+.modal-card {
+  animation: fadeInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   8. REDUCED MOTION OVERRIDE
+   ═══════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .glass-card,
+  .chat-bubble,
+  .chat-bubble-user,
+  .action-chip,
+  .modal-overlay,
+  .modal-card,
+  .toast,
+  .app-body {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -43,6 +43,17 @@
       "notification_prefs": "{\"emailUpload\": true, \"emailCompress\": true}",
       "last_login": "2026-09-05T04:58:43.684Z",
       "created_at": "2026-09-05T04:58:43.139Z"
+    },
+    {
+      "id": 5,
+      "username": "TheOrionGD",
+      "email": "hello.theoriongd@gmail.com",
+      "date_of_birth": "2004-10-08",
+      "password_hash": "$2a$12$ns0YqTOb/.ODYAVhL3pEhOHvpwR9zJO9P2J.jEGQ/wlWhf5.TxRa2",
+      "storage_used": 222633,
+      "notification_prefs": "{\"emailUpload\": true, \"emailCompress\": true}",
+      "last_login": "2026-09-05T05:18:13.905Z",
+      "created_at": "2026-09-05T05:18:07.614Z"
     }
   ],
   "files": [
@@ -453,6 +464,18 @@
       "storage_path": "C:\\Users\\arjun\\OneDrive\\Desktop\\MAD\\compressx\\backend\\storage\\converted\\3\\05ba622b-9ab2-48a5-b5c6-90890b436d9f.pdf",
       "status": "active",
       "created_at": "2026-09-04T14:01:26.203Z"
+    },
+    {
+      "id": 35,
+      "user_id": 5,
+      "original_name": "Statement of Purpose.pdf",
+      "stored_name": "17eb5bad-f625-4f90-9dd5-deda227f8180.pdf",
+      "file_type": "doc",
+      "mime_type": "application/pdf",
+      "file_size": 222633,
+      "storage_path": "C:\\Users\\arjun\\OneDrive\\Desktop\\MAD\\compressx\\backend\\storage\\uploads\\5\\17eb5bad-f625-4f90-9dd5-deda227f8180.pdf",
+      "status": "active",
+      "created_at": "2026-09-05T05:18:48.564Z"
     }
   ],
   "compression_history": [],

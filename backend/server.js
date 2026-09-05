@@ -38,7 +38,22 @@ const authLimiter = rateLimit({
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
-// Serve Frontend Static Files
+// Health Check & Root API Status (For Render / API-only Hosting)
+app.get('/health', (req, res) => res.json({ status: 'online', timestamp: new Date().toISOString() }));
+app.get('/', (req, res) => {
+    // If request explicitly asks for JSON or API-only mode
+    if (req.headers.accept && req.headers.accept.includes('application/json')) {
+        return res.json({ status: 'online', service: 'Docholder / CompressX API Engine', version: '1.0.0' });
+    }
+    // API welcome response
+    res.json({
+        service: 'Docholder / CompressX API Engine',
+        status: 'online',
+        endpoints: '/api/auth, /api/files, /api/compress, /api/extract, /api/pdf, /api/docx, /api/convert, /api/media, /api/image'
+    });
+});
+
+// Serve Frontend Static Files (if available)
 const frontendPath = path.join(__dirname, '../frontend');
 app.use(express.static(frontendPath, {
     maxAge: '1h',

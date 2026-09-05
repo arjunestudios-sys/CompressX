@@ -9,7 +9,7 @@
     "dev": "nodemon backend/server.js"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20.x"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.1",

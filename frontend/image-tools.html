@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Docholder — Image Studio</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .op-breadcrumb-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 6px;
+        }
+        .crop-preview-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #0f172a;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--surface-border);
+            min-height: 180px;
+            max-height: 260px;
+            margin-top: 10px;
+        }
+        .crop-overlay-box {
+            position: absolute;
+            border: 2px dashed #3B82F6;
+            background: rgba(59, 130, 246, 0.18);
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            transition: all 0.15s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-app-shell">
+        <div class="mobile-status-bar">
+            <span class="status-bar-time">9:41</span>
+            <div class="dynamic-island-notch">
+                <div class="notch-camera-dot"></div>
+            </div>
+            <div class="status-bar-icons">
+                <i class="fa-solid fa-signal"></i>
+                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-battery-full"></i>
+            </div>
+        </div>
+
+        <header class="mobile-app-header">
+            <button class="mobile-header-btn" onclick="handleSmartBack('tools.html?cat=image')"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="mobile-header-title">
+                <span id="header-image-op-title">Image Studio</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <a href="settings.html" class="mobile-header-btn" title="Settings"><i class="fa-solid fa-gear"></i></a>
+                <button class="theme-toggle-btn" onclick="toggleTheme()" style="width: 32px; height: 32px; font-size: 0.85rem;" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+            </div>
+        </header>
+
+        <span id="nav-user-email" class="hidden"></span>
+
+        <main class="app-body" style="padding-bottom: 90px;">
+            <div class="page-title-block">
+                <div id="img-op-breadcrumb" class="op-breadcrumb-badge"><i class="fa-solid fa-image"></i> Image → Compress Image</div>
+                <h1 class="page-title" id="img-main-op-title"><i class="fa-solid fa-compress" style="color: #8B5CF6;"></i> Compress Image</h1>
+                <p class="page-subtitle" id="img-main-op-subtitle">Optimize image file size while preserving rich visual quality.</p>
+            </div>
+
+            <!-- Mode Selector Chips -->
+            <div class="category-nav-bar" style="overflow-x: auto; white-space: nowrap; padding-bottom: 6px;">
+                <button class="action-chip active" data-mode="compress"><i class="fa-solid fa-compress"></i> Compress</button>
+                <button class="action-chip" data-mode="cyber"><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--cyan-neon);"></i> Cyber FX</button>
+                <button class="action-chip" data-mode="resize"><i class="fa-solid fa-up-right-and-down-left-from-center"></i> Resize</button>
+                <button class="action-chip" data-mode="crop"><i class="fa-solid fa-crop"></i> Crop</button>
+                <button class="action-chip" data-mode="rotate"><i class="fa-solid fa-rotate"></i> Rotate & Flip</button>
+                <button class="action-chip" data-mode="convert"><i class="fa-solid fa-arrow-right-arrow-left"></i> Convert</button>
+                <button class="action-chip" data-mode="exif"><i class="fa-solid fa-shield-halved"></i> Strip EXIF</button>
+                <button class="action-chip" data-mode="multi-pdf"><i class="fa-solid fa-file-pdf"></i> Images → PDF</button>
+            </div>
+
+            <!-- Step 1: Select Image -->
+            <div class="glass-card">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-square-check" style="color: var(--primary);"></i> 1. Select Image</h4>
+                
+                <div class="form-group" style="margin-bottom: 8px;">
+                    <select id="image-file-select" class="form-select" style="font-size: 0.85rem;">
+                        <option value="">-- Choose from Workspace --</option>
+                    </select>
+                </div>
+
+                <div id="image-dropzone" class="dropzone" style="padding: 14px; position: relative; overflow: hidden;">
+                    <div class="laser-scanner-line"></div>
+                    <input type="file" id="image-file-input" accept="image/*" class="hidden">
+                    <i class="fa-solid fa-cloud-arrow-up dropzone-icon" style="font-size: 1.5rem; margin-bottom: 4px; color: var(--cyan-neon);"></i>
+                    <div style="font-weight: 700; font-size: 0.85rem; font-family: var(--font-hud); letter-spacing: 0.5px;">Tap or Drop Vision Asset</div>
+                    <div style="font-size: 0.72rem; color: var(--text-secondary); font-family: var(--font-mono);">JPG, PNG, WebP, TIFF, BMP, GIF</div>
+                </div>
+
+                <!-- Live Image Preview & Metadata -->
+                <div id="selected-image-preview-container" class="hidden" style="margin-top: 10px;">
+                    <div class="crop-preview-wrapper">
+                        <img id="selected-image-preview" src="" alt="Preview" style="max-height: 220px; max-width: 100%; object-fit: contain; transition: transform 0.2s ease;">
+                        <div id="crop-overlay-box" class="crop-overlay-box hidden"></div>
+                    </div>
+                    <div id="selected-image-info" style="font-size: 0.76rem; color: var(--text-secondary); text-align: center; margin-top: 6px;"></div>
+                </div>
+            </div>
+
+            <!-- Step 2: Controls Panels -->
+
+            <!-- Compress Panel -->
+            <div id="panel-compress" class="glass-card">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-sliders" style="color: var(--accent);"></i> 2. Compression Options</h4>
+                
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <label class="form-label" style="margin: 0;">Quality Level</label>
+                        <span id="img-quality-val" style="color: var(--primary); font-weight: 700; font-size: 0.82rem;">85%</span>
+                    </div>
+                    <input type="range" id="img-quality-slider" min="10" max="100" value="85" style="width: 100%;">
+                </div>
+
+                <div class="form-group" style="margin-top: 10px;">
+                    <label class="form-label">Target File Size Limit (Optional)</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="number" id="img-target-size-val" class="form-input" placeholder="e.g. 500" style="flex: 1;">
+                        <select id="img-target-size-unit" class="form-select" style="width: 90px;">
+                            <option value="KB" selected>KB</option>
+                            <option value="MB">MB</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="btn-compress-image" class="btn btn-primary btn-block" style="margin-top: 12px;"><i class="fa-solid fa-bolt"></i> Compress Image</button>
+            </div>
+
+            <!-- Resize Panel (Section 9) -->
+            <div id="panel-resize" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-up-right-and-down-left-from-center" style="color: var(--accent);"></i> 2. Resize Dimensions</h4>
+                
+                <div class="form-group">
+                    <label class="form-label">Preset Dimensions & Plugins</label>
+                    <select id="img-resize-preset" class="form-select">
+                        <option value="">Custom Dimensions</option>
+                        <option value="original">Original Dimensions</option>
+                        <optgroup label="Social Media & Apps">
+                            <option value="twitter">Twitter / X Post (1200 × 675)</option>
+                            <option value="twitter_avatar">Twitter / X Avatar (400 × 400)</option>
+                            <option value="threads">Threads / Instagram Square (1080 × 1080)</option>
+                            <option value="threads_portrait">Threads / IG Portrait (1080 × 1350)</option>
+                            <option value="reels">Reels / TikTok / Stories (1080 × 1920)</option>
+                            <option value="discord_avatar">Discord Avatar (256 × 256)</option>
+                            <option value="discord_emote">Discord Emote (128 × 128)</option>
+                            <option value="youtube_thumb">YouTube Thumbnail (1280 × 720)</option>
+                            <option value="linkedin">LinkedIn Post (1200 × 627)</option>
+                        </optgroup>
+                        <optgroup label="Displays & Standards">
+                            <option value="1080p">Full HD (1920 × 1080)</option>
+                            <option value="720p">HD (1280 × 720)</option>
+                            <option value="square">Square 1:1 (1080 × 1080)</option>
+                            <option value="4k">4K Ultra HD (3840 × 2160)</option>
+                            <option value="50%">50% Scale</option>
+                            <option value="25%">25% Scale</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">Width (px)</label>
+                        <input type="number" id="img-resize-width" class="form-input" placeholder="Width">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">Height (px)</label>
+                        <input type="number" id="img-resize-height" class="form-input" placeholder="Height">
+                    </div>
+                </div>
+
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; margin: 4px 0 10px 0; cursor: pointer;">
+                    <input type="checkbox" id="img-maintain-aspect" checked style="width: 18px; height: 18px;">
+                    <span>Maintain aspect ratio</span>
+                </label>
+
+                <!-- Dimensions Badge -->
+                <div id="img-resize-dimensions-badge" style="background: var(--surface); padding: 8px 12px; border-radius: var(--radius-xs); border: 1px solid var(--surface-border); font-size: 0.78rem; color: var(--text); margin-bottom: 12px;">
+                    Original: <span id="img-orig-dim-text">0 × 0 px</span> → Output: <strong id="img-out-dim-text" style="color: var(--primary);">0 × 0 px</strong>
+                </div>
+
+                <button id="btn-resize-image" class="btn btn-primary btn-block"><i class="fa-solid fa-up-right-and-down-left-from-center"></i> Resize Image</button>
+            </div>
+
+            <!-- Crop Panel (Section 11) -->
+            <div id="panel-crop" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-crop" style="color: var(--accent);"></i> 2. Crop Image Workspace</h4>
+                
+                <div style="font-size: 0.8rem; font-weight: 700; margin-bottom: 6px; color: var(--text);">Aspect Ratio Presets:</div>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px;">
+                    <button type="button" class="btn btn-secondary btn-sm img-crop-ratio-btn active" data-ratio="free">Free</button>
+                    <button type="button" class="btn btn-secondary btn-sm img-crop-ratio-btn" data-ratio="1:1">1:1</button>
+                    <button type="button" class="btn btn-secondary btn-sm img-crop-ratio-btn" data-ratio="4:3">4:3</button>
+                    <button type="button" class="btn btn-secondary btn-sm img-crop-ratio-btn" data-ratio="16:9">16:9</button>
+                </div>
+
+                <!-- Crop Dimensions Control -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 2px;">
+                            <span>Crop Width</span>
+                            <span id="crop-w-val" style="font-weight: 700; color: var(--primary);">80%</span>
+                        </div>
+                        <input type="range" id="crop-w-slider" min="20" max="100" value="80" style="width: 100%;">
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 2px;">
+                            <span>Crop Height</span>
+                            <span id="crop-h-val" style="font-weight: 700; color: var(--primary);">80%</span>
+                        </div>
+                        <input type="range" id="crop-h-slider" min="20" max="100" value="80" style="width: 100%;">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <button id="btn-reset-crop" class="btn btn-secondary btn-sm" style="flex: 1;"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                    <button id="btn-apply-crop" class="btn btn-primary btn-sm" style="flex: 2;"><i class="fa-solid fa-crop"></i> Apply Crop</button>
+                </div>
+            </div>
+
+            <!-- Rotate & Flip Panel (Section 12) -->
+            <div id="panel-rotate" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-rotate" style="color: var(--accent);"></i> 2. Rotate & Flip Controls</h4>
+                
+                <div style="font-size: 0.8rem; font-weight: 700; margin-bottom: 6px; color: var(--text);">90° Rotation & Flip:</div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px;">
+                    <button id="btn-rotate-left" class="btn btn-secondary btn-sm"><i class="fa-solid fa-rotate-left"></i> ↶ Left 90°</button>
+                    <button id="btn-rotate-90" class="btn btn-secondary btn-sm"><i class="fa-solid fa-rotate-right"></i> ↷ Right 90°</button>
+                    <button id="btn-rotate-180" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrows-spin"></i> 180°</button>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px;">
+                    <button id="btn-flip-h" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrows-left-right"></i> ↔ Flip Horizontal</button>
+                    <button id="btn-flip-v" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrows-up-down"></i> ↕ Flip Vertical</button>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <label class="form-label" style="margin: 0;">Custom Rotation Angle</label>
+                        <span id="custom-rot-val" style="font-weight: 700; color: var(--primary); font-size: 0.82rem;">0°</span>
+                    </div>
+                    <input type="range" id="custom-rot-slider" min="0" max="360" value="0" step="5" style="width: 100%;">
+                </div>
+
+                <button id="btn-apply-custom-rotate" class="btn btn-primary btn-block"><i class="fa-solid fa-circle-check"></i> Apply Transformations</button>
+            </div>
+
+            <!-- Convert Panel (Section 10) -->
+            <div id="panel-convert" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-arrow-right-arrow-left" style="color: var(--accent);"></i> 2. Target Image Format</h4>
+                <div class="form-group">
+                    <label class="form-label">Convert To</label>
+                    <select id="img-target-format" class="form-select">
+                        <option value="webp" selected>WebP (.webp) — Modern & Compact</option>
+                        <option value="jpg">JPG / JPEG (.jpg) — Universal</option>
+                        <option value="png">PNG (.png) — Lossless with Alpha</option>
+                        <option value="pdf">PDF Document (.pdf)</option>
+                        <option value="tiff">TIFF (.tiff) — High Dynamic Range</option>
+                        <option value="bmp">BMP (.bmp) — Uncompressed Bitmap</option>
+                    </select>
+                </div>
+
+                <!-- PDF-Specific Page Layout Options (Conditional) -->
+                <div id="img-to-pdf-options" class="hidden" style="margin-top: 10px; padding: 10px; background: var(--surface-hover); border-radius: var(--radius-xs); border: 1px solid var(--surface-border);">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: var(--text); margin-bottom: 8px;">PDF Page Settings</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                        <div>
+                            <label class="form-label" style="font-size: 0.75rem;">Page Size</label>
+                            <select id="img-pdf-page-size" class="form-select" style="font-size: 0.82rem;">
+                                <option value="auto" selected>Auto (Image Size)</option>
+                                <option value="a4">A4 Standard</option>
+                                <option value="letter">US Letter</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label" style="font-size: 0.75rem;">Orientation</label>
+                            <select id="img-pdf-orientation" class="form-select" style="font-size: 0.82rem;">
+                                <option value="portrait" selected>Portrait</option>
+                                <option value="landscape">Landscape</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label" style="font-size: 0.75rem;">Page Fit Mode</label>
+                        <select id="img-pdf-fit" class="form-select" style="font-size: 0.82rem;">
+                            <option value="contain" selected>Fit with Margins (Preserve Aspect)</option>
+                            <option value="fill">Fill Entire Page</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="img-convert-progress-wrapper" class="hidden" style="margin: 12px 0;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.76rem; margin-bottom: 4px;">
+                        <span id="img-convert-progress-status" style="color: var(--cyan-neon);">Converting image...</span>
+                        <span id="img-convert-progress-percent" style="font-weight: 700;">0%</span>
+                    </div>
+                    <div class="progress-bar-container" style="height: 6px;">
+                        <div id="img-convert-progress-fill" class="progress-bar-fill" style="width: 0%; background: linear-gradient(90deg, var(--cyan-neon), var(--magenta-neon)); transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+
+                <button id="btn-convert-image" class="btn btn-primary btn-block" style="margin-top: 12px;"><i class="fa-solid fa-rotate"></i> Convert Format</button>
+            </div>
+
+            <!-- Strip EXIF Panel -->
+            <div id="panel-exif" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-shield-halved" style="color: var(--success);"></i> 2. Privacy & Metadata Scrubbing</h4>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 12px;">Wipe camera serial number, GPS location tags, timestamp, and device info to protect personal privacy.</p>
+                <button id="btn-strip-exif" class="btn btn-primary btn-block"><i class="fa-solid fa-shield-halved"></i> Remove EXIF Metadata</button>
+            </div>
+
+            <!-- Multi-Image to PDF Panel -->
+            <div id="panel-multi-pdf" class="glass-card cyber-card hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h4 style="font-size: 0.88rem; margin: 0;"><i class="fa-solid fa-file-pdf" style="color: #EF4444;"></i> 2. Combine Multi-Images to Single PDF</h4>
+                    <span id="multi-img-count-badge" class="hud-badge hud-badge-cyan" style="font-size: 0.65rem;">0 IMAGES</span>
+                </div>
+                
+                <p style="font-size: 0.76rem; color: var(--text-secondary); margin-bottom: 8px;">
+                    Select images and arrange page order using the arrow buttons. They will appear in PDF in this exact sequence:
+                </p>
+
+                <!-- Reorderable Image Card List -->
+                <div id="multi-images-ordered-list" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; max-height: 240px; overflow-y: auto;">
+                    <div id="multi-img-empty-state" style="text-align: center; padding: 16px; border: 1px dashed var(--surface-border); border-radius: var(--radius-xs); color: var(--text-muted); font-size: 0.8rem;">
+                        <i class="fa-solid fa-images" style="font-size: 1.5rem; margin-bottom: 6px; display: block; color: var(--primary);"></i>
+                        Select images from workspace or upload below
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label class="form-label">Combined PDF Filename (Optional)</label>
+                    <input type="text" id="multi-pdf-custom-name" class="form-input" placeholder="e.g. combined_gallery">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                    <div>
+                        <label class="form-label" style="font-size: 0.75rem;">Page Layout</label>
+                        <select id="multi-pdf-page-size" class="form-select" style="font-size: 0.82rem;">
+                            <option value="auto" selected>Auto Fit (Image Size)</option>
+                            <option value="a4">A4 Standard</option>
+                            <option value="letter">US Letter</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label" style="font-size: 0.75rem;">Orientation</label>
+                        <select id="multi-pdf-orientation" class="form-select" style="font-size: 0.82rem;">
+                            <option value="portrait" selected>Portrait</option>
+                            <option value="landscape">Landscape</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="multi-pdf-progress-wrapper" class="hidden" style="margin-bottom: 12px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.76rem; margin-bottom: 4px;">
+                        <span id="multi-pdf-progress-status" style="color: var(--cyan-neon);"><i class="fa-solid fa-spinner fa-spin"></i> Assembling PDF pages...</span>
+                        <span id="multi-pdf-progress-percent" style="font-weight: 700; font-family: var(--font-mono);">0%</span>
+                    </div>
+                    <div class="progress-bar-container" style="height: 6px;">
+                        <div id="multi-pdf-progress-fill" class="progress-bar-fill" style="width: 0%; background: linear-gradient(90deg, var(--primary), var(--cyan-neon));"></div>
+                    </div>
+                </div>
+
+                <button id="btn-multi-pdf" class="btn btn-primary btn-block">
+                    <i class="fa-solid fa-file-pdf"></i> Create Combined PDF
+                </button>
+            </div>
+
+            <!-- Cyberpunk FX & Matrix Filter Panel -->
+            <div id="panel-cyber" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px; font-family: var(--font-hud); letter-spacing: 0.5px;">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--cyan-neon);"></i> 2. Neural Cyber Filters & Hologram FX
+                </h4>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 12px;">Apply instant sci-fi aesthetic filters, holographic neon color grading, and chromatic shifts.</p>
+                
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label class="form-label" style="font-family: var(--font-hud); font-size: 0.75rem;">Select Cyber Filter</label>
+                    <select id="cyber-filter-select" class="form-select" style="font-size: 0.85rem;">
+                        <option value="neon-synth" selected>🌆 Neon Synthwave (Cyber Cyan & Hot Pink)</option>
+                        <option value="matrix-terminal">📟 Matrix Terminal (Digital Phosphor Green)</option>
+                        <option value="holo-blue">💎 Hologram Quantum Blue (Ethereal Specular)</option>
+                        <option value="glitch-rgb">⚡ Chromatic Aberration / RGB Split</option>
+                        <option value="thermal-vision">🔥 Thermal Infrared Spectrum</option>
+                        <option value="quantum-invert">🔮 Quantum Invert & High-Pass Neon</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.76rem; color: var(--text-secondary); margin-bottom: 4px;">
+                        <span>Effect Intensity</span>
+                        <span id="cyber-intensity-val" style="color: var(--cyan-neon); font-family: var(--font-mono);">80%</span>
+                    </div>
+                    <input type="range" id="cyber-intensity-range" min="10" max="100" value="80" style="width: 100%; accent-color: var(--cyan-neon);">
+                </div>
+
+                <button id="btn-apply-cyber-fx" class="btn btn-primary btn-block">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Render Cyber Transformation
+                </button>
+            </div>
+
+            <!-- Result Card -->
+            <div id="image-result-card" class="glass-card hidden" style="border-color: var(--success);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <h4 id="image-result-title" style="margin: 0; font-size: 0.9rem; color: var(--success);"><i class="fa-solid fa-circle-check"></i> Image Processed!</h4>
+                    <span id="img-result-saved" class="savings-badge">0% Saved</span>
+                </div>
+                
+                <div class="before-after-container">
+                    <div class="before-after-row">
+                        <div class="stat-metric-box">
+                            <span class="stat-metric-title">Original Size</span>
+                            <span id="img-before-val" class="stat-metric-value">0 KB</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right" style="color: var(--text-muted);"></i>
+                        <div class="stat-metric-box">
+                            <span class="stat-metric-title">Output Size</span>
+                            <span id="img-after-val" class="stat-metric-value" style="color: var(--success);">0 KB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="media-preview-container" style="margin: 10px 0;">
+                    <img id="img-result-preview" src="" alt="Result Preview" style="max-height: 200px; width: 100%; object-fit: contain;">
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <a id="img-preview-link" href="#" target="_blank" class="btn btn-secondary btn-block" style="flex: 1;"><i class="fa-solid fa-eye"></i> Preview</a>
+                    <a id="img-download-link" href="#" class="btn btn-primary btn-block" style="flex: 1;"><i class="fa-solid fa-download"></i> Download</a>
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav-bar">
+            <a href="dashboard.html" class="bottom-nav-item">
+                <i class="fa-solid fa-gauge"></i>
+                <span>Home</span>
+            </a>
+            <a href="tools.html" class="bottom-nav-item active">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Tools</span>
+            </a>
+            <a href="convert.html" class="bottom-nav-item">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Convert</span>
+            </a>
+            <a href="files.html" class="bottom-nav-item">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Files</span>
+            </a>
+            <a href="settings.html" class="bottom-nav-item">
+                <i class="fa-solid fa-gear"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/universalRegistry.js"></script>
+    <script src="js/futuristicEngine.js"></script>
+    <script src="js/imageStudio.js"></script>
+</body>
+</html>

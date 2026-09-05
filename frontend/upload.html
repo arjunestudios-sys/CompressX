@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Docholder — Upload</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-app-shell">
+        <div class="mobile-status-bar">
+            <span class="status-bar-time">9:41</span>
+            <div class="dynamic-island-notch">
+                <div class="notch-camera-dot"></div>
+            </div>
+            <div class="status-bar-icons">
+                <i class="fa-solid fa-signal"></i>
+                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-battery-full"></i>
+            </div>
+        </div>
+
+        <header class="mobile-app-header">
+            <button class="mobile-header-btn" onclick="window.location.href='dashboard.html'"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="mobile-header-title">
+                <span>Upload</span>
+            </div>
+            <button class="theme-toggle-btn" onclick="toggleTheme()" style="width: 32px; height: 32px; font-size: 0.85rem;" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+        </header>
+
+        <span id="nav-user-email" class="hidden"></span>
+
+        <main class="app-body">
+            <div class="page-title-block">
+                <h1 class="page-title"><i class="fa-solid fa-cloud-arrow-up" style="color: var(--primary);"></i> Upload Document</h1>
+                <p class="page-subtitle">Upload files up to 200MB into your workspace.</p>
+            </div>
+
+            <div class="glass-card">
+                <div id="upload-dropzone" class="dropzone" style="padding: 36px 16px;">
+                    <input type="file" id="file-input" class="hidden">
+                    <i class="fa-solid fa-cloud-arrow-up dropzone-icon" style="font-size: 2.8rem; margin-bottom: 12px;"></i>
+                    <h3 class="dropzone-title">Tap to browse files</h3>
+                    <p class="dropzone-desc">or drag and drop into this zone</p>
+                    <p style="font-size: 0.72rem; color: var(--text-muted); margin-top: 10px;">PDF, Word, Excel, CSV, Images, Code, Archives</p>
+
+                    <div id="upload-progress-container" class="hidden" style="margin-top: 18px;">
+                        <div class="progress-bar-container">
+                            <div id="upload-progress-fill" class="progress-bar-fill"></div>
+                        </div>
+                        <div id="upload-status" style="margin-top: 8px; font-size: 0.82rem; font-weight: 700; color: var(--primary);">Uploading... 0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Success Card -->
+            <div id="upload-success-card" class="glass-card hidden" style="border-left: 4px solid var(--success);">
+                <h4 style="color: var(--success); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-circle-check"></i> Upload Successful!
+                </h4>
+                <div id="upload-success-details" style="font-size: 0.82rem; line-height: 1.5; margin-bottom: 12px;"></div>
+                <div style="display: flex; gap: 8px; flex-direction: column;">
+                    <a id="btn-transform-now" href="convert.html" class="btn btn-primary btn-sm"><i class="fa-solid fa-wand-magic-sparkles"></i> Transform with Assistant</a>
+                    <a href="files.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-folder-open"></i> Go to My Files</a>
+                    <button id="btn-upload-another" class="btn btn-secondary btn-sm"><i class="fa-solid fa-plus"></i> Upload Another</button>
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav-bar">
+            <a href="dashboard.html" class="bottom-nav-item">
+                <i class="fa-solid fa-gauge"></i>
+                <span>Home</span>
+            </a>
+            <a href="convert.html" class="bottom-nav-item">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Transform</span>
+            </a>
+            <a href="files.html" class="bottom-nav-item">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Files</span>
+            </a>
+            <a href="compress.html" class="bottom-nav-item">
+                <i class="fa-solid fa-file-zipper"></i>
+                <span>Compress</span>
+            </a>
+            <a href="settings.html" class="bottom-nav-item">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/upload.js"></script>
+</body>
+</html>

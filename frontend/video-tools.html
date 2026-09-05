@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Docholder — Video Studio</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-app-shell">
+        <div class="mobile-status-bar">
+            <span class="status-bar-time">9:41</span>
+            <div class="dynamic-island-notch">
+                <div class="notch-camera-dot"></div>
+            </div>
+            <div class="status-bar-icons">
+                <i class="fa-solid fa-signal"></i>
+                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-battery-full"></i>
+            </div>
+        </div>
+
+        <header class="mobile-app-header">
+            <button class="mobile-header-btn" onclick="handleSmartBack('tools.html?cat=video')"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="mobile-header-title">
+                <span>Video Studio</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <a href="settings.html" class="mobile-header-btn" title="Settings"><i class="fa-solid fa-gear"></i></a>
+                <button class="theme-toggle-btn" onclick="toggleTheme()" style="width: 32px; height: 32px; font-size: 0.85rem;" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+            </div>
+        </header>
+
+        <span id="nav-user-email" class="hidden"></span>
+
+        <main class="app-body">
+            <div class="page-title-block">
+                <h1 class="page-title"><i class="fa-solid fa-video" style="color: #EC4899;"></i> Video Studio</h1>
+                <p class="page-subtitle">Compress, convert, extract audio, and trim video.</p>
+            </div>
+
+            <!-- Mode Selector Chips -->
+            <div class="category-nav-bar">
+                <button class="action-chip active" data-mode="compress"><i class="fa-solid fa-compress"></i> Compress</button>
+                <button class="action-chip" data-mode="extract"><i class="fa-solid fa-music"></i> Extract MP3</button>
+                <button class="action-chip" data-mode="convert"><i class="fa-solid fa-rotate"></i> Convert</button>
+                <button class="action-chip" data-mode="resize"><i class="fa-solid fa-expand"></i> Resize</button>
+                <button class="action-chip" data-mode="trim"><i class="fa-solid fa-scissors"></i> Trim</button>
+                <button class="action-chip" data-mode="gif"><i class="fa-solid fa-film"></i> Video → GIF</button>
+                <button class="action-chip" data-mode="merge"><i class="fa-solid fa-object-group"></i> Merge</button>
+            </div>
+
+            <!-- Step 1: Attach Video -->
+            <div class="glass-card">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-square-check" style="color: var(--primary);"></i> 1. Select Video</h4>
+                
+                <div class="form-group" style="margin-bottom: 8px;">
+                    <select id="video-file-select" class="form-select" style="font-size: 0.85rem;">
+                        <option value="">-- Choose from Workspace --</option>
+                    </select>
+                </div>
+
+                <div id="video-dropzone" class="dropzone" style="padding: 14px; position: relative; overflow: hidden;">
+                    <div class="laser-scanner-line"></div>
+                    <input type="file" id="video-file-input" accept="video/*" class="hidden">
+                    <i class="fa-solid fa-cloud-arrow-up dropzone-icon" style="font-size: 1.5rem; margin-bottom: 4px; color: var(--magenta-neon);"></i>
+                    <div style="font-weight: 700; font-size: 0.85rem; font-family: var(--font-hud); letter-spacing: 0.5px;">Tap or Drop Holographic Stream</div>
+                    <div style="font-size: 0.72rem; color: var(--text-secondary); font-family: var(--font-mono);">MP4, WebM, MOV, AVI, MKV</div>
+                </div>
+
+                <!-- Video Preview Player with Tactical HUD -->
+                <div id="selected-video-preview-container" class="hidden" style="margin-top: 10px;">
+                    <div class="media-preview-container" style="position: relative; overflow: hidden; border-radius: var(--radius-sm); border: 1px solid rgba(0, 240, 255, 0.3);">
+                        <video id="selected-video-player" controls preload="metadata" style="max-height: 200px; width: 100%; display: block;"></video>
+                        <div class="video-hud-overlay">
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <span class="hud-badge" style="font-size: 0.58rem;"><i class="fa-solid fa-circle" style="color: var(--danger); font-size: 0.5rem;"></i> REC // 4K</span>
+                                <span id="video-hud-timecode" class="video-hud-timecode">00:00:00</span>
+                            </div>
+                            <div class="video-hud-crosshair"></div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <span class="hud-badge hud-badge-pink" style="font-size: 0.58rem;">FPS: 60 • HDR10</span>
+                                <span class="hud-badge hud-badge-green" style="font-size: 0.58rem;">SYNC: LOCKED</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="selected-video-meta-badge" style="font-size: 0.76rem; color: var(--cyan-neon); font-family: var(--font-mono); text-align: center; margin-top: 4px;"></div>
+                </div>
+            </div>
+
+            <!-- Step 2: Controls Panel -->
+            <!-- Compress Panel -->
+            <div id="panel-compress" class="glass-card">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-sliders" style="color: var(--accent);"></i> 2. Video Compression</h4>
+                <div class="form-group">
+                    <label class="form-label">Quality Preset</label>
+                    <select id="vid-quality-preset" class="form-select">
+                        <option value="medium" selected>Balanced (CRF 26) — Recommended</option>
+                        <option value="high">High Quality (CRF 22)</option>
+                        <option value="low">Maximum Compression (CRF 32)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Resolution & Social Preset</label>
+                    <select id="vid-res-select" class="form-select">
+                        <option value="">Keep Original Resolution</option>
+                        <optgroup label="Social Video Presets">
+                            <option value="tiktok">TikTok / Reels / Shorts 9:16 (720 × 1280)</option>
+                            <option value="twitter">Twitter / X HD (1280 × 720)</option>
+                            <option value="square">Square 1:1 Feed (720 × 720)</option>
+                        </optgroup>
+                        <optgroup label="Standard Displays">
+                            <option value="1080p">1080p Full HD (1920 × 1080)</option>
+                            <option value="720p">720p HD (Great for Mobile)</option>
+                            <option value="480p">480p SD</option>
+                            <option value="360p">360p Compact</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Target File Size (Optional)</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="number" id="vid-target-size-val" class="form-input" placeholder="e.g. 20">
+                        <span style="display: flex; align-items: center; font-weight: 700; font-size: 0.85rem;">MB</span>
+                    </div>
+                    <span style="font-size: 0.72rem; color: var(--text-secondary);">Calculates exact bitrate for target size</span>
+                </div>
+
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; margin: 10px 0; cursor: pointer;">
+                    <input type="checkbox" id="vid-strip-audio">
+                    <span>Remove audio track (Mute video)</span>
+                </label>
+
+                <button id="btn-compress-video" class="btn btn-primary btn-block"><i class="fa-solid fa-bolt"></i> Compress Video</button>
+            </div>
+
+            <!-- Extract Audio Panel -->
+            <div id="panel-extract" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-music" style="color: #10B981;"></i> 2. Extract Audio from Video</h4>
+                <div class="form-group">
+                    <label class="form-label">Output Audio Format</label>
+                    <select id="vid-audio-format" class="form-select">
+                        <option value="mp3" selected>MP3 (.mp3) — Universal</option>
+                        <option value="wav">WAV (.wav) — Lossless</option>
+                        <option value="aac">AAC (.aac)</option>
+                        <option value="ogg">OGG (.ogg)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Audio Bitrate</label>
+                    <select id="vid-audio-bitrate" class="form-select">
+                        <option value="192k" selected>192 kbps (High Quality)</option>
+                        <option value="128k">128 kbps (Standard)</option>
+                        <option value="256k">256 kbps (Studio)</option>
+                        <option value="320k">320 kbps (Maximum)</option>
+                    </select>
+                </div>
+
+                <button id="btn-extract-audio" class="btn btn-primary btn-block"><i class="fa-solid fa-music"></i> Extract Audio Track</button>
+            </div>
+
+            <!-- Convert Format Panel -->
+            <div id="panel-convert" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-rotate" style="color: var(--accent);"></i> 2. Convert Video Format</h4>
+                <div class="form-group">
+                    <label class="form-label">Target Format</label>
+                    <select id="vid-convert-format" class="form-select">
+                        <option value="mp4" selected>MP4 (.mp4) — Universal</option>
+                        <option value="webm">WebM (.webm) — Web Ready</option>
+                        <option value="mov">QuickTime MOV (.mov)</option>
+                        <option value="avi">AVI (.avi)</option>
+                        <option value="mkv">MKV (.mkv)</option>
+                    </select>
+                </div>
+
+                <button id="btn-convert-video" class="btn btn-primary btn-block"><i class="fa-solid fa-rotate"></i> Convert Video</button>
+            </div>
+
+            <!-- Resize Panel -->
+            <div id="panel-resize" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-expand" style="color: var(--accent);"></i> 2. Resolution Scaling</h4>
+                <div class="form-group">
+                    <label class="form-label">Target Resolution</label>
+                    <select id="vid-scale-target" class="form-select">
+                        <option value="1080p">1080p Full HD (1920 × 1080)</option>
+                        <option value="720p" selected>720p HD (1280 × 720)</option>
+                        <option value="480p">480p SD (854 × 480)</option>
+                        <option value="360p">360p Compact (640 × 360)</option>
+                    </select>
+                </div>
+
+                <button id="btn-resize-video" class="btn btn-primary btn-block"><i class="fa-solid fa-expand"></i> Resize Video</button>
+            </div>
+
+            <!-- Trim Panel -->
+            <div id="panel-trim" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-scissors" style="color: var(--accent);"></i> 2. Trim Video</h4>
+                <div style="display: flex; gap: 8px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">Start Time (sec)</label>
+                        <input type="number" id="vid-trim-start" class="form-input" value="0" min="0" step="0.5">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">End Time (sec)</label>
+                        <input type="number" id="vid-trim-end" class="form-input" value="10" min="1" step="0.5">
+                    </div>
+                </div>
+
+                <button id="btn-trim-video" class="btn btn-primary btn-block"><i class="fa-solid fa-scissors"></i> Trim Video</button>
+            </div>
+
+            <!-- Video to GIF Panel -->
+            <div id="panel-gif" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-film" style="color: #14B8A6;"></i> 2. Convert Video to GIF</h4>
+                <div class="form-group">
+                    <label class="form-label">Frame Rate (FPS)</label>
+                    <select id="vid-gif-fps" class="form-select">
+                        <option value="12" selected>12 FPS (Balanced)</option>
+                        <option value="15">15 FPS (Smoother)</option>
+                        <option value="8">8 FPS (Smaller Size)</option>
+                    </select>
+                </div>
+
+                <button id="btn-gif-video" class="btn btn-primary btn-block"><i class="fa-solid fa-film"></i> Generate GIF</button>
+            </div>
+
+            <!-- Merge Video Panel -->
+            <div id="panel-merge" class="glass-card cyber-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-object-group" style="color: var(--magenta-neon);"></i> 2. Merge Multiple Videos</h4>
+                <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">Select 2 or more videos:</div>
+                <div id="video-multi-select-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 140px; overflow-y: auto; margin-bottom: 12px;"></div>
+                <button id="btn-apply-video-merge" class="btn btn-primary btn-block">
+                    <i class="fa-solid fa-object-group"></i> Merge Videos into MP4
+                </button>
+            </div>
+
+            <!-- Result Card -->
+            <div id="video-result-card" class="glass-card hidden" style="border-color: var(--success);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <h4 style="margin: 0; font-size: 0.9rem; color: var(--success);"><i class="fa-solid fa-circle-check"></i> Video Processed!</h4>
+                    <span id="vid-result-saved" class="savings-badge">0% Saved</span>
+                </div>
+                <div class="before-after-container">
+                    <div class="before-after-row">
+                        <div class="stat-metric-box">
+                            <span class="stat-metric-title">Before</span>
+                            <span id="vid-before-val" class="stat-metric-value">0 MB</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right" style="color: var(--text-muted);"></i>
+                        <div class="stat-metric-box">
+                            <span class="stat-metric-title">After</span>
+                            <span id="vid-after-val" class="stat-metric-value" style="color: var(--success);">0 MB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="vid-result-media-container" class="media-preview-container">
+                    <!-- Dynamic preview video or audio player -->
+                </div>
+
+                <a id="vid-download-link" href="#" class="btn btn-primary btn-block" style="margin-top: 10px;"><i class="fa-solid fa-download"></i> Download Processed File</a>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/universalRegistry.js"></script>
+    <script src="js/futuristicEngine.js"></script>
+    <script src="js/videoStudio.js"></script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Docholder — Universal File Workspace</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-app-shell">
+        <!-- Smartphone Status Bar -->
+        <div class="mobile-status-bar">
+            <span class="status-bar-time">9:41</span>
+            <div class="dynamic-island-notch">
+                <div class="notch-camera-dot"></div>
+            </div>
+            <div class="status-bar-icons">
+                <i class="fa-solid fa-signal"></i>
+                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-battery-full"></i>
+            </div>
+        </div>
+
+        <!-- Top Header -->
+        <header class="mobile-app-header">
+            <div class="mobile-header-title">
+                <img src="assets/logo.svg" alt="Docholder" style="width: 26px; height: 26px; border-radius: 6px;">
+                <span>Docholder</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <a href="settings.html" class="mobile-header-btn" title="Settings"><i class="fa-solid fa-gear"></i></a>
+                <button class="theme-toggle-btn" onclick="toggleTheme()" style="width: 32px; height: 32px; font-size: 0.85rem;" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+                <a href="profile.html" style="text-decoration: none;">
+                    <div id="nav-user-avatar" class="user-avatar" style="width: 30px; height: 30px; font-size: 0.8rem;">U</div>
+                </a>
+            </div>
+        </header>
+
+        <span id="nav-user-email" class="hidden"></span>
+
+        <!-- Mobile Scrollable Body -->
+        <main class="app-body">
+            <!-- Greeting Block with Telemetry -->
+            <div class="page-title-block">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                    <span class="hud-badge hud-badge-green" style="font-size: 0.6rem;"><i class="fa-solid fa-circle" style="font-size: 0.5rem;"></i> QUANTUM OS v4.2</span>
+                    <span class="hud-badge" style="font-size: 0.6rem;">CORE: ONLINE</span>
+                </div>
+                <h1 class="page-title">Hi, <span id="dash-user-name">User</span> ⚡</h1>
+                <p class="page-subtitle">Universal neural workspace for file transformation.</p>
+            </div>
+
+            <!-- Stats Stack Grid -->
+            <div class="mobile-stack-grid" style="margin-bottom: 12px;">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper">
+                        <i class="fa-solid fa-folder"></i>
+                    </div>
+                    <div>
+                        <div id="stat-total-files" class="stat-val">0</div>
+                        <div class="stat-label">Total Files</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper" style="background: var(--accent-light); color: var(--accent);">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <div>
+                        <div id="stat-transformed" class="stat-val">0</div>
+                        <div class="stat-label">Processed</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper" style="background: var(--success-light); color: var(--success);">
+                        <i class="fa-solid fa-hard-drive"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div id="stat-storage-used" class="stat-val" style="font-size: 0.95rem;">0 B / 500 MB</div>
+                        <div class="stat-label">Storage Used</div>
+                        <div class="progress-bar-container">
+                            <div id="storage-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Universal Dropzone & File Discovery with Laser Scanner -->
+            <div class="glass-card cyber-card">
+                <div id="smart-dropzone" class="dropzone" style="position: relative; overflow: hidden;">
+                    <div class="laser-scanner-line"></div>
+                    <input type="file" id="smart-file-input" class="hidden">
+                    <i class="fa-solid fa-cloud-arrow-up dropzone-icon" style="color: var(--cyan-neon); text-shadow: var(--cyan-glow);"></i>
+                    <h3 class="dropzone-title" style="font-family: var(--font-hud); letter-spacing: 0.5px;">Drop ANY Asset to Process</h3>
+                    <p class="dropzone-desc" style="font-family: var(--font-mono); font-size: 0.72rem;">Documents, Vision, Audio, Streams, Archives & Code</p>
+                </div>
+
+                <!-- Detected File Intent & Discovery Box -->
+                <div id="detected-intent-box" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: var(--radius-sm); background: var(--surface-hover); border: 1px solid var(--surface-border);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i id="intent-file-icon" class="fa-solid fa-file" style="color: var(--primary); font-size: 1.4rem;"></i>
+                            <div>
+                                <strong id="intent-file-name" style="font-size: 0.85rem; display: block; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">filename.pdf</strong>
+                                <span id="intent-file-size" style="font-size: 0.75rem; color: var(--text-secondary);">1.2 MB</span>
+                            </div>
+                        </div>
+                        <button id="clear-intent-btn" class="icon-btn" style="width: 24px; height: 24px;"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+
+                    <!-- Metadata Details Chip Row -->
+                    <div id="intent-meta-chips" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;"></div>
+
+                    <!-- Top 3-5 Recommended Actions -->
+                    <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); margin: 6px 0;">Recommended Actions:</div>
+                    <div id="intent-action-pills" class="action-chips" style="margin: 0 0 10px 0;"></div>
+
+                    <!-- Quick Hub Actions -->
+                    <div style="display: flex; gap: 6px; margin-top: 6px;">
+                        <button id="btn-quick-convert-to" class="btn btn-primary btn-sm" style="flex: 1;"><i class="fa-solid fa-rotate"></i> Convert To...</button>
+                        <button id="btn-quick-make-smaller" class="btn btn-secondary btn-sm" style="flex: 1;"><i class="fa-solid fa-bolt" style="color: var(--warning);"></i> Make It Smaller</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Studio Hub -->
+            <div class="glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h4 style="margin: 0; font-size: 0.88rem;"><i class="fa-solid fa-layer-group" style="color: var(--primary);"></i> Operation Studios</h4>
+                    <a href="tools.html" style="font-size: 0.78rem; font-weight: 700;">All Tools (50+) →</a>
+                </div>
+                <div class="mobile-row-grid">
+                    <a href="image-tools.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-image" style="color: #8B5CF6;"></i> Images</a>
+                    <a href="video-tools.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-video" style="color: #EC4899;"></i> Videos</a>
+                    <a href="audio-tools.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-music" style="color: #10B981;"></i> Audio</a>
+                    <a href="document-tools.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-file-pdf" style="color: #EF4444;"></i> Documents</a>
+                    <a href="word-tools.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-file-word" style="color: #3B82F6;"></i> Word</a>
+                    <a href="convert.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-rotate" style="color: #06B6D4;"></i> Convert</a>
+                    <a href="compress.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-file-zipper" style="color: #F59E0B;"></i> Compress</a>
+                </div>
+            </div>
+
+            <!-- Docholder Conversational Assistant Mobile Panel -->
+            <div id="docholder-assistant-container"></div>
+
+            <!-- Recent Workspace Files -->
+            <div class="glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="margin: 0; font-size: 0.88rem;"><i class="fa-solid fa-folder" style="color: var(--primary);"></i> Recent Files</h4>
+                    <a href="files.html" style="font-size: 0.78rem; font-weight: 700;">My Files →</a>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Size</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-files-list">
+                            <tr><td colspan="3" style="text-align: center; color: var(--text-secondary); padding: 20px;">Loading workspace files...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Transformation History Snippet -->
+            <div class="glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="margin: 0; font-size: 0.88rem;"><i class="fa-solid fa-clock-rotate-left" style="color: var(--accent);"></i> Recent Activity</h4>
+                    <a href="history.html" style="font-size: 0.78rem; font-weight: 700;">Full Log →</a>
+                </div>
+                <div id="transformation-history-list" style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="text-align: center; color: var(--text-secondary); padding: 14px; font-size: 0.82rem;">No transformations yet.</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav-bar">
+            <a href="dashboard.html" class="bottom-nav-item active">
+                <i class="fa-solid fa-gauge"></i>
+                <span>Home</span>
+            </a>
+            <a href="tools.html" class="bottom-nav-item">
+                <i class="fa-solid fa-grid-2"></i>
+                <span>Tools</span>
+            </a>
+            <a href="convert.html" class="bottom-nav-item">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Convert</span>
+            </a>
+            <a href="files.html" class="bottom-nav-item">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Files</span>
+            </a>
+            <a href="history.html" class="bottom-nav-item">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>History</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Universal "Convert To" Modal -->
+    <div id="modal-convert-to" class="modal-overlay hidden">
+        <div class="modal-dialog">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-size: 0.95rem; margin: 0;"><i class="fa-solid fa-rotate" style="color: var(--primary);"></i> Convert <span id="modal-convert-filename" style="color: var(--primary);">file</span></h3>
+                <button id="modal-convert-close" class="icon-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <p style="font-size: 0.76rem; color: var(--text-secondary); margin: 0;">Select one or multiple formats to export simultaneously:</p>
+
+            <div id="modal-convert-formats-grid" class="format-checkbox-grid"></div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                <button id="btn-select-all-formats" class="btn btn-secondary btn-sm" style="font-size: 0.72rem;">Select All</button>
+                <span id="selected-formats-count" style="font-size: 0.76rem; color: var(--text-secondary);">0 formats selected</span>
+            </div>
+
+            <button id="btn-execute-multi-export" class="btn btn-primary btn-block" style="margin-top: 8px;"><i class="fa-solid fa-rocket"></i> Convert Selected Formats</button>
+        </div>
+    </div>
+
+    <!-- Universal "Make It Smaller" Modal -->
+    <div id="modal-make-smaller" class="modal-overlay hidden">
+        <div class="modal-dialog">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-size: 0.95rem; margin: 0;"><i class="fa-solid fa-bolt" style="color: var(--warning);"></i> Make It Smaller</h3>
+                <button id="modal-smaller-close" class="icon-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <p id="modal-smaller-desc" style="font-size: 0.76rem; color: var(--text-secondary); margin: 0;">Smart size optimization tailored for your file type.</p>
+
+            <div class="form-group" style="margin-top: 6px;">
+                <label class="form-label">Compression Strategy</label>
+                <select id="smaller-preset-select" class="form-select">
+                    <option value="auto" selected>⚡ Smart Auto (Recommended)</option>
+                    <option value="high">High Quality (Balanced)</option>
+                    <option value="max">Maximum Compression (Smallest Size)</option>
+                    <option value="target">Custom Target File Size</option>
+                </select>
+            </div>
+
+            <div id="smaller-target-group" class="form-group hidden">
+                <label class="form-label">Target Size Limit</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="number" id="smaller-target-val" class="form-input" placeholder="e.g. 500">
+                    <select id="smaller-target-unit" class="form-select" style="width: 90px;">
+                        <option value="KB">KB</option>
+                        <option value="MB" selected>MB</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="btn-execute-smart-compress" class="btn btn-primary btn-block" style="margin-top: 10px;"><i class="fa-solid fa-compress"></i> Compress Now</button>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/universalRegistry.js"></script>
+    <script src="js/futuristicEngine.js"></script>
+    <script src="js/assistant.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

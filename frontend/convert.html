@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Docholder — Universal Transform & Multi-Export</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-app-shell">
+        <div class="mobile-status-bar">
+            <span class="status-bar-time">9:41</span>
+            <div class="dynamic-island-notch">
+                <div class="notch-camera-dot"></div>
+            </div>
+            <div class="status-bar-icons">
+                <i class="fa-solid fa-signal"></i>
+                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-battery-full"></i>
+            </div>
+        </div>
+
+        <header class="mobile-app-header">
+            <button class="mobile-header-btn" onclick="handleSmartBack('tools.html?cat=convert')"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="mobile-header-title">
+                <span>Transform & Multi-Export</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <a href="settings.html" class="mobile-header-btn" title="Settings"><i class="fa-solid fa-gear"></i></a>
+                <button class="theme-toggle-btn" onclick="toggleTheme()" style="width: 32px; height: 32px; font-size: 0.85rem;" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+            </div>
+        </header>
+
+        <span id="nav-user-email" class="hidden"></span>
+
+        <main class="app-body">
+            <div class="page-title-block">
+                <h1 class="page-title"><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--primary);"></i> Universal Transform</h1>
+                <p class="page-subtitle">Multi-format export, target size, and batch processing.</p>
+            </div>
+
+            <!-- Mode Selector Chips (Scrollable) -->
+            <div class="action-chips">
+                <button class="action-chip active" data-mode="multi"><i class="fa-solid fa-layer-group"></i> Multi-Export</button>
+                <button class="action-chip" data-mode="direct"><i class="fa-solid fa-rotate"></i> Convert</button>
+                <button class="action-chip" data-mode="target"><i class="fa-solid fa-crosshairs"></i> Target Size</button>
+                <button class="action-chip" data-mode="prepare"><i class="fa-solid fa-paper-plane"></i> Prepare</button>
+                <button class="action-chip" data-mode="batch"><i class="fa-solid fa-arrows-split-up-and-left"></i> Batch</button>
+            </div>
+
+            <!-- Step 1: Select File -->
+            <div class="glass-card">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-square-check" style="color: var(--primary);"></i> 1. Select Document / File</h4>
+                
+                <div id="convert-single-select-group" class="form-group" style="margin-bottom: 8px;">
+                    <select id="studio-file-select" class="form-select" style="font-size: 0.85rem;">
+                        <option value="">-- Choose from Workspace --</option>
+                    </select>
+                </div>
+
+                <div id="studio-dropzone" class="dropzone" style="padding: 14px; position: relative; overflow: hidden;">
+                    <div class="laser-scanner-line"></div>
+                    <input type="file" id="studio-file-input" class="hidden">
+                    <i class="fa-solid fa-cloud-arrow-up dropzone-icon" style="font-size: 1.5rem; margin-bottom: 4px; color: var(--cyan-neon);"></i>
+                    <div style="font-weight: 700; font-size: 0.85rem; font-family: var(--font-hud); letter-spacing: 0.5px;">Tap or Drop Universal Asset</div>
+                    <div style="font-size: 0.72rem; color: var(--text-secondary); font-family: var(--font-mono);">Documents, Vision, Audio, Streams, Data & Archives</div>
+                </div>
+            </div>
+
+            <!-- Step 2: Controls Panels -->
+            <!-- Panel Multi-Export -->
+            <div id="panel-multi" class="glass-card">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-layer-group" style="color: var(--accent);"></i> 2. Select Output Formats</h4>
+                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 8px;">Export this file into multiple formats simultaneously and bundle as a ZIP.</p>
+                
+                <div id="multi-formats-grid" class="format-checkbox-grid">
+                    <div style="font-size: 0.76rem; color: var(--text-secondary); padding: 10px;">Select a file above to load compatible formats.</div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 8px 0;">
+                    <button id="btn-multi-select-all" class="btn btn-secondary btn-sm" style="font-size: 0.72rem;">Select All Formats</button>
+                    <span id="multi-count-badge" style="font-size: 0.76rem; color: var(--text-secondary);">0 selected</span>
+                </div>
+
+                <button id="run-multi-export-btn" class="btn btn-primary btn-block"><i class="fa-solid fa-rocket"></i> Export Selected Formats</button>
+            </div>
+
+            <!-- Panel Direct Format -->
+            <div id="panel-direct" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-sliders" style="color: var(--accent);"></i> 2. Single Target Format</h4>
+                <div class="form-group">
+                    <label class="form-label" for="target-format-select">Format</label>
+                    <select id="target-format-select" class="form-select" style="font-size: 0.85rem;">
+                        <optgroup label="Documents">
+                            <option value="pdf">PDF (.pdf)</option>
+                            <option value="docx">Word (.docx)</option>
+                            <option value="txt">Plain Text (.txt)</option>
+                            <option value="html">Web (.html)</option>
+                        </optgroup>
+                        <optgroup label="Spreadsheets">
+                            <option value="csv">CSV (.csv)</option>
+                            <option value="xlsx">Excel (.xlsx)</option>
+                            <option value="json">JSON Data (.json)</option>
+                        </optgroup>
+                        <optgroup label="Images">
+                            <option value="webp">WEBP (.webp)</option>
+                            <option value="jpg">JPG (.jpg)</option>
+                            <option value="png">PNG (.png)</option>
+                            <option value="tiff">TIFF (.tiff)</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <button id="run-direct-convert-btn" class="btn btn-primary btn-block" style="margin-top: 6px;">
+                    <i class="fa-solid fa-rotate"></i> Convert File Now
+                </button>
+            </div>
+
+            <!-- Panel Target Size -->
+            <div id="panel-target" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-crosshairs" style="color: var(--warning);"></i> 2. Target Size Limit</h4>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px;">
+                    Intelligently optimize file to strictly stay below your required size limit.
+                </p>
+
+                <div class="form-group">
+                    <label class="form-label">Size Limit Preset</label>
+                    <select id="target-size-preset" class="form-select" style="font-size: 0.85rem;">
+                        <option value="204800">200 KB (Forms & Avatars)</option>
+                        <option value="512000" selected>500 KB (Fast Web)</option>
+                        <option value="1048576">1 MB (Standard Document)</option>
+                        <option value="2097152">2 MB (Email Attachment)</option>
+                        <option value="5242880">5 MB (Portal Upload)</option>
+                        <option value="20971520">20 MB (Video Standard)</option>
+                        <option value="custom">Custom Target Size...</option>
+                    </select>
+                </div>
+                <div id="custom-size-group" class="form-group hidden">
+                    <label class="form-label">Custom Size</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="number" id="custom-size-input" class="form-input" placeholder="e.g. 750" min="10">
+                        <select id="custom-size-unit" class="form-select" style="width: 80px;">
+                            <option value="KB" selected>KB</option>
+                            <option value="MB">MB</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="run-target-size-btn" class="btn btn-primary btn-block" style="margin-top: 6px;">
+                    <i class="fa-solid fa-compress"></i> Optimize to Target Size
+                </button>
+            </div>
+
+            <!-- Panel Prepare -->
+            <div id="panel-prepare" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-paper-plane" style="color: var(--success);"></i> 2. Destination Preset</h4>
+                <div class="grid-3-col" style="margin-bottom: 12px;">
+                    <button class="btn btn-secondary prepare-preset-btn active" data-preset="email" style="flex-direction: column; height: 70px; padding: 6px;">
+                        <i class="fa-solid fa-envelope" style="color: var(--primary);"></i>
+                        <span style="font-size: 0.76rem; font-weight: 700; margin-top: 2px;">Email</span>
+                    </button>
+                    <button class="btn btn-secondary prepare-preset-btn" data-preset="whatsapp" style="flex-direction: column; height: 70px; padding: 6px;">
+                        <i class="fa-brands fa-whatsapp" style="color: #22c55e;"></i>
+                        <span style="font-size: 0.76rem; font-weight: 700; margin-top: 2px;">WhatsApp</span>
+                    </button>
+                    <button class="btn btn-secondary prepare-preset-btn" data-preset="website" style="flex-direction: column; height: 70px; padding: 6px;">
+                        <i class="fa-solid fa-globe" style="color: var(--accent);"></i>
+                        <span style="font-size: 0.76rem; font-weight: 700; margin-top: 2px;">Web</span>
+                    </button>
+                    <button class="btn btn-secondary prepare-preset-btn" data-preset="printing" style="flex-direction: column; height: 70px; padding: 6px;">
+                        <i class="fa-solid fa-print" style="color: var(--warning);"></i>
+                        <span style="font-size: 0.76rem; font-weight: 700; margin-top: 2px;">Print</span>
+                    </button>
+                    <button class="btn btn-secondary prepare-preset-btn" data-preset="cloud" style="flex-direction: column; height: 70px; padding: 6px;">
+                        <i class="fa-solid fa-cloud" style="color: #a855f7;"></i>
+                        <span style="font-size: 0.76rem; font-weight: 700; margin-top: 2px;">Cloud</span>
+                    </button>
+                </div>
+
+                <button id="run-prepare-btn" class="btn btn-primary btn-block">
+                    <i class="fa-solid fa-paper-plane"></i> Prepare File Now
+                </button>
+            </div>
+
+            <!-- Panel Batch -->
+            <div id="panel-batch" class="glass-card cyber-card hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h4 style="font-size: 0.88rem; margin: 0;"><i class="fa-solid fa-arrows-split-up-and-left" style="color: var(--accent);"></i> 2. Batch File Conversion Engine</h4>
+                    <span id="batch-count-badge" class="hud-badge hud-badge-cyan" style="font-size: 0.65rem;">0 SELECTED</span>
+                </div>
+                
+                <p style="font-size: 0.76rem; color: var(--text-secondary); margin-bottom: 10px;">
+                    Select multiple files across any category to transform them simultaneously with live per-file tracking:
+                </p>
+
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label class="form-label">Universal Target Format:</label>
+                    <select id="batch-target-format" class="form-select" style="font-size: 0.85rem;">
+                        <optgroup label="Universal Document Formats">
+                            <option value="pdf" selected>Convert All to PDF (.pdf)</option>
+                            <option value="docx">Convert All to Word (.docx)</option>
+                            <option value="txt">Convert All to Plain Text (.txt)</option>
+                            <option value="html">Convert All to Web HTML (.html)</option>
+                        </optgroup>
+                        <optgroup label="Visual Image Formats">
+                            <option value="webp">Convert All to WebP (.webp)</option>
+                            <option value="jpg">Convert All to JPG (.jpg)</option>
+                            <option value="png">Convert All to PNG (.png)</option>
+                        </optgroup>
+                        <optgroup label="Audio / Video Formats">
+                            <option value="mp3">Convert / Extract Audio to MP3 (.mp3)</option>
+                            <option value="wav">Convert to WAV Audio (.wav)</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="font-size: 0.75rem; font-weight: 700; color: var(--text);">Select Workspace Files:</span>
+                    <button type="button" id="btn-batch-select-all" class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 8px;">Select All</button>
+                </div>
+
+                <div id="batch-files-checkbox-list" style="max-height: 160px; overflow-y: auto; margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px;"></div>
+
+                <!-- Live Per-File Progress Container -->
+                <div id="batch-progress-wrapper" class="hidden" style="margin-bottom: 12px; background: var(--surface-hover); padding: 10px; border-radius: var(--radius-xs); border: 1px solid var(--surface-border);">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.76rem; margin-bottom: 6px;">
+                        <span id="batch-progress-summary-status" style="color: var(--cyan-neon); font-weight: 700;">Processing batch files...</span>
+                        <span id="batch-progress-percent" style="font-family: var(--font-mono); font-weight: 700;">0%</span>
+                    </div>
+                    <div class="progress-bar-container" style="height: 6px; margin-bottom: 8px;">
+                        <div id="batch-progress-fill" class="progress-bar-fill" style="width: 0%; background: linear-gradient(90deg, var(--cyan-neon), var(--magenta-neon));"></div>
+                    </div>
+                    <div id="batch-rows-status-list" style="display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; font-size: 0.74rem;"></div>
+                </div>
+
+                <button id="run-batch-convert-btn" class="btn btn-primary btn-block">
+                    <i class="fa-solid fa-arrows-split-up-and-left"></i> Convert All (Files Ready: 0)
+                </button>
+            </div>
+
+            <!-- Batch Results Summary Card -->
+            <div id="batch-summary-card" class="glass-card hidden" style="border-color: var(--success); margin-top: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h4 id="batch-summary-title" style="color: var(--success); margin: 0; font-size: 0.9rem;">
+                        <i class="fa-solid fa-circle-check"></i> Batch Conversion Completed
+                    </h4>
+                    <span id="batch-summary-badge" class="savings-badge">0 / 0 Done</span>
+                </div>
+                
+                <div id="batch-completed-files-list" style="display: flex; flex-direction: column; gap: 6px; margin: 10px 0; max-height: 160px; overflow-y: auto;"></div>
+
+                <div id="batch-failed-section" class="hidden" style="margin-top: 8px; padding: 8px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-xs);">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: var(--danger); margin-bottom: 4px;"><i class="fa-solid fa-triangle-exclamation"></i> Failed Items:</div>
+                    <div id="batch-failed-list" style="font-size: 0.74rem; color: var(--text-secondary); margin-bottom: 6px;"></div>
+                    <button type="button" id="btn-retry-failed-batch" class="btn btn-secondary btn-sm" style="font-size: 0.72rem; width: 100%;"><i class="fa-solid fa-rotate-right"></i> Retry Failed Files</button>
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-top: 10px;">
+                    <a id="btn-batch-download-zip" href="#" class="btn btn-primary btn-block" style="flex: 1;"><i class="fa-solid fa-file-zipper"></i> Download ZIP Bundle</a>
+                </div>
+            </div>
+
+            <!-- Result Card -->
+            <div id="studio-result-card" class="glass-card hidden" style="border-color: var(--success);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h4 style="color: var(--success); margin: 0; display: flex; align-items: center; gap: 6px; font-size: 0.9rem;">
+                        <i class="fa-solid fa-circle-check"></i> Transformation Complete!
+                    </h4>
+                    <span id="res-savings-badge" class="savings-badge">0% Saved</span>
+                </div>
+
+                <div class="before-after-container">
+                    <div class="before-after-row">
+                        <div class="stat-metric-box">
+                            <span class="stat-metric-title">Before</span>
+                            <span id="res-orig-size" class="stat-metric-value">0 KB</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right" style="color: var(--text-muted);"></i>
+                        <div class="stat-metric-box">
+                            <span class="stat-metric-title">After</span>
+                            <span id="res-new-size" class="stat-metric-value" style="color: var(--success);">0 KB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="res-files-list-container" style="margin-bottom: 10px;">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Result File:</div>
+                    <strong id="res-file-name" style="font-size: 0.85rem; word-break: break-all;">output.file</strong>
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <a id="res-download-btn" href="#" class="btn btn-primary btn-block"><i class="fa-solid fa-download"></i> Download Result</a>
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav-bar">
+            <a href="dashboard.html" class="bottom-nav-item">
+                <i class="fa-solid fa-gauge"></i>
+                <span>Home</span>
+            </a>
+            <a href="tools.html" class="bottom-nav-item">
+                <i class="fa-solid fa-grid-2"></i>
+                <span>Tools</span>
+            </a>
+            <a href="convert.html" class="bottom-nav-item active">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Convert</span>
+            </a>
+            <a href="files.html" class="bottom-nav-item">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Files</span>
+            </a>
+            <a href="history.html" class="bottom-nav-item">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>History</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/universalRegistry.js"></script>
+    <script src="js/futuristicEngine.js"></script>
+    <script src="js/convert.js"></script>
+</body>
+</html>

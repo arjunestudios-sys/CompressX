@@ -1,0 +1,159 @@
+# =============================================================
+#  CompressX – Root .gitignore
+#  Covers: Node/npm, Backend, Frontend, Capacitor/Android/iOS,
+#          SQLite, Sharp/FFmpeg artifacts, IDE & OS files
+# =============================================================
+
+# ─── Node / npm ────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+package-lock.json   # keep if you prefer reproducible installs; delete this line if so
+
+# ─── Environment Variables & Secrets ───────────────────────
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+backend/.env
+*.pem
+
+# ─── Build Outputs ─────────────────────────────────────────
+dist/
+build/
+out/
+.output/
+.nuxt/
+.next/
+.cache/
+.parcel-cache/
+*.tsbuildinfo
+
+# ─── Logs ──────────────────────────────────────────────────
+logs/
+*.log
+*.log.*
+
+# ─── Runtime / Temp files ──────────────────────────────────
+tmp/
+temp/
+.tmp/
+.temp/
+*.pid
+*.seed
+*.pid.lock
+
+# ─── Coverage & Testing ────────────────────────────────────
+coverage/
+.nyc_output/
+*.lcov
+backend/test_artifacts/
+backend/test_output/
+__tests__/__snapshots__/
+
+# ─── Backend: Storage (keep .gitkeep placeholders) ─────────
+backend/storage/uploads/*
+backend/storage/converted/*
+backend/storage/compressed/*
+backend/storage/temp/*
+!backend/storage/uploads/.gitkeep
+!backend/storage/converted/.gitkeep
+!backend/storage/compressed/.gitkeep
+!backend/storage/temp/.gitkeep
+
+# ─── Backend: SQLite Database ──────────────────────────────
+backend/*.db
+backend/*.db-shm
+backend/*.db-wal
+backend/*.sqlite
+backend/*.sqlite3
+*.db
+*.sqlite
+*.sqlite3
+
+# ─── Backend: Sharp / FFmpeg native binaries ───────────────
+backend/node_modules/.cache/
+**/sharp/build/
+**/canvas/build/
+**/ffmpeg-static/**/*.exe
+**/ffmpeg-static/**/*.bin
+
+# ─── Frontend: Bundler artifacts ───────────────────────────
+frontend/dist/
+frontend/build/
+frontend/.cache/
+
+# ─── Capacitor (Mobile) ────────────────────────────────────
+android/
+ios/
+.capacitor/
+capacitor.config.json.bak
+
+# ─── Android (if android/ ever gets committed partially) ───
+*.apk
+*.aab
+*.ap_
+local.properties
+.gradle/
+android/.gradle/
+android/local.properties
+android/app/build/
+android/.idea/
+
+# ─── iOS ───────────────────────────────────────────────────
+*.ipa
+*.dSYM.zip
+*.dSYM
+Pods/
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+DerivedData/
+
+# ─── ESLint / Prettier cache ───────────────────────────────
+.eslintcache
+.stylelintcache
+.prettiercache
+
+# ─── TypeScript ────────────────────────────────────────────
+*.js.map
+*.d.ts
+
+# ─── Misc project root leftovers ───────────────────────────
+fix_json_db.js     # one-off repair script – remove from repo
+
+# ─── OS & Editor files ─────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# IDEs
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+.history/
+*.orig
+
+# JetBrains
+*.iml
+*.ipr
+*.iws
+
+# Vim
+*~

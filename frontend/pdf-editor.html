@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docholder — Annotate PDF</title>
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        #pdf-container {
+            position: relative;
+            margin: 0 auto;
+            border: 1px solid var(--surface-border);
+            background: white;
+            box-shadow: var(--glass-shadow);
+            border-radius: 8px;
+        }
+        #pdf-canvas {
+            display: block;
+            border-radius: 8px;
+        }
+        #overlay-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .annotation-box {
+            position: absolute;
+            pointer-events: auto;
+            border: 1px dashed #6366f1;
+            padding: 4px;
+            background: rgba(255, 255, 255, 0.85);
+            font-family: Arial, sans-serif;
+            outline: none;
+            white-space: pre-wrap;
+            min-width: 60px;
+            min-height: 24px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <header class="app-navbar">
+            <div class="navbar-inner">
+                <a href="files.html" class="brand-wrapper">
+                    <img src="assets/logo.svg" alt="Docholder" class="brand-logo">
+                    <span class="brand-title">Docholder</span>
+                </a>
+                <div style="font-size: 0.95rem; font-weight: 700; color: var(--text);" id="pdf-filename">Loading PDF...</div>
+                <div class="nav-actions">
+                    <a href="files.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Files</a>
+                    <button class="btn btn-primary btn-sm" id="save-pdf-btn"><i class="fa-solid fa-floppy-disk"></i> Save Annotations</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-container" style="max-width: 960px;">
+            <div class="glass-card" style="padding: 14px 20px; display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button class="btn btn-secondary btn-sm" id="prev-page"><i class="fa-solid fa-chevron-left"></i></button>
+                    <span style="font-size: 0.88rem; font-weight: 600;">Page <span id="page-num">1</span> of <span id="page-count">1</span></span>
+                    <button class="btn btn-secondary btn-sm" id="next-page"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <label style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);">Color:</label>
+                    <input type="color" id="text-color" value="#000000" style="width: 32px; height: 32px; padding: 0; border: none; border-radius: 4px; cursor: pointer;">
+                    <select id="font-size" class="form-select" style="width: 85px; padding: 6px; font-size: 0.85rem;">
+                        <option value="12">12px</option>
+                        <option value="16">16px</option>
+                        <option value="20" selected>20px</option>
+                        <option value="24">24px</option>
+                        <option value="32">32px</option>
+                    </select>
+                    <button class="btn btn-secondary btn-sm" id="add-text-btn"><i class="fa-solid fa-i-cursor"></i> Add Text Box</button>
+                </div>
+            </div>
+
+            <div style="text-align: center; overflow: auto; padding: 24px; background: #1e293b; border-radius: var(--radius-lg); border: 1px solid var(--surface-border);">
+                <div id="pdf-container">
+                    <canvas id="pdf-canvas"></canvas>
+                    <div id="overlay-layer"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
+    <script src="js/api.js"></script>
+    <script src="js/pdf-editor.js"></script>
+</body>
+</html>

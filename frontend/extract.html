@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Docholder — Extract</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-app-shell">
+        <div class="mobile-status-bar">
+            <span class="status-bar-time">9:41</span>
+            <div class="dynamic-island-notch">
+                <div class="notch-camera-dot"></div>
+            </div>
+            <div class="status-bar-icons">
+                <i class="fa-solid fa-signal"></i>
+                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-battery-full"></i>
+            </div>
+        </div>
+
+        <header class="mobile-app-header">
+            <button class="mobile-header-btn" onclick="window.location.href='dashboard.html'"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="mobile-header-title">
+                <span>Extract</span>
+            </div>
+            <button class="theme-toggle-btn" onclick="toggleTheme()" style="width: 32px; height: 32px; font-size: 0.85rem;" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+        </header>
+
+        <span id="nav-user-email" class="hidden"></span>
+
+        <main class="app-body">
+            <div class="page-title-block">
+                <h1 class="page-title"><i class="fa-solid fa-box-open" style="color: var(--accent);"></i> Extract Archive</h1>
+                <p class="page-subtitle">Inspect and unpack individual archive contents.</p>
+            </div>
+
+            <div class="glass-card">
+                <div class="form-group">
+                    <label class="form-label" style="font-size: 0.8rem;">Select from Workspace:</label>
+                    <select id="extract-file-select" class="form-select" style="font-size: 0.85rem;">
+                        <option value="">-- Choose Workspace Archive --</option>
+                    </select>
+                </div>
+
+                <div style="text-align: center; color: var(--text-secondary); margin: 8px 0; font-size: 0.75rem; font-weight: 700;">— OR UPLOAD ARCHIVE —</div>
+
+                <div class="form-group">
+                    <input type="file" id="extract-upload-input" class="form-input" accept=".zip,.tar,.gz,.tgz,.7z" style="font-size: 0.85rem;">
+                </div>
+
+                <button id="start-extract-btn" class="btn btn-primary" style="width: 100%; margin-top: 4px;">
+                    <i class="fa-solid fa-box-open"></i> Extract Archive
+                </button>
+            </div>
+
+            <!-- Extracted Results Card -->
+            <div id="extract-result-card" class="glass-card hidden" style="border-left: 4px solid var(--accent);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div>
+                        <h4 id="extract-archive-title" style="margin: 0; font-size: 0.95rem;">Extracted</h4>
+                        <span id="extract-file-count" style="color: var(--text-secondary); font-size: 0.75rem;">0 files</span>
+                    </div>
+                    <a id="download-all-zip-btn" href="#" class="btn btn-primary btn-sm"><i class="fa-solid fa-file-zipper"></i> ZIP All</a>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>File</th>
+                                <th style="text-align: right;">Size</th>
+                                <th style="text-align: right;">Get</th>
+                            </tr>
+                        </thead>
+                        <tbody id="extracted-files-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav-bar">
+            <a href="dashboard.html" class="bottom-nav-item">
+                <i class="fa-solid fa-gauge"></i>
+                <span>Home</span>
+            </a>
+            <a href="convert.html" class="bottom-nav-item">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Transform</span>
+            </a>
+            <a href="files.html" class="bottom-nav-item">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Files</span>
+            </a>
+            <a href="compress.html" class="bottom-nav-item">
+                <i class="fa-solid fa-file-zipper"></i>
+                <span>Compress</span>
+            </a>
+            <a href="settings.html" class="bottom-nav-item">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/extract.js"></script>
+</body>
+</html>

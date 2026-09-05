@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Docholder — All Tools Directory</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-app-shell">
+        <div class="mobile-status-bar">
+            <span class="status-bar-time">9:41</span>
+            <div class="dynamic-island-notch">
+                <div class="notch-camera-dot"></div>
+            </div>
+            <div class="status-bar-icons">
+                <i class="fa-solid fa-signal"></i>
+                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-battery-full"></i>
+            </div>
+        </div>
+
+        <header class="mobile-app-header">
+            <button class="mobile-header-btn" onclick="handleSmartBack('dashboard.html')"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="mobile-header-title">
+                <span>Tools Catalog</span>
+            </div>
+            <button class="theme-toggle-btn" onclick="toggleTheme()" style="width: 32px; height: 32px; font-size: 0.85rem;" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+        </header>
+
+        <span id="nav-user-email" class="hidden"></span>
+
+        <main class="app-body">
+            <div class="page-title-block">
+                <h1 class="page-title"><i class="fa-solid fa-grid-2" style="color: var(--primary);"></i> Tool Catalog</h1>
+                <p class="page-subtitle">50+ universal processing tools for every file.</p>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-bar" style="margin-bottom: 12px;">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="tool-search-input" class="search-input" placeholder="Search any operation (e.g. compress video, convert PDF, trim)...">
+            </div>
+
+            <!-- Category Filter Chips -->
+            <div class="category-nav-bar">
+                <button class="action-chip active" data-cat="all"><i class="fa-solid fa-layer-group"></i> All Tools</button>
+                <button class="action-chip" data-cat="doc"><i class="fa-solid fa-file-pdf" style="color: #EF4444;"></i> Documents</button>
+                <button class="action-chip" data-cat="word"><i class="fa-solid fa-file-word" style="color: #3B82F6;"></i> Word</button>
+                <button class="action-chip" data-cat="image"><i class="fa-solid fa-image" style="color: #8B5CF6;"></i> Images</button>
+                <button class="action-chip" data-cat="video"><i class="fa-solid fa-video" style="color: #EC4899;"></i> Videos</button>
+                <button class="action-chip" data-cat="audio"><i class="fa-solid fa-music" style="color: #10B981;"></i> Audio</button>
+                <button class="action-chip" data-cat="convert"><i class="fa-solid fa-rotate" style="color: #06B6D4;"></i> Convert</button>
+                <button class="action-chip" data-cat="compress"><i class="fa-solid fa-compress" style="color: #F59E0B;"></i> Compress</button>
+                <button class="action-chip" data-cat="archive"><i class="fa-solid fa-file-zipper" style="color: #EAB308;"></i> Archives</button>
+            </div>
+
+            <!-- Tools Grid Container -->
+            <div id="tools-container" style="display: flex; flex-direction: column; gap: 16px; margin-top: 10px;">
+                <!-- Dynamically populated categories and cards -->
+            </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav-bar">
+            <a href="dashboard.html" class="bottom-nav-item">
+                <i class="fa-solid fa-gauge"></i>
+                <span>Home</span>
+            </a>
+            <a href="tools.html" class="bottom-nav-item active">
+                <i class="fa-solid fa-grid-2"></i>
+                <span>Tools</span>
+            </a>
+            <a href="convert.html" class="bottom-nav-item">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Convert</span>
+            </a>
+            <a href="files.html" class="bottom-nav-item">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Files</span>
+            </a>
+            <a href="history.html" class="bottom-nav-item">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>History</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/universalRegistry.js"></script>
+    <script src="js/futuristicEngine.js"></script>
+    <script src="js/tools.js"></script>
+</body>
+</html>

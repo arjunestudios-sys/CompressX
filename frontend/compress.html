@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Docholder — Compress</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-app-shell">
+        <div class="mobile-status-bar">
+            <span class="status-bar-time">9:41</span>
+            <div class="dynamic-island-notch">
+                <div class="notch-camera-dot"></div>
+            </div>
+            <div class="status-bar-icons">
+                <i class="fa-solid fa-signal"></i>
+                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-battery-full"></i>
+            </div>
+        </div>
+
+        <header class="mobile-app-header">
+            <button class="mobile-header-btn" onclick="handleSmartBack('tools.html?cat=compress')"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="mobile-header-title">
+                <span>Compress</span>
+            </div>
+            <button class="theme-toggle-btn" onclick="toggleTheme()" style="width: 32px; height: 32px; font-size: 0.85rem;" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+        </header>
+
+        <span id="nav-user-email" class="hidden"></span>
+
+        <main class="app-body">
+            <div class="page-title-block">
+                <h1 class="page-title"><i class="fa-solid fa-file-zipper" style="color: var(--primary);"></i> Archive Compression</h1>
+                <p class="page-subtitle">Package and compress documents into ZIP & TAR.GZ.</p>
+            </div>
+
+            <!-- 1. Select Files -->
+            <div class="glass-card">
+                <h4 style="font-size: 0.9rem; margin-bottom: 10px;"><i class="fa-solid fa-square-check" style="color: var(--primary);"></i> 1. Select Documents</h4>
+                <div id="compress-files-list" style="max-height: 180px; overflow-y: auto;">
+                    <p style="color: var(--text-secondary); font-size: 0.82rem;">Loading files...</p>
+                </div>
+            </div>
+
+            <!-- 2. Settings -->
+            <div class="glass-card">
+                <h4 style="font-size: 0.9rem; margin-bottom: 10px;"><i class="fa-solid fa-sliders" style="color: var(--accent);"></i> 2. Archive Settings</h4>
+                
+                <div class="form-group">
+                    <label class="form-label" for="archive-format">Format</label>
+                    <select id="archive-format" class="form-select" style="font-size: 0.85rem;">
+                        <option value="zip">ZIP (.zip)</option>
+                        <option value="tar.gz">TAR.GZ (.tar.gz)</option>
+                        <option value="tar">TAR (.tar)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="archive-level">Compression Level</label>
+                    <select id="archive-level" class="form-select" style="font-size: 0.85rem;">
+                        <option value="9">Maximum (Smallest size)</option>
+                        <option value="5">Balanced</option>
+                        <option value="1">Fastest</option>
+                        <option value="0">Store Only</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="archive-password">Password (Optional)</label>
+                    <input type="password" id="archive-password" class="form-input" placeholder="Leave blank for none" style="font-size: 0.85rem;">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="archive-name">Archive Name (Optional)</label>
+                    <input type="text" id="archive-name" class="form-input" placeholder="e.g. documents" style="font-size: 0.85rem;">
+                </div>
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="delete-originals" style="width: 16px; height: 16px;">
+                    <label for="delete-originals" style="font-size: 0.78rem; color: var(--text-secondary); cursor: pointer;">Delete originals after compress</label>
+                </div>
+
+                <button id="start-compress-btn" class="btn btn-primary" style="width: 100%; margin-top: 6px;">
+                    <i class="fa-solid fa-file-zipper"></i> Compress Selected Files
+                </button>
+            </div>
+
+            <!-- Result Card -->
+            <div id="compress-result-card" class="glass-card hidden" style="border-left: 4px solid var(--success);">
+                <h4 style="color: var(--success); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-circle-check"></i> Compression Complete!
+                </h4>
+                
+                <div class="comparison-card">
+                    <div>
+                        <div style="font-size: 0.72rem; color: var(--text-secondary);">BEFORE</div>
+                        <strong id="res-orig-size" style="font-size: 0.95rem;">0 MB</strong>
+                    </div>
+                    <div><i class="fa-solid fa-arrow-right" style="color: var(--primary);"></i></div>
+                    <div>
+                        <div style="font-size: 0.72rem; color: var(--text-secondary);">AFTER</div>
+                        <strong id="res-comp-size" style="font-size: 0.95rem; color: var(--success);">0 MB</strong>
+                    </div>
+                    <div>
+                        <span id="res-saved-percent" class="savings-badge">0% Saved</span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 10px;">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Archive File:</div>
+                    <strong id="res-archive-name" style="font-size: 0.88rem;">archive.zip</strong>
+                </div>
+
+                <a id="res-download-btn" href="#" class="btn btn-primary btn-sm" style="width: 100%;"><i class="fa-solid fa-download"></i> Download Archive</a>
+            </div>
+        </main>
+
+        <nav class="bottom-nav-bar">
+            <a href="dashboard.html" class="bottom-nav-item">
+                <i class="fa-solid fa-gauge"></i>
+                <span>Home</span>
+            </a>
+            <a href="convert.html" class="bottom-nav-item">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Transform</span>
+            </a>
+            <a href="files.html" class="bottom-nav-item">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Files</span>
+            </a>
+            <a href="compress.html" class="bottom-nav-item active">
+                <i class="fa-solid fa-file-zipper"></i>
+                <span>Compress</span>
+            </a>
+            <a href="settings.html" class="bottom-nav-item">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/futuristicEngine.js"></script>
+    <script src="js/compress.js"></script>
+</body>
+</html>

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Docholder — Word Studio & Document Optimizer</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        (function() {
+            const t = localStorage.getItem('docholder_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+    <style>
+        .word-block-card {
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            transition: all var(--transition-fast);
+        }
+        .word-block-card:focus-within {
+            border-color: var(--cyan-neon);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+            background: var(--surface-card);
+        }
+        .word-block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 0.74rem;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
+        .word-block-textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-family: var(--font-family);
+            font-size: 0.88rem;
+            resize: vertical;
+            outline: none;
+            min-height: 48px;
+            line-height: 1.5;
+        }
+        .word-toolbar-btn {
+            padding: 4px 8px;
+            font-size: 0.76rem;
+        }
+        .word-opt-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        @media (max-width: 480px) {
+            .word-opt-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-app-shell">
+        <div class="mobile-status-bar">
+            <span class="status-bar-time">9:41</span>
+            <div class="dynamic-island-notch">
+                <div class="notch-camera-dot"></div>
+                <div class="dynamic-island-pulse"></div>
+            </div>
+            <div class="status-bar-icons">
+                <i class="fa-solid fa-signal"></i>
+                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-battery-full"></i>
+            </div>
+        </div>
+
+        <header class="mobile-app-header">
+            <button class="mobile-header-btn" onclick="handleSmartBack('tools.html?cat=doc')"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="mobile-header-title">
+                <span id="word-studio-header-title">Word Studio</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <a href="settings.html" class="mobile-header-btn" title="Settings"><i class="fa-solid fa-gear"></i></a>
+                <button class="theme-toggle-btn" onclick="toggleTheme()" style="width: 32px; height: 32px; font-size: 0.85rem;" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+            </div>
+        </header>
+
+        <span id="nav-user-email" class="hidden"></span>
+
+        <main class="app-body" style="padding-bottom: 90px;">
+            <div class="page-title-block">
+                <div class="op-breadcrumb-badge"><i class="fa-solid fa-file-word" style="color: #3B82F6;"></i> Office Suite → Word Processing</div>
+                <h1 class="page-title" id="word-page-title"><i class="fa-solid fa-file-word" style="color: #3B82F6;"></i> Word Studio</h1>
+                <p class="page-subtitle" id="word-page-subtitle">Native document editing, styling options, and high-performance Word conversion reactor.</p>
+            </div>
+
+            <!-- Mode Selector Chips: Edit, Convert, Optimize -->
+            <div class="action-chips" id="word-mode-selector" style="padding: 6px 0; margin-bottom: 12px; display: flex; gap: 6px; overflow-x: auto;">
+                <button class="action-chip active" id="tab-convert-mode" data-mode="convert" style="flex: 1; justify-content: center; min-width: 100px;">
+                    <i class="fa-solid fa-rotate" style="color: var(--magenta-neon);"></i> Convert
+                </button>
+                <button class="action-chip" id="tab-optimize-mode" data-mode="optimize" style="flex: 1; justify-content: center; min-width: 100px;">
+                    <i class="fa-solid fa-bolt" style="color: var(--amber-neon);"></i> Optimize
+                </button>
+                <button class="action-chip" id="tab-edit-mode" data-mode="edit" style="flex: 1; justify-content: center; min-width: 100px;">
+                    <i class="fa-solid fa-pen-to-square" style="color: var(--cyan-neon);"></i> Edit
+                </button>
+            </div>
+
+            <!-- Step 1: Select Word Document -->
+            <div class="glass-card cyber-card">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-square-check" style="color: var(--primary);"></i> 1. Select Word Document</h4>
+                
+                <div class="form-group" style="margin-bottom: 8px;">
+                    <select id="word-file-select" class="form-select" style="font-size: 0.85rem;">
+                        <option value="">-- Choose from Workspace --</option>
+                    </select>
+                </div>
+
+                <div id="word-dropzone" class="dropzone" style="padding: 14px; position: relative; overflow: hidden;">
+                    <div class="laser-scanner-line"></div>
+                    <input type="file" id="word-file-input" accept=".docx,.doc" class="hidden">
+                    <i class="fa-solid fa-cloud-arrow-up dropzone-icon" style="font-size: 1.5rem; margin-bottom: 4px; color: #3B82F6;"></i>
+                    <div style="font-weight: 700; font-size: 0.85rem; font-family: var(--font-hud); letter-spacing: 0.5px;">Tap or Drop Word Document</div>
+                    <div style="font-size: 0.72rem; color: var(--text-secondary); font-family: var(--font-mono);">DOCX, DOC files supported</div>
+                </div>
+
+                <div id="selected-word-badge" class="hidden" style="margin-top: 8px; padding: 8px 12px; background: var(--surface-hover); border: 1px solid var(--surface-border); border-radius: var(--radius-xs); font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span class="hud-badge" style="font-size: 0.6rem;">DOCX // READY</span>
+                        <span id="selected-word-name" style="font-weight: 600; font-family: var(--font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px;"></span>
+                    </div>
+                    <span id="selected-word-size" style="color: var(--cyan-neon); font-family: var(--font-mono); font-size: 0.74rem;"></span>
+                </div>
+            </div>
+
+            <!-- TAB 1: CONVERT WORD PANEL (Default) -->
+            <div id="panel-word-convert" class="glass-card cyber-card">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-rotate" style="color: var(--magenta-neon);"></i> 2. Word Conversion & Layout Options</h4>
+                
+                <div class="form-group">
+                    <label class="form-label">Target Format</label>
+                    <select id="word-convert-target" class="form-select" style="font-size: 0.85rem;">
+                        <option value="pdf" selected>Word to PDF Document (.pdf)</option>
+                        <option value="pptx">Word to PowerPoint Slides (.pptx)</option>
+                        <option value="txt">Word to Plain Text (.txt)</option>
+                        <option value="html">Word to Webpage HTML (.html)</option>
+                        <option value="md">Word to Markdown Document (.md)</option>
+                    </select>
+                </div>
+
+                <!-- Word-to-PDF Specific Formatting Options -->
+                <div id="word-pdf-options-box" style="margin-top: 10px; background: var(--surface); padding: 12px; border-radius: var(--radius-xs); border: 1px solid var(--surface-border);">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: var(--text); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-sliders" style="color: var(--cyan-neon);"></i> Document Layout & Styling:
+                    </div>
+
+                    <div class="word-opt-grid">
+                        <div class="form-group" style="margin-bottom: 8px;">
+                            <label class="form-label" style="font-size: 0.72rem;">Page Size</label>
+                            <select id="word-opt-pagesize" class="form-select" style="font-size: 0.8rem;">
+                                <option value="A4" selected>Standard A4 (210 × 297 mm)</option>
+                                <option value="Letter">US Letter (8.5 × 11 in)</option>
+                                <option value="Legal">US Legal (8.5 × 14 in)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 8px;">
+                            <label class="form-label" style="font-size: 0.72rem;">Margins</label>
+                            <select id="word-opt-margins" class="form-select" style="font-size: 0.8rem;">
+                                <option value="standard" selected>Standard (50 pt)</option>
+                                <option value="compact">Compact / Narrow (32 pt)</option>
+                                <option value="wide">Wide / Editorial (72 pt)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 8px;">
+                            <label class="form-label" style="font-size: 0.72rem;">Typography Theme</label>
+                            <select id="word-opt-theme" class="form-select" style="font-size: 0.8rem;">
+                                <option value="modern" selected>Modern Sans (Clean & Crisp)</option>
+                                <option value="classic">Classic Serif (Times Editorial)</option>
+                                <option value="mono">Technical Monospace</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 8px;">
+                            <label class="form-label" style="font-size: 0.72rem;">Watermark Stamp</label>
+                            <select id="word-opt-watermark" class="form-select" style="font-size: 0.8rem;">
+                                <option value="none" selected>No Watermark</option>
+                                <option value="CONFIDENTIAL">CONFIDENTIAL</option>
+                                <option value="DRAFT">DRAFT</option>
+                                <option value="INTERNAL ONLY">INTERNAL ONLY</option>
+                                <option value="DO NOT COPY">DO NOT COPY</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px; font-size: 0.76rem;">
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text);">
+                            <input type="checkbox" id="word-opt-pagenums" checked>
+                            <span>Include Page Numbers in Footer</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="word-convert-progress-wrapper" class="hidden" style="margin: 12px 0;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.76rem; margin-bottom: 4px;">
+                        <span id="word-convert-progress-status" style="color: var(--cyan-neon);">Converting Word document...</span>
+                        <span id="word-convert-progress-percent" style="font-weight: 700;">0%</span>
+                    </div>
+                    <div class="progress-bar-container" style="height: 6px;">
+                        <div id="word-convert-progress-fill" class="progress-bar-fill" style="width: 0%; background: linear-gradient(90deg, var(--cyan-neon), var(--magenta-neon));"></div>
+                    </div>
+                </div>
+
+                <button id="btn-apply-word-convert" class="btn btn-primary btn-block" style="margin-top: 12px;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Convert Word Document
+                </button>
+            </div>
+
+            <!-- TAB 2: OPTIMIZE DOCX PANEL -->
+            <div id="panel-word-optimize" class="glass-card cyber-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-bolt" style="color: var(--amber-neon);"></i> 2. Word DOCX Optimization & Compression</h4>
+                
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 12px;">
+                    Compresses embedded images in the Word package, removes redundant XML namespaces, and cleans document bloat.
+                </p>
+
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label class="form-label">Optimization Level</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+                        <button type="button" class="btn btn-secondary btn-sm word-opt-level-btn" data-level="low" style="font-size: 0.74rem;">
+                            Low (Safe)
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm word-opt-level-btn active" data-level="recommended" style="font-size: 0.74rem; border-color: var(--amber-neon); color: var(--amber-neon);">
+                            ★ Recommended
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm word-opt-level-btn" data-level="high" style="font-size: 0.74rem;">
+                            High (Max Size Drop)
+                        </button>
+                    </div>
+                </div>
+
+                <div id="word-opt-progress-wrapper" class="hidden" style="margin: 12px 0;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.76rem; margin-bottom: 4px;">
+                        <span id="word-opt-progress-status" style="color: var(--amber-neon);">Optimizing Word document...</span>
+                        <span id="word-opt-progress-percent" style="font-weight: 700;">0%</span>
+                    </div>
+                    <div class="progress-bar-container" style="height: 6px;">
+                        <div id="word-opt-progress-fill" class="progress-bar-fill" style="width: 0%; background: linear-gradient(90deg, var(--amber-neon), var(--cyan-neon));"></div>
+                    </div>
+                </div>
+
+                <button id="btn-apply-word-optimize" class="btn btn-primary btn-block" style="margin-top: 6px; background: linear-gradient(135deg, #F59E0B, #D97706); border-color: #F59E0B;">
+                    <i class="fa-solid fa-bolt"></i> Optimize DOCX Package
+                </button>
+            </div>
+
+            <!-- TAB 3: EDIT WORD PANEL -->
+            <div id="panel-word-edit" class="glass-card cyber-card hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                    <h4 style="font-size: 0.88rem; margin: 0;"><i class="fa-solid fa-pen-to-square" style="color: var(--cyan-neon);"></i> 2. Word Content Editor</h4>
+                    <span id="word-stats-badge" style="font-size: 0.74rem; color: var(--text-secondary); font-family: var(--font-mono);">0 words • 0 paragraphs</span>
+                </div>
+
+                <!-- Editor Actions Toolbar -->
+                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap; background: var(--surface); padding: 8px; border-radius: var(--radius-xs); border: 1px solid var(--surface-border); margin-bottom: 12px;">
+                    <button type="button" id="btn-word-undo" class="btn btn-secondary btn-sm word-toolbar-btn" title="Undo"><i class="fa-solid fa-rotate-left"></i> Undo</button>
+                    <button type="button" id="btn-word-redo" class="btn btn-secondary btn-sm word-toolbar-btn" title="Redo"><i class="fa-solid fa-rotate-right"></i> Redo</button>
+                    <button type="button" id="btn-toggle-find" class="btn btn-secondary btn-sm word-toolbar-btn" title="Find and Replace"><i class="fa-solid fa-magnifying-glass"></i> Find</button>
+                    <div style="width: 1px; height: 18px; background: var(--surface-border); margin: 0 4px;"></div>
+                    <button type="button" id="btn-add-paragraph" class="btn btn-secondary btn-sm word-toolbar-btn"><i class="fa-solid fa-plus"></i> Add Paragraph</button>
+                    <button type="button" id="btn-save-docx" class="btn btn-primary btn-sm word-toolbar-btn" style="margin-left: auto;"><i class="fa-solid fa-floppy-disk"></i> Save DOCX</button>
+                </div>
+
+                <!-- Find and Replace Bar -->
+                <div id="word-find-replace-bar" class="hidden" style="background: var(--surface); padding: 10px; border-radius: var(--radius-xs); border: 1px solid var(--surface-border); margin-bottom: 10px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; align-items: center;">
+                        <input type="text" id="word-find-input" class="form-input" placeholder="Find text..." style="font-size: 0.78rem; padding: 4px 8px;">
+                        <input type="text" id="word-replace-input" class="form-input" placeholder="Replace with..." style="font-size: 0.78rem; padding: 4px 8px;">
+                        <div style="display: flex; gap: 4px;">
+                            <button type="button" id="btn-exec-word-replace" class="btn btn-primary btn-sm" style="font-size: 0.74rem; padding: 4px 8px;">Replace All</button>
+                            <button type="button" id="btn-close-word-find" class="icon-btn" style="width: 28px; height: 28px;"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paragraphs / Text Blocks List -->
+                <div id="word-blocks-container" style="max-height: 380px; overflow-y: auto; padding-right: 2px;">
+                    <div style="text-align: center; padding: 36px; color: var(--text-secondary); font-size: 0.82rem;">
+                        <i class="fa-solid fa-file-word fa-2x" style="color: var(--text-muted); margin-bottom: 8px; display: block;"></i>
+                        Select or drop a Word document above to begin editing.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Universal Operation Result Card -->
+            <div id="word-result-card" class="glass-card cyber-card hidden" style="margin-top: 14px; border-color: rgba(0, 240, 255, 0.4); box-shadow: 0 0 16px rgba(0, 240, 255, 0.15);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                    <h4 id="word-result-title" style="margin: 0; font-size: 0.9rem; color: var(--emerald-neon); font-family: var(--font-hud);">
+                        <i class="fa-solid fa-circle-check"></i> Operation Completed!
+                    </h4>
+                    <span id="word-res-size-badge" class="hud-badge hud-badge-green" style="font-size: 0.65rem;"></span>
+                </div>
+
+                <div style="background: var(--surface); padding: 10px 12px; border-radius: var(--radius-xs); border: 1px solid var(--surface-border); margin-bottom: 12px;">
+                    <div style="font-size: 0.74rem; color: var(--text-secondary); margin-bottom: 2px;">OUTPUT ASSET:</div>
+                    <div id="word-res-out-name" style="font-weight: 700; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text); word-break: break-all;"></div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                    <button id="btn-word-res-preview" class="btn btn-secondary btn-sm" style="font-size: 0.82rem;">
+                        <i class="fa-solid fa-eye"></i> Preview Output
+                    </button>
+                    <a id="word-download-link" href="#" class="btn btn-primary btn-sm" download style="font-size: 0.82rem; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <i class="fa-solid fa-download"></i> Save to Device
+                    </a>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button id="btn-word-res-share" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.78rem;">
+                        <i class="fa-solid fa-share-nodes"></i> Share / Export
+                    </button>
+                    <button id="btn-word-convert-another" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.78rem;">
+                        <i class="fa-solid fa-rotate"></i> Process Another
+                    </button>
+                </div>
+            </div>
+
+            <div id="word-error-container"></div>
+        </main>
+
+        <!-- PDF Preview Modal -->
+        <div id="word-preview-modal" class="modal-overlay hidden">
+            <div class="modal-card" style="max-width: 480px; width: 92%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 id="word-preview-modal-title" style="margin: 0; font-size: 0.95rem; color: var(--primary);"><i class="fa-solid fa-file-pdf"></i> Document Preview</h4>
+                    <button id="close-word-preview-btn" class="icon-btn"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div id="word-preview-frame-container" style="height: 380px; background: #111; border-radius: 8px; overflow: hidden;">
+                    <iframe id="word-preview-iframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <button id="btn-modal-save" class="btn btn-primary btn-sm" style="flex: 1;"><i class="fa-solid fa-download"></i> Save</button>
+                    <button id="btn-modal-share" class="btn btn-secondary btn-sm" style="flex: 1;"><i class="fa-solid fa-share-nodes"></i> Share</button>
+                </div>
+            </div>
+        </div>
+
+        <nav class="bottom-nav-bar">
+            <a href="dashboard.html" class="bottom-nav-item">
+                <i class="fa-solid fa-gauge"></i>
+                <span>Home</span>
+            </a>
+            <a href="tools.html" class="bottom-nav-item active">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Tools</span>
+            </a>
+            <a href="convert.html" class="bottom-nav-item">
+                <i class="fa-solid fa-rotate"></i>
+                <span>Convert</span>
+            </a>
+            <a href="files.html" class="bottom-nav-item">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Files</span>
+            </a>
+            <a href="settings.html" class="bottom-nav-item">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/futuristicEngine.js"></script>
+    <script src="js/wordStudio.js"></script>
+</body>
+</html>

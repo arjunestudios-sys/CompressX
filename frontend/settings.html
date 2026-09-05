@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Docholder — Settings & Preferences</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-app-shell">
+        <div class="mobile-status-bar">
+            <span class="status-bar-time">9:41</span>
+            <div class="dynamic-island-notch">
+                <div class="notch-camera-dot"></div>
+            </div>
+            <div class="status-bar-icons">
+                <i class="fa-solid fa-signal"></i>
+                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-battery-full"></i>
+            </div>
+        </div>
+
+        <header class="mobile-app-header">
+            <button class="mobile-header-btn" onclick="window.location.href='dashboard.html'"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="mobile-header-title">
+                <span>Settings</span>
+            </div>
+            <a href="profile.html" class="mobile-header-btn" title="Profile"><i class="fa-solid fa-user-gear"></i></a>
+        </header>
+
+        <span id="nav-user-email" class="hidden"></span>
+
+        <main class="app-body" style="padding-bottom: 90px;">
+            <div class="page-title-block">
+                <h1 class="page-title"><i class="fa-solid fa-sliders" style="color: var(--primary);"></i> Settings</h1>
+                <p class="page-subtitle">Personalize themes, defaults, and manage workspace data.</p>
+            </div>
+
+            <!-- Appearance & Accessibility Card -->
+            <div class="glass-card">
+                <h4 style="margin-bottom: 12px; font-size: 0.9rem;"><i class="fa-solid fa-palette" style="color: var(--primary);"></i> Appearance & Accessibility</h4>
+                
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label class="form-label">Theme Mode</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+                        <button type="button" id="btn-theme-dark" class="btn btn-secondary btn-sm"><i class="fa-solid fa-moon"></i> Dark</button>
+                        <button type="button" id="btn-theme-light" class="btn btn-secondary btn-sm"><i class="fa-solid fa-sun"></i> Light</button>
+                        <button type="button" id="btn-theme-system" class="btn btn-secondary btn-sm"><i class="fa-solid fa-circle-half-stroke"></i> System</button>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 14px;">
+                    <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+                        <div>
+                            <strong style="color: var(--cyan-neon); font-size: 0.85rem; display: block; font-family: var(--font-hud);">Procedural Sci-Fi Audio FX</strong>
+                            <span style="font-size: 0.74rem; color: var(--text-secondary);">Synthesize real-time tactile blips, laser sweeps & quantum chimes</span>
+                        </div>
+                        <input type="checkbox" id="setting-scifi-sfx" checked style="width: 20px; height: 20px; accent-color: var(--cyan-neon);">
+                    </label>
+
+                    <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+                        <div>
+                            <strong style="color: var(--text); font-size: 0.85rem; display: block;">Reduced Motion</strong>
+                            <span style="font-size: 0.74rem; color: var(--text-secondary);">Disable animations and rapid UI transitions</span>
+                        </div>
+                        <input type="checkbox" id="setting-reduced-motion" style="width: 20px; height: 20px;">
+                    </label>
+
+                    <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+                        <div>
+                            <strong style="color: var(--text); font-size: 0.85rem; display: block;">High Contrast Mode</strong>
+                            <span style="font-size: 0.74rem; color: var(--text-secondary);">Elevate border sharpness and readability</span>
+                        </div>
+                        <input type="checkbox" id="setting-high-contrast" style="width: 20px; height: 20px;">
+                    </label>
+                </div>
+            </div>
+
+            <!-- File Processing Defaults Card -->
+            <div class="glass-card">
+                <h4 style="margin-bottom: 12px; font-size: 0.9rem;"><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent);"></i> Processing Defaults</h4>
+                
+                <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin-bottom: 14px;">
+                    <div>
+                        <strong style="color: var(--text); font-size: 0.85rem; display: block;">Auto-Download Result</strong>
+                        <span style="font-size: 0.74rem; color: var(--text-secondary);">Automatically trigger file download when complete</span>
+                    </div>
+                    <input type="checkbox" id="setting-auto-download" style="width: 20px; height: 20px;">
+                </label>
+
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <label class="form-label" style="margin: 0;">Default Image Quality</label>
+                        <span id="setting-img-quality-val" style="color: var(--primary); font-weight: 700; font-size: 0.82rem;">85%</span>
+                    </div>
+                    <input type="range" id="setting-default-img-quality" min="20" max="100" value="85" style="width: 100%;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label class="form-label">Default Video Preset</label>
+                    <select id="setting-default-vid-quality" class="form-select">
+                        <option value="high">High Quality (CRF 22)</option>
+                        <option value="medium" selected>Balanced (CRF 26)</option>
+                        <option value="low">Maximum Compression (CRF 32)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Default Compression Profile</label>
+                    <select id="setting-default-compression" class="form-select">
+                        <option value="optimal" selected>Optimal (Balanced Quality & Size)</option>
+                        <option value="high">High Compression (Smallest Size)</option>
+                        <option value="lossless">Lossless / Near-Original</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- In-App Notifications Card -->
+            <div class="glass-card">
+                <h4 style="margin-bottom: 12px; font-size: 0.9rem;"><i class="fa-solid fa-bell" style="color: var(--warning);"></i> In-App Notifications</h4>
+                
+                <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin-bottom: 12px;">
+                    <div>
+                        <strong style="color: var(--text); font-size: 0.85rem; display: block;">In-App Toast Alerts</strong>
+                        <span style="font-size: 0.74rem; color: var(--text-secondary);">Show operation completion and error toasts</span>
+                    </div>
+                    <input type="checkbox" id="setting-notifications-enabled" checked style="width: 20px; height: 20px;">
+                </label>
+
+                <div class="form-group">
+                    <label class="form-label">Toast Auto-Dismiss Duration</label>
+                    <select id="setting-notification-duration" class="form-select">
+                        <option value="2000">2 Seconds (Fast)</option>
+                        <option value="4000" selected>4 Seconds (Standard)</option>
+                        <option value="6000">6 Seconds (Relaxed)</option>
+                        <option value="8000">8 Seconds (Long)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- System Permissions Card -->
+            <div class="glass-card">
+                <h4 style="margin-bottom: 10px; font-size: 0.9rem;"><i class="fa-solid fa-shield-halved" style="color: var(--emerald-neon);"></i> System Permissions</h4>
+                <p style="font-size: 0.76rem; color: var(--text-secondary); margin-bottom: 12px;">Review and manage device permissions for media and documents.</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--surface-border-subtle);">
+                        <div>
+                            <strong style="font-size: 0.84rem; display: block; color: var(--text);"><i class="fa-solid fa-folder-open" style="color: var(--primary); margin-right: 6px;"></i> Storage & Files</strong>
+                            <span style="font-size: 0.72rem; color: var(--text-secondary);">Access local documents, archives & exports</span>
+                        </div>
+                        <button type="button" id="btn-perm-storage" class="btn btn-sm btn-secondary" style="font-size: 0.72rem; padding: 3px 8px;">Granted</button>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--surface-border-subtle);">
+                        <div>
+                            <strong style="font-size: 0.84rem; display: block; color: var(--text);"><i class="fa-solid fa-camera" style="color: var(--cyan-neon); margin-right: 6px;"></i> Camera & Vision</strong>
+                            <span style="font-size: 0.72rem; color: var(--text-secondary);">Scan documents and capture photos</span>
+                        </div>
+                        <button type="button" id="btn-perm-camera" class="btn btn-sm btn-secondary" style="font-size: 0.72rem; padding: 3px 8px;">Granted</button>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0;">
+                        <div>
+                            <strong style="font-size: 0.84rem; display: block; color: var(--text);"><i class="fa-solid fa-microphone" style="color: var(--magenta-neon); margin-right: 6px;"></i> Audio & Microphone</strong>
+                            <span style="font-size: 0.72rem; color: var(--text-secondary);">Record and transcribe local audio</span>
+                        </div>
+                        <button type="button" id="btn-perm-microphone" class="btn btn-sm btn-secondary" style="font-size: 0.72rem; padding: 3px 8px;">Granted</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Storage & Privacy Card -->
+            <div class="glass-card">
+                <h4 style="margin-bottom: 10px; font-size: 0.9rem;"><i class="fa-solid fa-database" style="color: #EF4444;"></i> Storage & Data Management</h4>
+                <p style="font-size: 0.76rem; color: var(--text-secondary); margin-bottom: 12px;">Manage workspace state, transformation log records, and temporary caches.</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button type="button" id="btn-clear-history" class="btn btn-secondary btn-block" style="font-size: 0.82rem; color: #EF4444; border-color: rgba(239, 68, 68, 0.3);">
+                        <i class="fa-solid fa-trash-can"></i> Clear Transformation History
+                    </button>
+                    <button type="button" id="btn-clear-workspace-cache" class="btn btn-secondary btn-block" style="font-size: 0.82rem;">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Workspace Session Cache
+                    </button>
+                </div>
+            </div>
+
+            <button type="button" id="btn-save-settings" class="btn btn-primary btn-block" style="margin-top: 14px;">
+                <i class="fa-solid fa-circle-check"></i> Save & Apply Settings
+            </button>
+        </main>
+
+        <nav class="bottom-nav-bar">
+            <a href="dashboard.html" class="bottom-nav-item">
+                <i class="fa-solid fa-gauge"></i>
+                <span>Home</span>
+            </a>
+            <a href="convert.html" class="bottom-nav-item">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Transform</span>
+            </a>
+            <a href="files.html" class="bottom-nav-item">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Files</span>
+            </a>
+            <a href="compress.html" class="bottom-nav-item">
+                <i class="fa-solid fa-file-zipper"></i>
+                <span>Compress</span>
+            </a>
+            <a href="settings.html" class="bottom-nav-item active">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/futuristicEngine.js"></script>
+    <script src="js/settings.js"></script>
+</body>
+</html>

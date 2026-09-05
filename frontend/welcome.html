@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Welcome to Docholder</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="mobile-app-shell">
+        <div class="mobile-status-bar">
+            <span class="status-bar-time">9:41</span>
+            <div class="dynamic-island-notch">
+                <div class="notch-camera-dot"></div>
+            </div>
+            <div class="status-bar-icons">
+                <i class="fa-solid fa-signal"></i>
+                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-battery-full"></i>
+            </div>
+        </div>
+
+        <header class="mobile-app-header">
+            <div class="mobile-header-title">
+                <img src="assets/logo.svg" alt="Docholder" style="width: 26px; height: 26px; border-radius: 6px;">
+                <span>Docholder</span>
+            </div>
+            <button class="theme-toggle-btn" onclick="toggleTheme()" style="width: 32px; height: 32px; font-size: 0.85rem;" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+        </header>
+
+        <main class="app-body" style="padding-bottom: 30px;">
+            <div class="glass-card" style="text-align: center; padding: 28px 16px; margin-top: 10px;">
+                <div style="width: 68px; height: 68px; margin: 0 auto 14px auto;">
+                    <img src="assets/logo.svg" alt="Docholder Logo" style="width: 100%; height: 100%; filter: drop-shadow(0 6px 16px var(--primary-glow));">
+                </div>
+                <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.3px;">Docholder</h1>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 20px;">
+                    Your intelligent mobile document workspace. Convert, compress, extract, and transform any document with conversational ease.
+                </p>
+
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
+                    <a href="login.html" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Sign In</a>
+                    <a href="register.html" class="btn btn-secondary"><i class="fa-solid fa-user-plus"></i> Create Account</a>
+                </div>
+
+                <div style="border-top: 1px solid var(--surface-border); padding-top: 14px;">
+                    <a href="/api/auth/google" class="btn btn-google btn-sm" style="width: 100%; padding: 8px;">
+                        <i class="fa-brands fa-google" style="color: #ea4335;"></i> Continue with Google
+                    </a>
+                </div>
+            </div>
+
+            <!-- Features Cards -->
+            <div class="glass-card" style="display: flex; align-items: center; gap: 12px; padding: 12px;">
+                <div class="stat-icon-wrapper" style="width: 36px; height: 36px; font-size: 0.95rem;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <div>
+                    <strong style="font-size: 0.85rem; display: block; color: var(--text);">Conversational Transform</strong>
+                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Ask to convert to Word, PDF, Excel & WebP</span>
+                </div>
+            </div>
+
+            <div class="glass-card" style="display: flex; align-items: center; gap: 12px; padding: 12px;">
+                <div class="stat-icon-wrapper" style="width: 36px; height: 36px; font-size: 0.95rem; background: var(--accent-light); color: var(--accent);">
+                    <i class="fa-solid fa-file-zipper"></i>
+                </div>
+                <div>
+                    <strong style="font-size: 0.85rem; display: block; color: var(--text);">Smart Compression</strong>
+                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Target size mode & AES-256 encrypted ZIP</span>
+                </div>
+            </div>
+
+            <div class="glass-card" style="display: flex; align-items: center; gap: 12px; padding: 12px;">
+                <div class="stat-icon-wrapper" style="width: 36px; height: 36px; font-size: 0.95rem; background: var(--success-light); color: var(--success);">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <strong style="font-size: 0.85rem; display: block; color: var(--text);">100% Private & Local</strong>
+                    <span style="font-size: 0.75rem; color: var(--text-secondary);">All processing runs securely in your local environment</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/futuristicEngine.js"></script>
+</body>
+</html>

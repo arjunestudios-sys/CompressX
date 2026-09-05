@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docholder — Edit Word & Document</title>
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .text-block {
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--surface-border);
+            border-radius: var(--radius-sm);
+            background: var(--surface-hover);
+            transition: all var(--transition-fast);
+        }
+        .text-block:focus-within {
+            border-color: var(--primary);
+            background: var(--surface);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+        .text-block textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.92rem;
+            resize: vertical;
+            outline: none;
+            min-height: 44px;
+        }
+        .text-block-id {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+        }
+        .editor-tool-btn {
+            padding: 4px 10px;
+            font-size: 0.78rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <header class="app-navbar">
+            <div class="navbar-inner">
+                <a href="files.html" class="brand-wrapper">
+                    <img src="assets/logo.svg" alt="Docholder" class="brand-logo">
+                    <span class="brand-title">Docholder</span>
+                </a>
+                <div style="font-size: 0.95rem; font-weight: 700; color: var(--text);" id="docx-filename">Loading Document...</div>
+                <div class="nav-actions" style="display: flex; gap: 8px;">
+                    <a href="files.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Files</a>
+                    <button class="btn btn-primary btn-sm" id="save-docx-btn"><i class="fa-solid fa-floppy-disk"></i> Save DOCX</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-container" style="max-width: 900px; padding: 20px;">
+            <!-- Document Toolbar & Utilities -->
+            <div class="glass-card" style="margin-bottom: 14px; padding: 14px 18px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                        <button type="button" id="btn-toggle-find" class="btn btn-secondary btn-sm editor-tool-btn"><i class="fa-solid fa-magnifying-glass"></i> Find & Replace</button>
+                        <button type="button" id="btn-export-pdf" class="btn btn-secondary btn-sm editor-tool-btn"><i class="fa-solid fa-file-pdf" style="color: #EF4444;"></i> Export PDF</button>
+                        <button type="button" id="btn-export-txt" class="btn btn-secondary btn-sm editor-tool-btn"><i class="fa-solid fa-file-lines" style="color: #64748B;"></i> Export TXT</button>
+                    </div>
+                    <div id="docx-stats-badge" style="font-size: 0.78rem; color: var(--text-secondary); font-weight: 600;">
+                        0 blocks • 0 words
+                    </div>
+                </div>
+
+                <!-- Find and Replace Bar -->
+                <div id="find-replace-bar" class="hidden" style="background: var(--surface); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--surface-border); margin-top: 10px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: center;">
+                        <input type="text" id="find-query" class="form-input" placeholder="Find text..." style="font-size: 0.82rem;">
+                        <input type="text" id="replace-query" class="form-input" placeholder="Replace with..." style="font-size: 0.82rem;">
+                        <div style="display: flex; gap: 6px;">
+                            <button type="button" id="btn-exec-replace" class="btn btn-primary btn-sm" style="font-size: 0.78rem;">Replace All</button>
+                            <button type="button" id="btn-close-find" class="icon-btn" style="width: 32px; height: 32px;"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Text Content Card -->
+            <div class="glass-card">
+                <p style="font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 16px;">
+                    <i class="fa-solid fa-circle-info" style="color: var(--primary);"></i> Edit text segments below. Original document formatting (fonts, tables, layouts, headers, margins) will be strictly preserved upon saving.
+                </p>
+                <div id="blocks-container">
+                    <div style="text-align: center; padding: 48px; color: var(--text-secondary);">
+                        <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                        <p style="margin-top: 12px;">Extracting document text segments...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/docx-editor.js"></script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Docholder — Mobile Workspace</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .splash-viewport {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            text-align: center;
+            padding: 24px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .splash-logo-box {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            margin-bottom: 20px;
+            animation: logoAppear 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .splash-logo-img {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 10px 25px var(--primary-glow));
+            animation: floatGlow 2.5s ease-in-out infinite;
+        }
+
+        .splash-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.4px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0;
+            transform: translateY(12px);
+            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+        }
+
+        .splash-tagline {
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            margin-top: 6px;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(12px);
+            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+        }
+
+        .splash-loader {
+            width: 44px;
+            height: 4px;
+            background: var(--surface-border);
+            border-radius: 4px;
+            margin-top: 28px;
+            overflow: hidden;
+            position: relative;
+            opacity: 0;
+            animation: fadeIn 0.4s ease 0.6s forwards;
+        }
+
+        .splash-loader-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            animation: loadProgress 1.4s cubic-bezier(0.4, 0, 0.2, 1) 0.7s forwards;
+        }
+
+        @keyframes logoAppear {
+            from { transform: scale(0.7) translateY(20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        @keyframes floatGlow {
+            0%, 100% { transform: translateY(0); filter: drop-shadow(0 8px 20px var(--primary-glow)); }
+            50% { transform: translateY(-5px); filter: drop-shadow(0 14px 28px var(--accent-light)); }
+        }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes loadProgress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-app-shell">
+        <div class="mobile-status-bar">
+            <span class="status-bar-time">9:41</span>
+            <div class="dynamic-island-notch">
+                <div class="notch-camera-dot"></div>
+            </div>
+            <div class="status-bar-icons">
+                <i class="fa-solid fa-signal"></i>
+                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-battery-full"></i>
+            </div>
+        </div>
+
+        <div id="splash-viewport" class="splash-viewport">
+            <div class="splash-logo-box">
+                <img src="assets/logo.svg" alt="Docholder Logo" class="splash-logo-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'45\' fill=\'%236366F1\'/><path d=\'M30 50 L45 65 L70 35\' stroke=\'white\' stroke-width=\'8\' fill=\'none\' stroke-linecap=\'round\'/></svg>'">
+            </div>
+            <h1 class="splash-title" style="font-family: var(--font-hud); letter-spacing: 1.2px;">DOCHOLDER // CYBERX</h1>
+            <p class="splash-tagline" style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--cyan-neon);">[ NEURAL WORKSPACE & FILE REACTOR ]</p>
+            
+            <div class="splash-loader" style="width: 140px; height: 4px; background: rgba(0, 240, 255, 0.15); box-shadow: 0 0 10px rgba(0, 240, 255, 0.4); border-radius: 4px;">
+                <div id="splash-progress-bar" class="splash-loader-bar" style="background: linear-gradient(90deg, var(--cyan-neon), var(--magenta-neon)); width: 15%;"></div>
+            </div>
+            
+            <div id="splash-telemetry" style="font-family: var(--font-hud); font-size: 0.64rem; color: var(--text-secondary); margin-top: 14px; letter-spacing: 0.8px;">
+                INITIALIZING WORKSPACE STORAGE...
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/futuristicEngine.js"></script>
+    <script>
+        async function bootApplication() {
+            const bar = document.getElementById('splash-progress-bar');
+            const telemetry = document.getElementById('splash-telemetry');
+            const viewport = document.getElementById('splash-viewport');
+
+            const setStage = (percent, text) => {
+                if (bar) bar.style.width = percent + '%';
+                if (telemetry) telemetry.textContent = text;
+            };
+
+            // Concurrent high-speed startup: verify session while animating progress
+            setStage(45, 'VERIFYING NEURAL STORAGE ENGINE...');
+
+            let targetRoute = 'welcome.html';
+            const authPromise = apiFetch('/api/auth/me')
+                .then(res => {
+                    if (res && res.user) {
+                        targetRoute = 'dashboard.html';
+                        try { sessionStorage.setItem('docholder_cached_user', JSON.stringify(res.user)); } catch(e) {}
+                    }
+                })
+                .catch(() => {
+                    targetRoute = 'welcome.html';
+                });
+
+            await Promise.race([
+                authPromise,
+                new Promise(r => setTimeout(r, 100))
+            ]);
+
+            setStage(85, 'SYNAPSE QUANTUM MATRIX READY...');
+            await new Promise(r => setTimeout(r, 60));
+
+            setStage(100, 'LAUNCHING WORKSPACE...');
+            await authPromise;
+
+            if (viewport) {
+                viewport.style.transition = 'opacity 0.18s ease, transform 0.18s ease';
+                viewport.style.opacity = '0';
+                viewport.style.transform = 'scale(0.97)';
+            }
+
+            setTimeout(() => {
+                window.location.replace(targetRoute);
+            }, 160);
+        }
+
+        document.addEventListener('DOMContentLoaded', bootApplication);
+    </script>
+</body>
+</html>

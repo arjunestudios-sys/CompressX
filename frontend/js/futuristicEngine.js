@@ -1,28 +1,31 @@
-// Docholder CyberX — Futuristic Sound Synthesizer, Holographic FX & HUD Engine
+// Docholder CyberX â€” Futuristic Sound Synthesizer, Holographic FX & HUD Engine
 
 class DocholderAudioFX {
     constructor() {
         this.ctx = null;
         this.enabled = localStorage.getItem('docholder_sfx_enabled') !== 'false';
         this.initOnInteraction = this.initOnInteraction.bind(this);
-        window.addEventListener('click', this.initOnInteraction, { once: true });
-        window.addEventListener('keydown', this.initOnInteraction, { once: true });
+        window.addEventListener('click',      this.initOnInteraction, { once: true });
+        window.addEventListener('keydown',    this.initOnInteraction, { once: true });
+        window.addEventListener('touchstart', this.initOnInteraction, { once: true });
     }
 
+    // Deferred AudioContext â€” only created after first real user gesture
     initContext() {
-        if (!this.ctx) {
-            const AudioCtx = window.AudioContext || window.webkitAudioContext;
-            if (AudioCtx) {
-                this.ctx = new AudioCtx();
-            }
-        }
-        if (this.ctx && this.ctx.state === 'suspended') {
-            this.ctx.resume();
-        }
+        if (this.ctx) return;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        try {
+            this.ctx = new AudioCtx();
+        } catch(e) {}
     }
 
     initOnInteraction() {
         this.initContext();
+        // If context was suspended by browser, resume it now
+        if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume().catch(() => {});
+        }
     }
 
     toggle() {
@@ -49,8 +52,7 @@ class DocholderAudioFX {
     // Synthesize crisp futuristic UI click blip
     playClick() {
         if (!this.enabled) return;
-        this.initContext();
-        if (!this.ctx) return;
+        if (!this.ctx || this.ctx.state !== 'running') return;
 
         try {
             const now = this.ctx.currentTime;
@@ -75,8 +77,7 @@ class DocholderAudioFX {
     // Synthesize soft hover tick
     playHover() {
         if (!this.enabled) return;
-        this.initContext();
-        if (!this.ctx) return;
+        if (!this.ctx || this.ctx.state !== 'running') return;
 
         try {
             const now = this.ctx.currentTime;
@@ -101,8 +102,7 @@ class DocholderAudioFX {
     // Synthesize futuristic laser scanning sweep (on dropzone hover/file select)
     playLaserScan() {
         if (!this.enabled) return;
-        this.initContext();
-        if (!this.ctx) return;
+        if (!this.ctx || this.ctx.state !== 'running') return;
 
         try {
             const now = this.ctx.currentTime;
@@ -135,8 +135,7 @@ class DocholderAudioFX {
     // Synthesize shimmering quantum success resolution chord
     playSuccess() {
         if (!this.enabled) return;
-        this.initContext();
-        if (!this.ctx) return;
+        if (!this.ctx || this.ctx.state !== 'running') return;
 
         try {
             const now = this.ctx.currentTime;
@@ -166,8 +165,7 @@ class DocholderAudioFX {
     // Synthesize cyber alert / warning buzz
     playAlert() {
         if (!this.enabled) return;
-        this.initContext();
-        if (!this.ctx) return;
+        if (!this.ctx || this.ctx.state !== 'running') return;
 
         try {
             const now = this.ctx.currentTime;
@@ -192,8 +190,7 @@ class DocholderAudioFX {
     // Synthesize mode warp transition sound
     playWarp() {
         if (!this.enabled) return;
-        this.initContext();
-        if (!this.ctx) return;
+        if (!this.ctx || this.ctx.state !== 'running') return;
 
         try {
             const now = this.ctx.currentTime;

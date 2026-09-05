@@ -1,86 +1,29 @@
 @echo off
-title CompressX — Dev Server
+title CompressX — Launcher
 color 0A
 
 echo.
 echo  ============================================
-echo   CompressX — Starting Development Server
+echo   CompressX — Full Stack Launcher
 echo  ============================================
 echo.
-
-:: ── Check Node.js ────────────────────────────────────────────
-where node >nul 2>&1
-if %errorlevel% neq 0 (
-    color 0C
-    echo  [ERROR] Node.js is not installed or not in PATH.
-    echo  Download it from: https://nodejs.org
-    pause
-    exit /b 1
-)
-
-for /f "tokens=*" %%v in ('node -v') do set NODE_VER=%%v
-echo  [OK] Node.js %NODE_VER% found.
-
-:: ── Check if node_modules exists ─────────────────────────────
-if not exist "%~dp0node_modules\" (
-    echo.
-    echo  [INFO] node_modules not found. Installing dependencies...
-    echo  This may take a minute on first run.
-    echo.
-    call npm install
-    if %errorlevel% neq 0 (
-        color 0C
-        echo  [ERROR] npm install failed. Check your internet connection.
-        pause
-        exit /b 1
-    )
-    echo.
-    echo  [OK] Dependencies installed.
-)
-
-:: ── Check if .env exists ──────────────────────────────────────
-if not exist "%~dp0backend\.env" (
-    echo.
-    echo  [WARN] backend\.env not found.
-    if exist "%~dp0backend\.env.example" (
-        echo  Copying from backend\.env.example...
-        copy "%~dp0backend\.env.example" "%~dp0backend\.env" >nul
-        echo  [OK] backend\.env created. Edit it with your secrets.
-    ) else (
-        echo  [WARN] No .env.example found either. Server may use defaults.
-    )
-)
-
-:: ── Create storage folders if missing ────────────────────────
-if not exist "%~dp0backend\storage\uploads\"     mkdir "%~dp0backend\storage\uploads"
-if not exist "%~dp0backend\storage\converted\"   mkdir "%~dp0backend\storage\converted"
-if not exist "%~dp0backend\storage\compressed\"  mkdir "%~dp0backend\storage\compressed"
-if not exist "%~dp0backend\storage\temp\"        mkdir "%~dp0backend\storage\temp"
-
-:: ── Start the server ─────────────────────────────────────────
-echo.
-echo  [INFO] Starting CompressX backend + frontend server...
-echo  [INFO] Open your browser at: http://localhost:5000
-echo.
-echo  Press Ctrl+C to stop the server.
-echo  ============================================
+echo  Opening backend server in a new terminal...
 echo.
 
-:: Use nodemon if available, else fallback to node
-where nodemon >nul 2>&1
-if %errorlevel% equ 0 (
-    echo  [INFO] Using nodemon (auto-restart on file changes)
-    echo.
-    cd /d "%~dp0"
-    nodemon backend/server.js
-) else (
-    echo  [INFO] Using node (install nodemon for auto-restart: npm i -g nodemon)
-    echo.
-    cd /d "%~dp0"
-    node backend/server.js
-)
+:: Open backend in its own window
+start "CompressX Backend" cmd /k "cd /d "%~dp0" && start-backend.bat"
 
-:: ── If server exits ───────────────────────────────────────────
+:: Small delay so backend can claim port 5000 first
+timeout /t 3 /nobreak >nul
+
+echo  [OK] Backend terminal launched.
 echo.
-echo  [INFO] Server stopped.
+echo  [INFO] Frontend is served by the backend at:
+echo         http://localhost:5000
+echo.
+echo  Open your browser at: http://localhost:5000
+echo.
+echo  Both servers run in their own windows.
+echo  Close those windows (or press Ctrl+C inside them) to stop.
+echo.
 pause

@@ -685,21 +685,245 @@ body.fullscreen-mode .mobile-status-bar {
   margin-bottom: 6px;
 }
 
-.form-input, .form-select {
+/* ── Base input & select ─────────────────────────────────────────────────── */
+.form-input,
+.form-select,
+textarea.form-input {
   width: 100%;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--surface-border);
-  background: var(--surface);
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--surface-border);
+  background: var(--surface-hover);
   color: var(--text);
   font-size: 0.88rem;
+  font-family: var(--font-body, inherit);
   outline: none;
-  transition: border-color var(--transition-fast);
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.form-input:focus, .form-select:focus {
-  border-color: var(--primary);
+/* Placeholder */
+.form-input::placeholder,
+textarea.form-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+  font-size: 0.85rem;
 }
+
+/* Focus ring — violet glow */
+.form-input:focus,
+.form-select:focus,
+textarea.form-input:focus {
+  border-color: var(--primary);
+  background: var(--surface);
+  box-shadow:
+    0 0 0 3px rgba(99, 102, 241, 0.18),
+    0 2px 8px rgba(99, 102, 241, 0.12);
+}
+
+/* Hover (non-focused) */
+.form-input:hover:not(:focus),
+.form-select:hover:not(:focus),
+textarea.form-input:hover:not(:focus) {
+  border-color: var(--primary);
+  background: var(--surface);
+}
+
+/* Disabled */
+.form-input:disabled,
+.form-select:disabled,
+textarea.form-input:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Textarea */
+textarea.form-input {
+  resize: vertical;
+  min-height: 88px;
+  line-height: 1.55;
+}
+
+/* Select arrow */
+.form-select {
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236366f1' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  cursor: pointer;
+}
+
+/* ── Validation states ───────────────────────────────────────────────────── */
+.form-input.input-error,
+.form-select.input-error,
+textarea.form-input.input-error {
+  border-color: var(--danger, #ef4444);
+  background: rgba(239, 68, 68, 0.04);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.14);
+}
+
+.form-input.input-success,
+.form-select.input-success,
+textarea.form-input.input-success {
+  border-color: var(--success, #10b981);
+  background: rgba(16, 185, 129, 0.04);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.14);
+}
+
+/* ── Icon-prefix input wrapper ───────────────────────────────────────────── */
+.input-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon-wrap .input-icon {
+  position: absolute;
+  left: 13px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  pointer-events: none;
+  transition: color 0.2s ease;
+  z-index: 1;
+}
+
+.input-icon-wrap .form-input {
+  padding-left: 38px;
+}
+
+.input-icon-wrap:focus-within .input-icon {
+  color: var(--primary);
+}
+
+/* ── Search bar ──────────────────────────────────────────────────────────── */
+.search-bar-wrap,
+.search-bar {                      /* .search-bar is a legacy alias */
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.search-bar-wrap .search-icon {
+  position: absolute;
+  left: 13px;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.search-bar-wrap .search-clear {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: color 0.15s, background 0.15s;
+  display: none;
+}
+
+.search-bar-wrap .search-clear:hover {
+  color: var(--danger);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.search-bar-wrap input:not(:placeholder-shown) ~ .search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 36px 10px 38px;
+  border-radius: 50px;            /* pill shape */
+  border: 1.5px solid var(--surface-border);
+  background: var(--surface-hover);
+  color: var(--text);
+  font-size: 0.86rem;
+  outline: none;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+  -webkit-appearance: none;
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.search-input:focus {
+  border-color: var(--primary);
+  background: var(--surface);
+  box-shadow:
+    0 0 0 3px rgba(99, 102, 241, 0.18),
+    0 2px 12px rgba(99, 102, 241, 0.1);
+}
+
+.search-bar-wrap:focus-within .search-icon {
+  color: var(--primary);
+}
+
+/* ── Range / slider ──────────────────────────────────────────────────────── */
+input[type="range"].form-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 5px;
+  border-radius: 50px;
+  background: var(--surface-border);
+  outline: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 8px 0;
+}
+
+input[type="range"].form-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+input[type="range"].form-range::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 5px rgba(99, 102, 241, 0.3);
+}
+
+input[type="range"].form-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+  cursor: pointer;
+}
+
+/* ── Date input ──────────────────────────────────────────────────────────── */
+input[type="date"].form-input,
+input[type="time"].form-input {
+  color-scheme: dark;
+}
+
 
 /* Modals */
 .modal-overlay {

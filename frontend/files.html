@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
@@ -49,13 +49,14 @@
 
             <!-- Search & Sort Bar -->
             <div class="glass-card" style="padding: 10px 12px; margin-bottom: 10px;">
-                <div style="position: relative; margin-bottom: 8px;">
-                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 0.8rem;"></i>
-                    <input type="text" id="search-input" class="form-input" placeholder="Search by filename..." style="padding-left: 32px; font-size: 0.82rem; height: 36px;">
+                <div class="search-bar-wrap" style="margin-bottom: 8px;">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="search-input" class="search-input" placeholder="Search by filename...">
+                    <button class="search-clear" onclick="document.getElementById('search-input').value='';document.getElementById('search-input').dispatchEvent(new Event('input'));" aria-label="Clear search"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600;">Sort By:</span>
-                    <select id="sort-select" class="form-select" style="width: auto; padding: 4px 8px; font-size: 0.78rem; height: 30px;">
+                    <select id="sort-select" class="form-select" style="width: auto; padding: 6px 32px 6px 10px; font-size: 0.78rem;">
                         <option value="date">Newest</option>
                         <option value="name">Name (A-Z)</option>
                         <option value="size">Size</option>
@@ -63,6 +64,7 @@
                     </select>
                 </div>
             </div>
+
 
             <!-- Filter Chips (Horizontally Scrollable) -->
             <div class="filter-chips">

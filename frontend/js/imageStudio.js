@@ -624,13 +624,15 @@ function setupControls() {
                     window.DocholderAudio.playSuccess();
                     showToast('Cyber transformation rendered successfully!', 'success');
 
-                    renderImageResult({
-                        originalName: newName,
-                        originalSize: currentImageFile.file_size,
-                        convertedSize: blob.size,
-                        percentageSaved: 0,
-                        downloadUrl: `/api/files/${uploadRes.file.id}/download`
-                    });
+                    if (typeof renderImageResult === 'function') {
+                        renderImageResult({
+                            originalName: newName,
+                            originalSize: currentImageFile.file_size,
+                            convertedSize: blob.size,
+                            percentageSaved: 0,
+                            downloadUrl: `/api/files/${uploadRes.file.id}/download`
+                        });
+                    }
 
                     await loadWorkspaceImages();
                 }, 'image/png', 0.92);

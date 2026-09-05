@@ -3,19 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Docholder — Sign In</title>
+    <title>CompressX — Sign In</title>
+    <meta name="description" content="Sign in to your CompressX account to access your document workspace.">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .auth-field-error {
+            display: none;
+            color: var(--danger);
+            font-size: 0.75rem;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+        .auth-success-notice {
+            display: none;
+            background: var(--success-light, rgba(16,185,129,.15));
+            border: 1px solid var(--success, #10b981);
+            color: var(--success, #10b981);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 0.8rem;
+            margin-bottom: 14px;
+            font-weight: 500;
+        }
+        .pw-wrapper { position: relative; }
+        .pw-toggle {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; cursor: pointer;
+            color: var(--text-secondary); font-size: 0.9rem; padding: 4px;
+        }
+        .pw-wrapper .form-input { padding-right: 40px; }
+    </style>
 </head>
 <body>
     <div class="mobile-app-shell">
         <div class="mobile-status-bar">
-            <span class="status-bar-time">9:41</span>
-            <div class="dynamic-island-notch">
-                <div class="notch-camera-dot"></div>
-            </div>
+            <span class="status-bar-time" id="status-time">9:41</span>
+            <div class="dynamic-island-notch"><div class="notch-camera-dot"></div></div>
             <div class="status-bar-icons">
                 <i class="fa-solid fa-signal"></i>
                 <i class="fa-solid fa-wifi"></i>
@@ -24,55 +50,84 @@
         </div>
 
         <header class="mobile-app-header">
-            <button class="mobile-header-btn" onclick="window.location.href='welcome.html'"><i class="fa-solid fa-arrow-left"></i></button>
-            <div class="mobile-header-title">
-                <span>Sign In</span>
-            </div>
+            <button class="mobile-header-btn" onclick="window.location.href='welcome.html'">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <div class="mobile-header-title"><span>Sign In</span></div>
             <a href="register.html" class="mobile-header-btn"><i class="fa-solid fa-user-plus"></i></a>
         </header>
 
         <main class="app-body">
-            <div id="dev-link-banner" class="glass-card hidden" style="background: var(--primary-light); border-color: var(--primary); padding: 12px;"></div>
+            <!-- Dev reset link banner -->
+            <div id="dev-link-banner" class="glass-card hidden"
+                 style="display:none; background:var(--primary-light); border-color:var(--primary); padding:12px; margin-bottom:10px; font-size:0.78rem; border-radius:12px;"></div>
 
-            <div class="glass-card" style="padding: 24px 16px;">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <img src="assets/logo.svg" alt="Docholder" style="width: 50px; height: 50px; margin-bottom: 8px;">
-                    <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 2px;">Sign In to Docholder</h2>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary);">Your mobile document workspace.</p>
+            <div class="glass-card" style="padding:28px 18px; margin-top:8px;">
+
+                <!-- Logo + heading -->
+                <div style="text-align:center; margin-bottom:22px;">
+                    <img src="assets/logo.svg" alt="CompressX" style="width:52px;height:52px;margin-bottom:10px;">
+                    <h1 style="font-size:1.4rem;font-weight:800;margin-bottom:3px;">Welcome back</h1>
+                    <p style="font-size:0.8rem;color:var(--text-secondary);">Sign in to your CompressX account</p>
                 </div>
 
-                <form id="login-form">
+                <!-- Success notice (shown after registration) -->
+                <div id="login-success-notice" class="auth-success-notice">
+                    <i class="fa-solid fa-circle-check"></i> Account created successfully! You can now sign in.
+                </div>
+
+                <!-- General error -->
+                <div id="err-login-general" class="auth-field-error" style="margin-bottom:10px;text-align:center;"></div>
+
+                <form id="login-form" novalidate>
+
+                    <!-- Username -->
                     <div class="form-group">
-                        <label class="form-label" for="login-email" style="font-size: 0.8rem;">Email Address</label>
-                        <input type="email" id="login-email" class="form-input" placeholder="name@domain.com" required style="font-size: 0.85rem;">
+                        <label class="form-label" for="login-username" style="font-size:0.8rem;">
+                            Username <span style="color:var(--danger);">*</span>
+                        </label>
+                        <input type="text" id="login-username" class="form-input"
+                               placeholder="your_username" autocomplete="username"
+                               required style="font-size:0.85rem;">
                     </div>
 
+                    <!-- Password -->
                     <div class="form-group">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                            <label class="form-label" for="login-password" style="margin: 0; font-size: 0.8rem;">Password</label>
-                            <button type="button" id="forgot-btn" style="color: var(--primary); font-size: 0.75rem; font-weight: 600; background: none; border: none; cursor: pointer;">Forgot?</button>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                            <label class="form-label" for="login-password" style="margin:0;font-size:0.8rem;">
+                                Password <span style="color:var(--danger);">*</span>
+                            </label>
+                            <button type="button" id="forgot-btn"
+                                    style="color:var(--primary);font-size:0.75rem;font-weight:600;background:none;border:none;cursor:pointer;">
+                                Forgot password?
+                            </button>
                         </div>
-                        <input type="password" id="login-password" class="form-input" placeholder="••••••••" required style="font-size: 0.85rem;">
+                        <div class="pw-wrapper">
+                            <input type="password" id="login-password" class="form-input"
+                                   placeholder="••••••••" autocomplete="current-password"
+                                   required style="font-size:0.85rem;">
+                            <button type="button" id="toggle-login-pw" class="pw-toggle" aria-label="Show password">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
-                        <input type="checkbox" id="login-remember" style="width: 16px; height: 16px;">
-                        <label for="login-remember" style="font-size: 0.78rem; color: var(--text-secondary); cursor: pointer;">Remember Me</label>
+                    <!-- Remember me -->
+                    <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+                        <input type="checkbox" id="login-remember" style="width:16px;height:16px;accent-color:var(--primary);">
+                        <label for="login-remember" style="font-size:0.78rem;color:var(--text-secondary);cursor:pointer;">
+                            Keep me signed in for 30 days
+                        </label>
                     </div>
 
-                    <div id="login-error" class="form-error" style="margin-bottom: 12px; color: var(--danger); font-size: 0.8rem;"></div>
-
-                    <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
+                    <button type="submit" id="login-submit-btn" class="btn btn-primary" style="width:100%;margin-top:4px;">
+                        <i class="fa-solid fa-right-to-bracket"></i> Sign In
+                    </button>
                 </form>
 
-                <div style="margin-top: 16px; text-align: center; color: var(--text-secondary); font-size: 0.82rem;">
-                    New user? <a href="register.html" style="font-weight: 700;">Create account</a>
-                </div>
-
-                <div style="margin-top: 16px; border-top: 1px solid var(--surface-border); padding-top: 16px;">
-                    <a href="/api/auth/google" class="btn btn-google btn-sm" style="width: 100%; padding: 8px;">
-                        <i class="fa-brands fa-google" style="color: #ea4335;"></i> Continue with Google
-                    </a>
+                <div style="margin-top:18px;text-align:center;color:var(--text-secondary);font-size:0.82rem;">
+                    Don't have an account?
+                    <a href="register.html" style="font-weight:700;color:var(--primary);">Create one</a>
                 </div>
             </div>
         </main>
@@ -80,6 +135,18 @@
 
     <script src="js/api.js"></script>
     <script src="js/futuristicEngine.js"></script>
+    <!-- authGuard: redirect to dashboard if already logged in -->
+    <script src="js/authGuard.js" data-mode="unauth"></script>
     <script src="js/auth.js"></script>
+    <script>
+        // Live clock in status bar
+        const timeEl = document.getElementById('status-time');
+        function updateTime() {
+            const now = new Date();
+            if (timeEl) timeEl.textContent = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+        }
+        updateTime();
+        setInterval(updateTime, 30000);
+    </script>
 </body>
 </html>

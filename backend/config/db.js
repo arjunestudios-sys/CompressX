@@ -46,16 +46,16 @@ class PreparedStmt {
 
     run(...args) {
         if (this.sql.includes('INSERT INTO users')) {
-            const [name, email, password_hash, google_id, profile_image] = args;
+            const [username, email, date_of_birth, password_hash] = args;
             const newUser = {
                 id: store.users.length ? Math.max(...store.users.map(u => u.id)) + 1 : 1,
-                name: name || args[0],
-                email: email || args[1],
-                password_hash: password_hash || args[2] || null,
-                google_id: google_id || args[3] || null,
-                profile_image: profile_image || args[4] || null,
+                username: username || null,
+                email: email || null,
+                date_of_birth: date_of_birth || null,
+                password_hash: password_hash || null,
                 storage_used: 0,
                 notification_prefs: '{"emailUpload": true, "emailCompress": true}',
+                last_login: null,
                 created_at: new Date().toISOString()
             };
             store.users.push(newUser);
@@ -82,13 +82,9 @@ class PreparedStmt {
             const [user_id, original_file, compressed_file, original_size, compressed_size, compression_percentage, compression_format] = args;
             const record = {
                 id: store.compression_history.length ? Math.max(...store.compression_history.map(r => r.id)) + 1 : 1,
-                user_id,
-                original_file,
-                compressed_file,
-                original_size,
-                compressed_size,
-                compression_percentage,
-                compression_format,
+                user_id, original_file, compressed_file,
+                original_size, compressed_size,
+                compression_percentage, compression_format,
                 created_at: new Date().toISOString()
             };
             store.compression_history.push(record);
@@ -98,12 +94,8 @@ class PreparedStmt {
             const [user_id, original_name, result_name, action_type, original_size, result_size, percentage_saved, download_url] = args;
             const record = {
                 id: store.transformations.length ? Math.max(...store.transformations.map(r => r.id)) + 1 : 1,
-                user_id,
-                original_name,
-                result_name,
-                action_type,
-                original_size,
-                result_size,
+                user_id, original_name, result_name, action_type,
+                original_size, result_size,
                 percentage_saved: percentage_saved || 0,
                 download_url,
                 created_at: new Date().toISOString()
@@ -111,6 +103,11 @@ class PreparedStmt {
             store.transformations.push(record);
             saveStore();
             return { lastInsertRowid: record.id };
+        } else if (this.sql.includes('UPDATE users SET last_login =')) {
+            const [ts, userId] = args;
+            const user = store.users.find(u => String(u.id) === String(userId));
+            if (user) { user.last_login = ts; saveStore(); }
+            return { changes: 1 };
         } else if (this.sql.includes('UPDATE users SET storage_used = storage_used +')) {
             const [size, userId] = args;
             const user = store.users.find(u => String(u.id) === String(userId));
@@ -126,38 +123,25 @@ class PreparedStmt {
             const user = store.users.find(u => String(u.id) === String(userId));
             if (user) { user.password_hash = hash; saveStore(); }
             return { changes: 1 };
-        } else if (this.sql.includes('UPDATE users SET name =')) {
-            const [name, userId] = args;
+        } else if (this.sql.includes('UPDATE users SET username =')) {
+            const [username, userId] = args;
             const user = store.users.find(u => String(u.id) === String(userId));
-            if (user) { user.name = name; saveStore(); }
+            if (user) { user.username = username; saveStore(); }
             return { changes: 1 };
         } else if (this.sql.includes('UPDATE users SET notification_prefs =')) {
             const [prefs, userId] = args;
             const user = store.users.find(u => String(u.id) === String(userId));
             if (user) { user.notification_prefs = typeof prefs === 'string' ? prefs : JSON.stringify(prefs); saveStore(); }
             return { changes: 1 };
-        } else if (this.sql.includes('UPDATE users SET google_id =')) {
-            const [gid, img, userId] = args;
-            const user = store.users.find(u => String(u.id) === String(userId));
-            if (user) { user.google_id = gid; if (img) user.profile_image = img; saveStore(); }
-            return { changes: 1 };
         } else if (this.sql.includes('UPDATE files SET original_name =')) {
             const [origName, storedName, storagePath, fileId] = args;
             const file = store.files.find(f => String(f.id) === String(fileId));
-            if (file) {
-                file.original_name = origName;
-                file.stored_name = storedName;
-                file.storage_path = storagePath;
-                saveStore();
-            }
+            if (file) { file.original_name = origName; file.stored_name = storedName; file.storage_path = storagePath; saveStore(); }
             return { changes: 1 };
         } else if (this.sql.includes('UPDATE files SET file_size =')) {
             const [size, fileId] = args;
             const file = store.files.find(f => String(f.id) === String(fileId));
-            if (file) {
-                file.file_size = size;
-                saveStore();
-            }
+            if (file) { file.file_size = size; saveStore(); }
             return { changes: 1 };
         } else if (this.sql.includes('DELETE FROM files WHERE id =')) {
             const [fileId] = args;
@@ -187,10 +171,13 @@ class PreparedStmt {
 
     get(...args) {
         let result = null;
-        if (this.sql.includes('SELECT * FROM users WHERE google_id = ? OR email = ?')) {
-            const [gid, email] = args;
-            const targetEmail = (email || '').toLowerCase().trim();
-            result = store.users.find(u => (gid && u.google_id === gid) || (u.email && u.email.toLowerCase().trim() === targetEmail)) || null;
+
+        if (this.sql.includes('SELECT * FROM users WHERE username = ?')) {
+            const [username] = args;
+            result = store.users.find(u => u.username && u.username.toLowerCase() === (username || '').toLowerCase()) || null;
+        } else if (this.sql.includes('SELECT id FROM users WHERE username = ?')) {
+            const [username] = args;
+            result = store.users.find(u => u.username && u.username.toLowerCase() === (username || '').toLowerCase()) || null;
         } else if (this.sql.includes('SELECT * FROM users WHERE email = ?')) {
             const [email] = args;
             const targetEmail = (email || '').toLowerCase().trim();
@@ -199,16 +186,13 @@ class PreparedStmt {
             const [email] = args;
             const targetEmail = (email || '').toLowerCase().trim();
             result = store.users.find(u => u.email && u.email.toLowerCase().trim() === targetEmail) || null;
-        } else if (this.sql.includes('SELECT id, name, email, google_id, profile_image, storage_used, notification_prefs, created_at FROM users WHERE id = ?')) {
-            const [id] = args;
-            result = store.users.find(u => String(u.id) === String(id)) || null;
-        } else if (this.sql.includes('SELECT id, name, email, profile_image, storage_used, created_at FROM users WHERE id = ?')) {
-            const [id] = args;
-            result = store.users.find(u => String(u.id) === String(id)) || null;
         } else if (this.sql.includes('SELECT * FROM users WHERE id = ?')) {
             const [id] = args;
             result = store.users.find(u => String(u.id) === String(id)) || null;
-        } else if (this.sql.includes('SELECT * FROM files WHERE id = ?') || this.sql.includes('SELECT id FROM files WHERE id = ?')) {
+        } else if (this.sql.includes('SELECT id, username, email, date_of_birth, storage_used, notification_prefs, last_login, created_at FROM users WHERE id = ?')) {
+            const [id] = args;
+            result = store.users.find(u => String(u.id) === String(id)) || null;
+        } else if (this.sql.includes('SELECT * FROM files WHERE id =') || this.sql.includes('SELECT id FROM files WHERE id =')) {
             const [id, userId] = args;
             result = store.files.find(f => String(f.id) === String(id) && (userId ? String(f.user_id) === String(userId) : true)) || null;
         } else if (this.sql.includes('SELECT id FROM files WHERE user_id = ? AND original_name = ? AND id != ?')) {
@@ -218,6 +202,7 @@ class PreparedStmt {
             const [id, userId] = args;
             result = store.transformations.find(t => String(t.id) === String(id) && (userId ? String(t.user_id) === String(userId) : true)) || null;
         }
+
         return result ? { ...result } : null;
     }
 
@@ -225,7 +210,7 @@ class PreparedStmt {
         if (this.sql.includes('SELECT * FROM files WHERE user_id = ?')) {
             const userId = args[0];
             let list = store.files.filter(f => String(f.user_id) === String(userId) && f.status === 'active');
-            
+
             if (this.sql.includes('AND file_type = ?')) {
                 const category = args[1];
                 list = list.filter(f => f.file_type === category);
@@ -271,5 +256,5 @@ const db = {
     prepare: (sql) => new PreparedStmt(sql)
 };
 
-console.log('⚡ Docholder Pure-JS SQLite Data Engine connected:', dbPath);
+console.log('⚡ CompressX Pure-JS Data Engine connected:', dbPath);
 module.exports = db;

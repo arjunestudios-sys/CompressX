@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Docholder — Image Studio</title>
+    <title>Docholder â€” Image Studio</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/components.css">
@@ -73,7 +73,7 @@
 
         <main class="app-body" style="padding-bottom: 90px;">
             <div class="page-title-block">
-                <div id="img-op-breadcrumb" class="op-breadcrumb-badge"><i class="fa-solid fa-image"></i> Image → Compress Image</div>
+                <div id="img-op-breadcrumb" class="op-breadcrumb-badge"><i class="fa-solid fa-image"></i> Image â†’ Compress Image</div>
                 <h1 class="page-title" id="img-main-op-title"><i class="fa-solid fa-compress" style="color: #8B5CF6;"></i> Compress Image</h1>
                 <p class="page-subtitle" id="img-main-op-subtitle">Optimize image file size while preserving rich visual quality.</p>
             </div>
@@ -87,7 +87,7 @@
                 <button class="action-chip" data-mode="rotate"><i class="fa-solid fa-rotate"></i> Rotate & Flip</button>
                 <button class="action-chip" data-mode="convert"><i class="fa-solid fa-arrow-right-arrow-left"></i> Convert</button>
                 <button class="action-chip" data-mode="exif"><i class="fa-solid fa-shield-halved"></i> Strip EXIF</button>
-                <button class="action-chip" data-mode="multi-pdf"><i class="fa-solid fa-file-pdf"></i> Images → PDF</button>
+                <button class="action-chip" data-mode="multi-pdf"><i class="fa-solid fa-file-pdf"></i> Images â†’ PDF</button>
             </div>
 
             <!-- Step 1: Select Image -->
@@ -156,21 +156,21 @@
                         <option value="">Custom Dimensions</option>
                         <option value="original">Original Dimensions</option>
                         <optgroup label="Social Media & Apps">
-                            <option value="twitter">Twitter / X Post (1200 × 675)</option>
-                            <option value="twitter_avatar">Twitter / X Avatar (400 × 400)</option>
-                            <option value="threads">Threads / Instagram Square (1080 × 1080)</option>
-                            <option value="threads_portrait">Threads / IG Portrait (1080 × 1350)</option>
-                            <option value="reels">Reels / TikTok / Stories (1080 × 1920)</option>
-                            <option value="discord_avatar">Discord Avatar (256 × 256)</option>
-                            <option value="discord_emote">Discord Emote (128 × 128)</option>
-                            <option value="youtube_thumb">YouTube Thumbnail (1280 × 720)</option>
-                            <option value="linkedin">LinkedIn Post (1200 × 627)</option>
+                            <option value="twitter">Twitter / X Post (1200 Ã— 675)</option>
+                            <option value="twitter_avatar">Twitter / X Avatar (400 Ã— 400)</option>
+                            <option value="threads">Threads / Instagram Square (1080 Ã— 1080)</option>
+                            <option value="threads_portrait">Threads / IG Portrait (1080 Ã— 1350)</option>
+                            <option value="reels">Reels / TikTok / Stories (1080 Ã— 1920)</option>
+                            <option value="discord_avatar">Discord Avatar (256 Ã— 256)</option>
+                            <option value="discord_emote">Discord Emote (128 Ã— 128)</option>
+                            <option value="youtube_thumb">YouTube Thumbnail (1280 Ã— 720)</option>
+                            <option value="linkedin">LinkedIn Post (1200 Ã— 627)</option>
                         </optgroup>
                         <optgroup label="Displays & Standards">
-                            <option value="1080p">Full HD (1920 × 1080)</option>
-                            <option value="720p">HD (1280 × 720)</option>
-                            <option value="square">Square 1:1 (1080 × 1080)</option>
-                            <option value="4k">4K Ultra HD (3840 × 2160)</option>
+                            <option value="1080p">Full HD (1920 Ã— 1080)</option>
+                            <option value="720p">HD (1280 Ã— 720)</option>
+                            <option value="square">Square 1:1 (1080 Ã— 1080)</option>
+                            <option value="4k">4K Ultra HD (3840 Ã— 2160)</option>
                             <option value="50%">50% Scale</option>
                             <option value="25%">25% Scale</option>
                         </optgroup>
@@ -195,7 +195,7 @@
 
                 <!-- Dimensions Badge -->
                 <div id="img-resize-dimensions-badge" style="background: var(--surface); padding: 8px 12px; border-radius: var(--radius-xs); border: 1px solid var(--surface-border); font-size: 0.78rem; color: var(--text); margin-bottom: 12px;">
-                    Original: <span id="img-orig-dim-text">0 × 0 px</span> → Output: <strong id="img-out-dim-text" style="color: var(--primary);">0 × 0 px</strong>
+                    Original: <span id="img-orig-dim-text">0 Ã— 0 px</span> â†’ Output: <strong id="img-out-dim-text" style="color: var(--primary);">0 Ã— 0 px</strong>
                 </div>
 
                 <button id="btn-resize-image" class="btn btn-primary btn-block"><i class="fa-solid fa-up-right-and-down-left-from-center"></i> Resize Image</button>
@@ -241,21 +241,21 @@
             <div id="panel-rotate" class="glass-card hidden">
                 <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-rotate" style="color: var(--accent);"></i> 2. Rotate & Flip Controls</h4>
                 
-                <div style="font-size: 0.8rem; font-weight: 700; margin-bottom: 6px; color: var(--text);">90° Rotation & Flip:</div>
+                <div style="font-size: 0.8rem; font-weight: 700; margin-bottom: 6px; color: var(--text);">90Â° Rotation & Flip:</div>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px;">
-                    <button id="btn-rotate-left" class="btn btn-secondary btn-sm"><i class="fa-solid fa-rotate-left"></i> ↶ Left 90°</button>
-                    <button id="btn-rotate-90" class="btn btn-secondary btn-sm"><i class="fa-solid fa-rotate-right"></i> ↷ Right 90°</button>
-                    <button id="btn-rotate-180" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrows-spin"></i> 180°</button>
+                    <button id="btn-rotate-left" class="btn btn-secondary btn-sm"><i class="fa-solid fa-rotate-left"></i> â†¶ Left 90Â°</button>
+                    <button id="btn-rotate-90" class="btn btn-secondary btn-sm"><i class="fa-solid fa-rotate-right"></i> â†· Right 90Â°</button>
+                    <button id="btn-rotate-180" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrows-spin"></i> 180Â°</button>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px;">
-                    <button id="btn-flip-h" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrows-left-right"></i> ↔ Flip Horizontal</button>
-                    <button id="btn-flip-v" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrows-up-down"></i> ↕ Flip Vertical</button>
+                    <button id="btn-flip-h" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrows-left-right"></i> â†” Flip Horizontal</button>
+                    <button id="btn-flip-v" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrows-up-down"></i> â†• Flip Vertical</button>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 14px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                         <label class="form-label" style="margin: 0;">Custom Rotation Angle</label>
-                        <span id="custom-rot-val" style="font-weight: 700; color: var(--primary); font-size: 0.82rem;">0°</span>
+                        <span id="custom-rot-val" style="font-weight: 700; color: var(--primary); font-size: 0.82rem;">0Â°</span>
                     </div>
                     <input type="range" id="custom-rot-slider" min="0" max="360" value="0" step="5" style="width: 100%;">
                 </div>
@@ -269,12 +269,12 @@
                 <div class="form-group">
                     <label class="form-label">Convert To</label>
                     <select id="img-target-format" class="form-select">
-                        <option value="webp" selected>WebP (.webp) — Modern & Compact</option>
-                        <option value="jpg">JPG / JPEG (.jpg) — Universal</option>
-                        <option value="png">PNG (.png) — Lossless with Alpha</option>
+                        <option value="webp" selected>WebP (.webp) â€” Modern & Compact</option>
+                        <option value="jpg">JPG / JPEG (.jpg) â€” Universal</option>
+                        <option value="png">PNG (.png) â€” Lossless with Alpha</option>
                         <option value="pdf">PDF Document (.pdf)</option>
-                        <option value="tiff">TIFF (.tiff) — High Dynamic Range</option>
-                        <option value="bmp">BMP (.bmp) — Uncompressed Bitmap</option>
+                        <option value="tiff">TIFF (.tiff) â€” High Dynamic Range</option>
+                        <option value="bmp">BMP (.bmp) â€” Uncompressed Bitmap</option>
                     </select>
                 </div>
 
@@ -394,12 +394,12 @@
                 <div class="form-group" style="margin-bottom: 12px;">
                     <label class="form-label" style="font-family: var(--font-hud); font-size: 0.75rem;">Select Cyber Filter</label>
                     <select id="cyber-filter-select" class="form-select" style="font-size: 0.85rem;">
-                        <option value="neon-synth" selected>🌆 Neon Synthwave (Cyber Cyan & Hot Pink)</option>
-                        <option value="matrix-terminal">📟 Matrix Terminal (Digital Phosphor Green)</option>
-                        <option value="holo-blue">💎 Hologram Quantum Blue (Ethereal Specular)</option>
-                        <option value="glitch-rgb">⚡ Chromatic Aberration / RGB Split</option>
-                        <option value="thermal-vision">🔥 Thermal Infrared Spectrum</option>
-                        <option value="quantum-invert">🔮 Quantum Invert & High-Pass Neon</option>
+                        <option value="neon-synth" selected>ðŸŒ† Neon Synthwave (Cyber Cyan & Hot Pink)</option>
+                        <option value="matrix-terminal">ðŸ“Ÿ Matrix Terminal (Digital Phosphor Green)</option>
+                        <option value="holo-blue">ðŸ’Ž Hologram Quantum Blue (Ethereal Specular)</option>
+                        <option value="glitch-rgb">âš¡ Chromatic Aberration / RGB Split</option>
+                        <option value="thermal-vision">ðŸ”¥ Thermal Infrared Spectrum</option>
+                        <option value="quantum-invert">ðŸ”® Quantum Invert & High-Pass Neon</option>
                     </select>
                 </div>
 
@@ -472,6 +472,7 @@
         </nav>
     </div>
 
+    <script src="js/authGuard.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/universalRegistry.js"></script>

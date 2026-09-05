@@ -3,19 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Docholder — Create Account</title>
+    <title>CompressX — Create Account</title>
+    <meta name="description" content="Create a free CompressX account to access your intelligent document workspace.">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .auth-field-error {
+            display: none;
+            color: var(--danger);
+            font-size: 0.75rem;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+        .field-hint {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+        .pw-wrapper { position: relative; }
+        .pw-toggle {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; cursor: pointer;
+            color: var(--text-secondary); font-size: 0.9rem; padding: 4px;
+        }
+        .pw-wrapper .form-input { padding-right: 40px; }
+        .pw-strength {
+            height: 4px; border-radius: 2px;
+            margin-top: 5px; background: var(--surface-border);
+            overflow: hidden;
+        }
+        .pw-strength-bar {
+            height: 100%; border-radius: 2px;
+            transition: width 0.3s, background 0.3s;
+            width: 0%;
+        }
+    </style>
 </head>
 <body>
     <div class="mobile-app-shell">
         <div class="mobile-status-bar">
-            <span class="status-bar-time">9:41</span>
-            <div class="dynamic-island-notch">
-                <div class="notch-camera-dot"></div>
-            </div>
+            <span class="status-bar-time" id="status-time">9:41</span>
+            <div class="dynamic-island-notch"><div class="notch-camera-dot"></div></div>
             <div class="status-bar-icons">
                 <i class="fa-solid fa-signal"></i>
                 <i class="fa-solid fa-wifi"></i>
@@ -24,55 +54,104 @@
         </div>
 
         <header class="mobile-app-header">
-            <button class="mobile-header-btn" onclick="window.location.href='login.html'"><i class="fa-solid fa-arrow-left"></i></button>
-            <div class="mobile-header-title">
-                <span>Create Account</span>
-            </div>
+            <button class="mobile-header-btn" onclick="window.location.href='login.html'">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <div class="mobile-header-title"><span>Create Account</span></div>
             <a href="login.html" class="mobile-header-btn"><i class="fa-solid fa-right-to-bracket"></i></a>
         </header>
 
-        <main class="app-body">
-            <div class="glass-card" style="padding: 24px 16px;">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <img src="assets/logo.svg" alt="Docholder" style="width: 50px; height: 50px; margin-bottom: 8px;">
-                    <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 2px;">Join Docholder</h2>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary);">Start transforming your documents.</p>
+        <main class="app-body" style="padding-bottom:30px;">
+            <div class="glass-card" style="padding:28px 18px; margin-top:8px;">
+
+                <!-- Logo + heading -->
+                <div style="text-align:center; margin-bottom:22px;">
+                    <img src="assets/logo.svg" alt="CompressX" style="width:52px;height:52px;margin-bottom:10px;">
+                    <h1 style="font-size:1.4rem;font-weight:800;margin-bottom:3px;">Join CompressX</h1>
+                    <p style="font-size:0.8rem;color:var(--text-secondary);">Create your free account to get started</p>
                 </div>
 
-                <form id="register-form">
+                <!-- General error -->
+                <div id="err-register-general" class="auth-field-error"
+                     style="margin-bottom:10px;text-align:center;padding:8px 12px;background:rgba(239,68,68,.1);border-radius:8px;border:1px solid var(--danger);"></div>
+
+                <form id="register-form" novalidate>
+
+                    <!-- Email -->
                     <div class="form-group">
-                        <label class="form-label" for="reg-name" style="font-size: 0.8rem;">Full Name</label>
-                        <input type="text" id="reg-name" class="form-input" placeholder="Alex Rivera" required style="font-size: 0.85rem;">
+                        <label class="form-label" for="reg-email" style="font-size:0.8rem;">
+                            Email Address <span style="color:var(--danger);">*</span>
+                        </label>
+                        <input type="email" id="reg-email" class="form-input"
+                               placeholder="you@example.com" autocomplete="email"
+                               required style="font-size:0.85rem;">
+                        <div class="auth-field-error" id="err-email"></div>
                     </div>
 
+                    <!-- Username -->
                     <div class="form-group">
-                        <label class="form-label" for="reg-email" style="font-size: 0.8rem;">Email Address</label>
-                        <input type="email" id="reg-email" class="form-input" placeholder="alex@domain.com" required style="font-size: 0.85rem;">
+                        <label class="form-label" for="reg-username" style="font-size:0.8rem;">
+                            Username <span style="color:var(--danger);">*</span>
+                        </label>
+                        <input type="text" id="reg-username" class="form-input"
+                               placeholder="your_username" autocomplete="username"
+                               maxlength="30" required style="font-size:0.85rem;">
+                        <div class="field-hint">3–30 characters. Letters, numbers, underscores only.</div>
+                        <div class="auth-field-error" id="err-username"></div>
                     </div>
 
+                    <!-- Date of Birth -->
                     <div class="form-group">
-                        <label class="form-label" for="reg-password" style="font-size: 0.8rem;">Password (≥6 chars)</label>
-                        <input type="password" id="reg-password" class="form-input" placeholder="••••••••" required style="font-size: 0.85rem;">
+                        <label class="form-label" for="reg-dob" style="font-size:0.8rem;">
+                            Date of Birth <span style="color:var(--danger);">*</span>
+                        </label>
+                        <input type="date" id="reg-dob" class="form-input"
+                               required style="font-size:0.85rem;"
+                               max="">
+                        <div class="auth-field-error" id="err-dob"></div>
                     </div>
 
+                    <!-- Password -->
                     <div class="form-group">
-                        <label class="form-label" for="reg-confirm" style="font-size: 0.8rem;">Confirm Password</label>
-                        <input type="password" id="reg-confirm" class="form-input" placeholder="••••••••" required style="font-size: 0.85rem;">
+                        <label class="form-label" for="reg-password" style="font-size:0.8rem;">
+                            Password <span style="color:var(--danger);">*</span>
+                        </label>
+                        <div class="pw-wrapper">
+                            <input type="password" id="reg-password" class="form-input"
+                                   placeholder="Min. 8 characters" autocomplete="new-password"
+                                   required style="font-size:0.85rem;">
+                            <button type="button" id="toggle-reg-pw" class="pw-toggle" aria-label="Show password">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="pw-strength"><div class="pw-strength-bar" id="pw-strength-bar"></div></div>
+                        <div class="auth-field-error" id="err-password"></div>
                     </div>
 
-                    <div id="register-error" class="form-error" style="margin-bottom: 12px; color: var(--danger); font-size: 0.8rem;"></div>
+                    <!-- Confirm Password -->
+                    <div class="form-group">
+                        <label class="form-label" for="reg-confirm" style="font-size:0.8rem;">
+                            Confirm Password <span style="color:var(--danger);">*</span>
+                        </label>
+                        <div class="pw-wrapper">
+                            <input type="password" id="reg-confirm" class="form-input"
+                                   placeholder="Re-enter password" autocomplete="new-password"
+                                   required style="font-size:0.85rem;">
+                            <button type="button" id="toggle-reg-confirm" class="pw-toggle" aria-label="Show password">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="auth-field-error" id="err-confirm"></div>
+                    </div>
 
-                    <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fa-solid fa-user-plus"></i> Create Account</button>
+                    <button type="submit" id="reg-submit-btn" class="btn btn-primary" style="width:100%;margin-top:6px;">
+                        <i class="fa-solid fa-user-plus"></i> Create Account
+                    </button>
                 </form>
 
-                <div style="margin-top: 16px; text-align: center; color: var(--text-secondary); font-size: 0.82rem;">
-                    Already registered? <a href="login.html" style="font-weight: 700;">Sign in</a>
-                </div>
-
-                <div style="margin-top: 16px; border-top: 1px solid var(--surface-border); padding-top: 16px;">
-                    <a href="/api/auth/google" class="btn btn-google btn-sm" style="width: 100%; padding: 8px;">
-                        <i class="fa-brands fa-google" style="color: #ea4335;"></i> Continue with Google
-                    </a>
+                <div style="margin-top:18px;text-align:center;color:var(--text-secondary);font-size:0.82rem;">
+                    Already have an account?
+                    <a href="login.html" style="font-weight:700;color:var(--primary);">Sign in</a>
                 </div>
             </div>
         </main>
@@ -80,6 +159,40 @@
 
     <script src="js/api.js"></script>
     <script src="js/futuristicEngine.js"></script>
+    <!-- authGuard: redirect to dashboard if already logged in -->
+    <script src="js/authGuard.js" data-mode="unauth"></script>
     <script src="js/auth.js"></script>
+    <script>
+        // Set max DOB date to today
+        document.getElementById('reg-dob').max = new Date().toISOString().split('T')[0];
+
+        // Password strength indicator
+        const pwInput = document.getElementById('reg-password');
+        const strengthBar = document.getElementById('pw-strength-bar');
+        if (pwInput && strengthBar) {
+            pwInput.addEventListener('input', () => {
+                const v = pwInput.value;
+                let score = 0;
+                if (v.length >= 8) score++;
+                if (v.length >= 12) score++;
+                if (/[A-Z]/.test(v)) score++;
+                if (/[0-9]/.test(v)) score++;
+                if (/[^a-zA-Z0-9]/.test(v)) score++;
+                const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#10b981'];
+                const widths = ['20%', '40%', '60%', '80%', '100%'];
+                strengthBar.style.width = v.length ? widths[Math.min(score - 1, 4)] : '0%';
+                strengthBar.style.background = v.length ? colors[Math.min(score - 1, 4)] : '';
+            });
+        }
+
+        // Live clock
+        const timeEl = document.getElementById('status-time');
+        function updateTime() {
+            const now = new Date();
+            if (timeEl) timeEl.textContent = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+        }
+        updateTime();
+        setInterval(updateTime, 30000);
+    </script>
 </body>
 </html>

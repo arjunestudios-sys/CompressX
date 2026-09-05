@@ -6,7 +6,6 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const passport = require('./config/passport');
 const cleanupService = require('./services/cleanup.service');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -29,9 +28,6 @@ app.use(cors({
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 app.use(cookieParser());
-
-// Passport OAuth Initialization
-app.use(passport.initialize());
 
 // Rate Limiting for Authentication Endpoints
 const authLimiter = rateLimit({

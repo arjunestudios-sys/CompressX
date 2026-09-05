@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Docholder — Video Studio</title>
+    <title>Docholder â€” Video Studio</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/components.css">
@@ -49,7 +49,7 @@
                 <button class="action-chip" data-mode="convert"><i class="fa-solid fa-rotate"></i> Convert</button>
                 <button class="action-chip" data-mode="resize"><i class="fa-solid fa-expand"></i> Resize</button>
                 <button class="action-chip" data-mode="trim"><i class="fa-solid fa-scissors"></i> Trim</button>
-                <button class="action-chip" data-mode="gif"><i class="fa-solid fa-film"></i> Video → GIF</button>
+                <button class="action-chip" data-mode="gif"><i class="fa-solid fa-film"></i> Video â†’ GIF</button>
                 <button class="action-chip" data-mode="merge"><i class="fa-solid fa-object-group"></i> Merge</button>
             </div>
 
@@ -82,7 +82,7 @@
                             </div>
                             <div class="video-hud-crosshair"></div>
                             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                                <span class="hud-badge hud-badge-pink" style="font-size: 0.58rem;">FPS: 60 • HDR10</span>
+                                <span class="hud-badge hud-badge-pink" style="font-size: 0.58rem;">FPS: 60 â€¢ HDR10</span>
                                 <span class="hud-badge hud-badge-green" style="font-size: 0.58rem;">SYNC: LOCKED</span>
                             </div>
                         </div>
@@ -98,7 +98,7 @@
                 <div class="form-group">
                     <label class="form-label">Quality Preset</label>
                     <select id="vid-quality-preset" class="form-select">
-                        <option value="medium" selected>Balanced (CRF 26) — Recommended</option>
+                        <option value="medium" selected>Balanced (CRF 26) â€” Recommended</option>
                         <option value="high">High Quality (CRF 22)</option>
                         <option value="low">Maximum Compression (CRF 32)</option>
                     </select>
@@ -109,12 +109,12 @@
                     <select id="vid-res-select" class="form-select">
                         <option value="">Keep Original Resolution</option>
                         <optgroup label="Social Video Presets">
-                            <option value="tiktok">TikTok / Reels / Shorts 9:16 (720 × 1280)</option>
-                            <option value="twitter">Twitter / X HD (1280 × 720)</option>
-                            <option value="square">Square 1:1 Feed (720 × 720)</option>
+                            <option value="tiktok">TikTok / Reels / Shorts 9:16 (720 Ã— 1280)</option>
+                            <option value="twitter">Twitter / X HD (1280 Ã— 720)</option>
+                            <option value="square">Square 1:1 Feed (720 Ã— 720)</option>
                         </optgroup>
                         <optgroup label="Standard Displays">
-                            <option value="1080p">1080p Full HD (1920 × 1080)</option>
+                            <option value="1080p">1080p Full HD (1920 Ã— 1080)</option>
                             <option value="720p">720p HD (Great for Mobile)</option>
                             <option value="480p">480p SD</option>
                             <option value="360p">360p Compact</option>
@@ -145,8 +145,8 @@
                 <div class="form-group">
                     <label class="form-label">Output Audio Format</label>
                     <select id="vid-audio-format" class="form-select">
-                        <option value="mp3" selected>MP3 (.mp3) — Universal</option>
-                        <option value="wav">WAV (.wav) — Lossless</option>
+                        <option value="mp3" selected>MP3 (.mp3) â€” Universal</option>
+                        <option value="wav">WAV (.wav) â€” Lossless</option>
                         <option value="aac">AAC (.aac)</option>
                         <option value="ogg">OGG (.ogg)</option>
                     </select>
@@ -171,8 +171,8 @@
                 <div class="form-group">
                     <label class="form-label">Target Format</label>
                     <select id="vid-convert-format" class="form-select">
-                        <option value="mp4" selected>MP4 (.mp4) — Universal</option>
-                        <option value="webm">WebM (.webm) — Web Ready</option>
+                        <option value="mp4" selected>MP4 (.mp4) â€” Universal</option>
+                        <option value="webm">WebM (.webm) â€” Web Ready</option>
                         <option value="mov">QuickTime MOV (.mov)</option>
                         <option value="avi">AVI (.avi)</option>
                         <option value="mkv">MKV (.mkv)</option>
@@ -188,10 +188,10 @@
                 <div class="form-group">
                     <label class="form-label">Target Resolution</label>
                     <select id="vid-scale-target" class="form-select">
-                        <option value="1080p">1080p Full HD (1920 × 1080)</option>
-                        <option value="720p" selected>720p HD (1280 × 720)</option>
-                        <option value="480p">480p SD (854 × 480)</option>
-                        <option value="360p">360p Compact (640 × 360)</option>
+                        <option value="1080p">1080p Full HD (1920 Ã— 1080)</option>
+                        <option value="720p" selected>720p HD (1280 Ã— 720)</option>
+                        <option value="480p">480p SD (854 Ã— 480)</option>
+                        <option value="360p">360p Compact (640 Ã— 360)</option>
                     </select>
                 </div>
 
@@ -269,6 +269,7 @@
         </main>
     </div>
 
+    <script src="js/authGuard.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/universalRegistry.js"></script>

@@ -72,11 +72,22 @@ function updateThemeButtons(theme) {
     }
 }
 
+function updatePermButton(btn, isGranted) {
+    if (!btn) return;
+    btn.textContent  = isGranted ? 'Granted' : 'Denied';
+    btn.className    = btn.className
+        .replace(/btn-(primary|secondary|danger)\b/g, '')
+        .trim();
+    btn.classList.add('btn', isGranted ? 'btn-primary' : 'btn-secondary');
+    btn.style.opacity = isGranted ? '1' : '0.65';
+}
+
 function setupEventListeners() {
     // Theme switches
     const btnDark = document.getElementById('btn-theme-dark');
     const btnLight = document.getElementById('btn-theme-light');
     const btnSystem = document.getElementById('btn-theme-system');
+
 
     if (btnDark) {
         btnDark.addEventListener('click', () => {

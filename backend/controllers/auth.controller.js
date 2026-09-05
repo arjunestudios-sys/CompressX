@@ -28,7 +28,7 @@ function setTokenCookie(res, token, rememberMe = false) {
     res.cookie('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Lax',
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
         maxAge
     });
 }
@@ -207,7 +207,7 @@ exports.logout = async (req, res) => {
     res.clearCookie('token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Lax'
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax'
     });
     return res.json({ success: true, message: 'Signed out successfully.' });
 };

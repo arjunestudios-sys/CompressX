@@ -342,10 +342,14 @@ function setupModals() {
                 });
 
                 document.getElementById('modal-make-smaller').classList.add('hidden');
-                showToast(`Optimized! Reduced to ${formatBytes(res.result.convertedSize)} (${res.result.percentageSaved}% saved)`, 'success', 5000, {
-                    text: 'Download',
-                    onClick: () => window.location.href = res.result.downloadUrl
-                });
+                const _optResult = res && res.result ? res.result : null;
+                showToast(
+                    _optResult
+                        ? `Optimized! Reduced to ${formatBytes(_optResult.convertedSize)} (${_optResult.percentageSaved}% saved)`
+                        : 'File optimized successfully!',
+                    'success', 5000,
+                    _optResult && _optResult.downloadUrl ? { text: 'Download', onClick: () => window.location.href = _optResult.downloadUrl } : undefined
+                );
                 await loadDashboardStats();
                 await loadTransformationHistory();
             } catch(err) {
@@ -375,11 +379,13 @@ function setupModals() {
                 });
 
                 document.getElementById('modal-convert-to').classList.add('hidden');
-                const dlUrl = res.zipResult ? res.zipResult.downloadUrl : res.generatedFiles[0].downloadUrl;
-                showToast(`Successfully created ${res.generatedFiles.length} output files!`, 'success', 6000, {
-                    text: res.zipResult ? 'Download ZIP' : 'Download',
-                    onClick: () => window.location.href = dlUrl
-                });
+                const _files = (res && res.generatedFiles) ? res.generatedFiles : [];
+                const _dlUrl = (res && res.zipResult && res.zipResult.downloadUrl)
+                    ? res.zipResult.downloadUrl
+                    : (_files.length > 0 && _files[0].downloadUrl ? _files[0].downloadUrl : null);
+                showToast(`Successfully created ${_files.length} output files!`, 'success', 6000,
+                    _dlUrl ? { text: res.zipResult ? 'Download ZIP' : 'Download', onClick: () => window.location.href = _dlUrl } : undefined
+                );
 
                 await loadDashboardStats();
                 await loadTransformationHistory();

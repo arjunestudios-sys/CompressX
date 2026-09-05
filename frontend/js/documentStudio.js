@@ -530,13 +530,14 @@ function setupControls() {
                 if (window.DocholderAudio) window.DocholderAudio.playSuccess();
                 if (res.result) {
                     DocholderStorage.addRecentFile(res.result);
+                    displayDocResult({
+                        originalName: res.result.originalName,
+                        downloadUrl: res.result.downloadUrl,
+                        fileSize: res.result.convertedSize
+                    }, `Converted to ${targetFormat.toUpperCase()}!`);
+                } else {
+                    showToast('Conversion complete!', 'success');
                 }
-
-                displayDocResult({
-                    originalName: res.result.originalName,
-                    downloadUrl: res.result.downloadUrl,
-                    fileSize: res.result.convertedSize
-                }, `Converted to ${targetFormat.toUpperCase()}!`);
             } catch(e) {
                 showToast(e.message || 'Conversion failed.', 'error');
                 if (progressStatus) progressStatus.textContent = 'Conversion failed.';

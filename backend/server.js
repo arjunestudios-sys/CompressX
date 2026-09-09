@@ -60,18 +60,22 @@ app.use('/api/auth/register', authLimiter);
 
 // Health Check & Root API Status (For Render / API-only Hosting)
 app.get('/health', (req, res) => res.json({ status: 'online', timestamp: new Date().toISOString() }));
-app.get('/', (req, res) => {
-    // If request explicitly asks for JSON or API-only mode
-    if (req.headers.accept && req.headers.accept.includes('application/json')) {
+app.get('/api', (req, res) => res.json({
+    service: 'Docholder / CompressX API Engine',
+    status: 'online',
+    endpoints: '/api/auth, /api/files, /api/compress, /api/extract, /api/pdf, /api/docx, /api/convert, /api/media, /api/image'
+}));
+
+app.get('/', (req, res, next) => {
+    const accept = req.headers.accept || '';
+    // If request explicitly asks ONLY for JSON and not HTML (e.g., API client / curl / Postman)
+    if (accept.includes('application/json') && !accept.includes('text/html')) {
         return res.json({ status: 'online', service: 'Docholder / CompressX API Engine', version: '1.0.0' });
     }
-    // API welcome response
-    res.json({
-        service: 'Docholder / CompressX API Engine',
-        status: 'online',
-        endpoints: '/api/auth, /api/files, /api/compress, /api/extract, /api/pdf, /api/docx, /api/convert, /api/media, /api/image'
-    });
+    // Otherwise pass to static middleware / catch-all to serve index.html to browser
+    next();
 });
+
 
 // Serve Frontend Static Files (if available)
 const frontendPath = path.join(__dirname, '../frontend');

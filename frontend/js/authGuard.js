@@ -28,6 +28,9 @@
             const url = (typeof resolveApiUrl === 'function') ? resolveApiUrl('/api/auth/me') : defaultUrl;
             const headers = { 'Content-Type': 'application/json' };
             const authToken = localStorage.getItem('docholder_auth_token') || sessionStorage.getItem('docholder_auth_token');
+            if (!authToken && mode === 'unauth') {
+                return null;
+            }
             if (authToken) {
                 headers['Authorization'] = `Bearer ${authToken}`;
             }

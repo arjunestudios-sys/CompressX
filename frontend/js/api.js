@@ -644,13 +644,16 @@ async function initMobileAppEnvironment() {
             applyUserToUI(user);
         }
 
-        // Non-blocking background sync
-        apiFetch('/api/auth/me').then(res => {
-            if (res && res.user) {
-                applyUserToUI(res.user);
-                try { sessionStorage.setItem('docholder_cached_user', JSON.stringify(res.user)); } catch(e) {}
-            }
-        }).catch(() => {});
+        // Non-blocking background sync (only if token is present)
+        const hasAuthToken = localStorage.getItem('docholder_auth_token') || sessionStorage.getItem('docholder_auth_token');
+        if (hasAuthToken) {
+            apiFetch('/api/auth/me').then(res => {
+                if (res && res.user) {
+                    applyUserToUI(res.user);
+                    try { sessionStorage.setItem('docholder_cached_user', JSON.stringify(res.user)); } catch(e) {}
+                }
+            }).catch(() => {});
+        }
     } catch(e) {}
 }
 

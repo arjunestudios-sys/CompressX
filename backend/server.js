@@ -14,14 +14,34 @@ const PORT = process.env.PORT || 5000;
 
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
+const isProd = process.env.NODE_ENV === 'production';
+
+if (isProd && !process.env.JWT_SECRET) {
+    console.error('FATAL: JWT_SECRET environment variable must be set in production mode!');
+    process.exit(1);
+}
+
 // Security & Headers
 app.use(helmet({
-    contentSecurityPolicy: false // Allow inline scripts and assets on localhost
+    contentSecurityPolicy: isProd ? {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com"],
+            imgSrc: ["'self'", "data:", "blob:", "https:"],
+            connectSrc: ["'self'", "https://compressx-backend.onrender.com", "*"]
+        }
+    } : false
 }));
 
 // CORS Configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+    : true;
+
 app.use(cors({
-    origin: true,
+    origin: allowedOrigins,
     credentials: true
 }));
 

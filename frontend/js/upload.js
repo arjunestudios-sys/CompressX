@@ -62,7 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('file', file);
 
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', '/api/files/upload', true);
+        const uploadUrl = (typeof resolveApiUrl === 'function') ? resolveApiUrl('/api/files/upload') : '/api/files/upload';
+        xhr.open('POST', uploadUrl, true);
         xhr.withCredentials = true;
 
         xhr.upload.onprogress = (e) => {

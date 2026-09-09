@@ -2,19 +2,20 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'compressx_super_secret_jwt_key_2026_localhost';
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? null : 'compressx_super_secret_jwt_key_2026');
 
 function generateToken(user, rememberMe = false) {
-    const expiresIn = rememberMe ? '30d' : '1h';
+    // Session never expires (100 years duration)
     return jwt.sign(
         { id: user.id, email: user.email },
         JWT_SECRET,
-        { expiresIn }
+        { expiresIn: '36500d' }
     );
 }
 
 function setTokenCookie(res, token, rememberMe = false) {
-    const maxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000;
+    // 100-year cookie duration
+    const maxAge = 100 * 365 * 24 * 60 * 60 * 1000;
     res.cookie('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -105,7 +106,8 @@ exports.forgotPassword = async (req, res, next) => {
         
         // Generate reset token stub
         const resetToken = jwt.sign({ id: user ? user.id : 0 }, JWT_SECRET, { expiresIn: '15m' });
-        const resetLink = `http://localhost:3000/login.html?resetToken=${resetToken}`;
+        const appBaseUrl = process.env.APP_URL || 'https://compressx-backend.onrender.com';
+        const resetLink = `${appBaseUrl}/login.html?resetToken=${resetToken}`;
 
         console.log(`\n🔑 [DEVELOPMENT RESET LINK FOR ${email}]: ${resetLink}\n`);
 

@@ -29,8 +29,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         titleEl.textContent = 'Editing: ' + fileRes.file.original_name;
 
         // Fetch PDF content as ArrayBuffer
-        const pdfDataRes = await fetch(`/api/files/${fileId}/download?inline=true`, {
-            credentials: 'include'
+        const pdfDownloadUrl = (typeof resolveApiUrl === 'function') ? resolveApiUrl(`/api/files/${fileId}/download?inline=true`) : `/api/files/${fileId}/download?inline=true`;
+        const pdfHeaders = {};
+        const authToken = localStorage.getItem('docholder_auth_token') || sessionStorage.getItem('docholder_auth_token');
+        if (authToken) {
+            pdfHeaders['Authorization'] = `Bearer ${authToken}`;
+        }
+        const pdfDataRes = await fetch(pdfDownloadUrl, {
+            credentials: 'include',
+            headers: pdfHeaders
         });
         if (!pdfDataRes.ok) throw new Error("Failed to load PDF.");
         

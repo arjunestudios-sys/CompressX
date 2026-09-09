@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const authTypeEl = document.getElementById('prof-auth-type');
         if (authTypeEl) {
-            authTypeEl.textContent = user.google_id ? 'Google OAuth Account' : 'Standard Email/Password Account';
+            authTypeEl.textContent = 'Standard Account';
         }
 
         const avatarBox = document.getElementById('prof-avatar-box');

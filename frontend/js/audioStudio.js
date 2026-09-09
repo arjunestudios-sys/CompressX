@@ -136,7 +136,8 @@ async function renderSelectedAudio(file) {
     const metaBadge = document.getElementById('selected-audio-meta-badge');
     if (prevContainer && player) {
         prevContainer.classList.remove('hidden');
-        player.src = `/api/files/${file.id}/download?inline=true`;
+        const rawAudioUrl = `/api/files/${file.id}/download?inline=true`;
+        player.src = (typeof resolveApiUrl === 'function') ? resolveApiUrl(rawAudioUrl) : rawAudioUrl;
         if (metaBadge) metaBadge.textContent = `${file.original_name} • ${formatBytes(file.file_size)}`;
 
         initAudioVisualizer();

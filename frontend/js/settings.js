@@ -52,6 +52,26 @@ function loadCurrentSettingsIntoUI() {
     // Notification Duration
     const duration = document.getElementById('setting-notification-duration');
     if (duration) duration.value = String(settings.notificationDuration || 4000);
+
+    // API Server Host Setup
+    const apiPreset = document.getElementById('setting-api-preset');
+    const apiHostUrl = document.getElementById('setting-api-host-url');
+    const storedHost = localStorage.getItem('docholder_api_host') || '';
+    if (apiPreset && apiHostUrl) {
+        if (!storedHost || storedHost === 'https://compressx-backend.onrender.com') {
+            apiPreset.value = 'render';
+            apiHostUrl.value = 'https://compressx-backend.onrender.com';
+        } else if (storedHost.includes('10.0.2.2')) {
+            apiPreset.value = 'emulator';
+            apiHostUrl.value = storedHost;
+        } else if (storedHost.includes('localhost')) {
+            apiPreset.value = 'localhost';
+            apiHostUrl.value = storedHost;
+        } else {
+            apiPreset.value = 'custom';
+            apiHostUrl.value = storedHost;
+        }
+    }
 }
 
 function updateThemeButtons(theme) {
@@ -200,6 +220,22 @@ function setupEventListeners() {
         };
     }
 
+    // API Host Preset Change Listener
+    const apiPreset = document.getElementById('setting-api-preset');
+    const apiHostUrl = document.getElementById('setting-api-host-url');
+    if (apiPreset && apiHostUrl) {
+        apiPreset.addEventListener('change', (e) => {
+            const val = e.target.value;
+            if (val === 'render') {
+                apiHostUrl.value = 'https://compressx-backend.onrender.com';
+            } else if (val === 'emulator') {
+                apiHostUrl.value = 'http://10.0.2.2:5000';
+            } else if (val === 'localhost') {
+                apiHostUrl.value = 'http://localhost:5000';
+            }
+        });
+    }
+
     // Save All Settings Button
     const btnSave = document.getElementById('btn-save-settings');
     if (btnSave) {
@@ -225,6 +261,14 @@ function setupEventListeners() {
                 notificationsEnabled,
                 notificationDuration
             };
+
+            // Save API Host
+            const customApiHost = apiHostUrl?.value?.trim();
+            if (customApiHost) {
+                localStorage.setItem('docholder_api_host', customApiHost);
+            } else {
+                localStorage.removeItem('docholder_api_host');
+            }
 
             saveDocholderSettings(updatedSettings);
             showToast('All settings saved and applied successfully!', 'success');

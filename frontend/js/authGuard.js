@@ -23,10 +23,18 @@
 
     async function verifySession() {
         try {
-            const res = await fetch('/api/auth/me', {
+            const renderHost = window.API_BASE_URL || 'https://compressx-backend.onrender.com';
+            const defaultUrl = ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '5000') ? `${renderHost}/api/auth/me` : '/api/auth/me';
+            const url = (typeof resolveApiUrl === 'function') ? resolveApiUrl('/api/auth/me') : defaultUrl;
+            const headers = { 'Content-Type': 'application/json' };
+            const authToken = localStorage.getItem('docholder_auth_token') || sessionStorage.getItem('docholder_auth_token');
+            if (authToken) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+            }
+            const res = await fetch(url, {
                 method: 'GET',
                 credentials: 'include',
-                headers: { 'Content-Type': 'application/json' }
+                headers
             });
             if (res.ok) {
                 const data = await res.json();
@@ -74,7 +82,7 @@
         } else {
             // Protected pages: if NOT logged in → send to login
             if (!user) {
-                window.location.replace(LOGIN_PAGE + '?expired=1');
+                window.location.replace(LOGIN_PAGE);
             } else {
                 window.__authUser = user;
                 removeOverlay();

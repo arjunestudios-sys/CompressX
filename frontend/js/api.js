@@ -504,20 +504,40 @@ function clearWorkspaceState(namespace) {
     } catch(e) {}
 }
 
+// Default Live Backend API Host (Render)
+window.API_BASE_URL = window.API_BASE_URL || 'https://compressx-backend.onrender.com';
+
 // Resolves API endpoint URL (supports Web, Render, and Capacitor Native Mobile)
 function resolveApiUrl(endpoint) {
     if (!endpoint || endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
         return endpoint;
     }
-    const customHost = localStorage.getItem('docholder_api_host');
-    if (customHost) {
-        return `${customHost.replace(/\/+$/, '')}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+    
+    // 1. Custom Host configured in settings
+    let customHost = localStorage.getItem('docholder_api_host');
+    if (customHost && customHost.trim() !== '') {
+        let host = customHost.trim();
+        if ((window.Capacitor?.getPlatform() === 'android' || window.Capacitor?.isNativePlatform?.()) && (host.includes('localhost') || host.includes('127.0.0.1'))) {
+            host = host.replace('localhost', '10.0.2.2').replace('127.0.0.1', '10.0.2.2');
+        }
+        return `${host.replace(/\/+$/, '')}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
     }
-    const isCapacitor = window.Capacitor !== undefined || window.location.protocol === 'capacitor:' || window.location.protocol === 'file:';
-    if (isCapacitor && window.API_BASE_URL) {
-        return `${window.API_BASE_URL.replace(/\/+$/, '')}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+
+    // 2. Standard Web Browser Environment (Served via Express server or local dev port)
+    const isNative = (window.Capacitor && (window.Capacitor.isNativePlatform?.() || window.Capacitor.getPlatform() === 'android' || window.Capacitor.getPlatform() === 'ios')) || window.location.protocol === 'file:';
+    
+    // Check if running on a standalone local static frontend server (port !== 5000)
+    const isLocalFrontendServer = !isNative && window.location.origin && (
+        ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '5000')
+    );
+
+    if (!isNative && window.location.origin && window.location.origin !== 'null' && !isLocalFrontendServer) {
+        return `${window.location.origin}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
     }
-    return endpoint;
+
+    // 3. Fallback to Render backend host
+    const baseUrl = window.API_BASE_URL || 'https://compressx-backend.onrender.com';
+    return `${baseUrl.replace(/\/+$/, '')}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
 }
 
 // Main API Fetch Wrapper
@@ -525,6 +545,11 @@ async function apiFetch(endpoint, options = {}) {
     const defaultHeaders = {
         'Accept': 'application/json'
     };
+
+    const authToken = localStorage.getItem('docholder_auth_token') || sessionStorage.getItem('docholder_auth_token');
+    if (authToken && (!options.headers || !options.headers['Authorization'])) {
+        defaultHeaders['Authorization'] = `Bearer ${authToken}`;
+    }
 
     if (options.body && !(options.body instanceof FormData)) {
         defaultHeaders['Content-Type'] = 'application/json';
@@ -541,7 +566,7 @@ async function apiFetch(endpoint, options = {}) {
         if (response.status === 401) {
             const currentPath = window.location.pathname;
             if (!currentPath.endsWith('login.html') && !currentPath.endsWith('register.html') && !currentPath.endsWith('welcome.html') && currentPath !== '/') {
-                window.location.href = '/login.html?expired=1';
+                window.location.href = '/login.html';
                 return;
             }
         }
@@ -554,6 +579,13 @@ async function apiFetch(endpoint, options = {}) {
 
         return data;
     } catch (err) {
+        if (err.name === 'TypeError' || err.message === 'Failed to fetch' || err.message.includes('NetworkError')) {
+            const activeHost = localStorage.getItem('docholder_api_host') || window.API_BASE_URL;
+            console.error(`[Capacitor API Error] Could not reach backend server at ${activeHost}`, err);
+            if (typeof showToast === 'function') {
+                showToast(`Server connection failed (${activeHost}). Configure API Host in Settings.`, 'error', 4500);
+            }
+        }
         throw err;
     }
 }

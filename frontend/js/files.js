@@ -485,7 +485,9 @@ document.getElementById('close-properties-btn')?.addEventListener('click', () =>
 
 document.getElementById('btn-prop-share')?.addEventListener('click', async () => {
     if (!currentPropertyFile) return;
-    const downloadUrl = `${window.location.origin}/api/files/${currentPropertyFile.id}/download`;
+    const downloadUrl = (typeof resolveApiUrl === 'function') 
+        ? resolveApiUrl(`/api/files/${currentPropertyFile.id}/download`)
+        : `${window.location.origin}/api/files/${currentPropertyFile.id}/download`;
     if (navigator.share) {
         try {
             await navigator.share({

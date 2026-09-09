@@ -1,4 +1,4 @@
-// Docholder CyberX â€” Futuristic Sound Synthesizer, Holographic FX & HUD Engine
+// Docholder CyberX —  Futuristic Sound Synthesizer, Holographic FX & HUD Engine
 
 class DocholderAudioFX {
     constructor() {
@@ -10,7 +10,7 @@ class DocholderAudioFX {
         window.addEventListener('touchstart', this.initOnInteraction, { once: true });
     }
 
-    // Deferred AudioContext â€” only created after first real user gesture
+    // Deferred AudioContext —  only created after first real user gesture
     initContext() {
         if (this.ctx) return;
         const AudioCtx = window.AudioContext || window.webkitAudioContext;

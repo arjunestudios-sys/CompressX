@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Docholder â€” Settings & Preferences</title>
+    <title>Docholder —  Settings & Preferences</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/animations.css">
@@ -140,6 +140,31 @@
                         <option value="8000">8 Seconds (Long)</option>
                     </select>
                 </div>
+            </div>
+
+            <!-- API & Network Server Card -->
+            <div class="glass-card">
+                <h4 style="margin-bottom: 10px; font-size: 0.9rem;"><i class="fa-solid fa-network-wired" style="color: var(--cyan-neon);"></i> API Server & Mobile Network Host</h4>
+                <p style="font-size: 0.76rem; color: var(--text-secondary); margin-bottom: 12px;">Configure backend endpoint URL for Capacitor mobile app communication.</p>
+                
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label class="form-label">Backend Preset</label>
+                    <select id="setting-api-preset" class="form-select">
+                        <option value="render">Cloud Live (Render Production)</option>
+                        <option value="emulator">Android Emulator (10.0.2.2:5000)</option>
+                        <option value="localhost">Local PC Server (localhost:5000)</option>
+                        <option value="custom">Custom Server URL / Local Wi-Fi IP</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="group-custom-api-host" style="margin-bottom: 10px;">
+                    <label class="form-label">API Base Host URL</label>
+                    <input type="text" id="setting-api-host-url" class="form-input" placeholder="http://192.168.1.50:5000" style="font-family: var(--font-mono, monospace); font-size: 0.82rem;">
+                </div>
+
+                <p style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; line-height: 1.35;">
+                    <i class="fa-solid fa-circle-info" style="color: var(--cyan-neon);"></i> <strong>Mobile Tip:</strong> On Android emulator, local server runs at <code>http://10.0.2.2:5000</code>. On real devices, use your PC's local Wi-Fi IP (e.g., <code>http://192.168.x.x:5000</code>).
+                </p>
             </div>
 
             <!-- System Permissions Card -->

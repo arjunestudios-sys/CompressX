@@ -1,0 +1,9 @@
+{
+  "name": "docholder-frontend",
+  "version": "1.0.0",
+  "description": "Docholder Frontend Static Web Assets",
+  "scripts": {
+    "build": "npm --prefix .. run build",
+    "cap:sync": "npx cap sync android"
+  }
+}

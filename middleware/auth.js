@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'compressx_super_secret_jwt_key_2026_localhost';
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? null : 'compressx_super_secret_jwt_key_2026');
 
 function authMiddleware(req, res, next) {
     let token = null;
@@ -16,7 +16,7 @@ function authMiddleware(req, res, next) {
     }
 
     if (!token) {
-        return res.status(401).json({ error: 'Your session has expired. Please sign in again.' });
+        return res.status(401).json({ error: 'Authentication required. Please sign in.' });
     }
 
     try {
@@ -24,13 +24,13 @@ function authMiddleware(req, res, next) {
         const user = db.prepare('SELECT id, name, email, google_id, profile_image, storage_used, notification_prefs, created_at FROM users WHERE id = ?').get(decoded.id);
 
         if (!user) {
-            return res.status(401).json({ error: 'Your session has expired. Please sign in again.' });
+            return res.status(401).json({ error: 'Authentication required. Please sign in.' });
         }
 
         req.user = user;
         next();
     } catch (err) {
-        return res.status(401).json({ error: 'Your session has expired. Please sign in again.' });
+        return res.status(401).json({ error: 'Authentication required. Please sign in.' });
     }
 }
 

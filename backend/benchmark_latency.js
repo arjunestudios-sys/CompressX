@@ -1,9 +1,13 @@
 const http = require('http');
+const https = require('https');
+
+const baseUrl = process.env.API_URL || 'https://compressx-backend.onrender.com';
+const client = baseUrl.startsWith('https') ? https : http;
 
 const endpoints = [
     { name: 'Root / Splash', path: '/' },
     { name: 'Dashboard HTML', path: '/dashboard.html' },
-    { name: 'Auth Check', path: '/api/auth/me' },
+    { name: 'Health Endpoint', path: '/health' },
     { name: 'Files List', path: '/api/files' },
     { name: 'History API', path: '/api/convert/history' },
     { name: 'Theme CSS (cached)', path: '/css/theme.css' },
@@ -13,7 +17,8 @@ const endpoints = [
 function measure(endpoint) {
     return new Promise((resolve) => {
         const start = process.hrtime.bigint();
-        const req = http.get(`http://localhost:5000${endpoint.path}`, (res) => {
+        const fullUrl = `${baseUrl.replace(/\/+$/, '')}${endpoint.path}`;
+        const req = client.get(fullUrl, (res) => {
             let data = '';
             res.on('data', chunk => data += chunk);
             res.on('end', () => {
@@ -23,7 +28,7 @@ function measure(endpoint) {
             });
         });
         req.on('error', (err) => {
-            resolve({ ...endpoint, status: 'ERR', error: err.message });
+            resolve({ ...endpoint, status: 'ERR', error: err.message, latencyMs: '0' });
         });
     });
 }

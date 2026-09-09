@@ -136,7 +136,8 @@ async function renderSelectedVideo(file) {
     const metaBadge = document.getElementById('selected-video-meta-badge');
     if (prevContainer && player) {
         prevContainer.classList.remove('hidden');
-        player.src = `/api/files/${file.id}/download?inline=true`;
+        const rawMediaUrl = `/api/files/${file.id}/download?inline=true`;
+        player.src = (typeof resolveApiUrl === 'function') ? resolveApiUrl(rawMediaUrl) : rawMediaUrl;
         if (metaBadge) metaBadge.textContent = `${file.original_name} • ${formatBytes(file.file_size)}`;
 
         player.ontimeupdate = () => {

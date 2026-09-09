@@ -176,7 +176,7 @@ function renderMultiImagesOrderedList() {
         item.innerHTML = `
             <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; flex: 1;">
                 <span class="hud-badge hud-badge-cyan" style="font-size: 0.62rem; min-width: 24px; text-align: center;">#${index + 1}</span>
-                <img src="/api/files/${img.id}/download?inline=true" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid var(--surface-border);" alt="Thumb">
+                <img src="${(typeof resolveApiUrl === 'function') ? resolveApiUrl(`/api/files/${img.id}/download?inline=true`) : `/api/files/${img.id}/download?inline=true`}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid var(--surface-border);" alt="Thumb">
                 <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                     <div style="font-size: 0.82rem; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${img.original_name}</div>
                     <div style="font-size: 0.72rem; color: var(--text-secondary);">${formatBytes(img.file_size)}</div>
@@ -228,7 +228,7 @@ async function renderSelectedImage(file) {
     const prevInfo = document.getElementById('selected-image-info');
     if (prevContainer && prevImg) {
         prevContainer.classList.remove('hidden');
-        prevImg.src = `/api/files/${file.id}/download?inline=true`;
+        prevImg.src = (typeof resolveApiUrl === 'function') ? resolveApiUrl(`/api/files/${file.id}/download?inline=true`) : `/api/files/${file.id}/download?inline=true`;
         
         try {
             const insp = await apiFetch(`/api/files/${file.id}/inspect`);
@@ -521,7 +521,7 @@ function setupControls() {
             try {
                 const img = new Image();
                 img.crossOrigin = 'anonymous';
-                img.src = `/api/files/${currentImageFile.id}/download?inline=true`;
+                img.src = (typeof resolveApiUrl === 'function') ? resolveApiUrl(`/api/files/${currentImageFile.id}/download?inline=true`) : `/api/files/${currentImageFile.id}/download?inline=true`;
                 await new Promise((res, rej) => {
                     img.onload = res;
                     img.onerror = rej;

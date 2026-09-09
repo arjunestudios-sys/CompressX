@@ -147,9 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginForm) {
         const params = new URLSearchParams(window.location.search);
 
-        if (params.get('expired') === '1') {
-            setFieldError('err-login-general', 'Your session has expired. Please sign in again.');
-        }
         if (params.get('registered') === '1') {
             const notice = document.getElementById('login-success-notice');
             if (notice) {
@@ -179,10 +176,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                await apiFetch('/api/auth/login', {
+                const res = await apiFetch('/api/auth/login', {
                     method: 'POST',
                     body: { username, password, rememberMe }
                 });
+
+                if (res && res.token) {
+                    localStorage.setItem('docholder_auth_token', res.token);
+                }
 
                 if (typeof showToast === 'function') showToast('Welcome back! 👋', 'success');
                 setTimeout(() => { window.location.href = 'dashboard.html'; }, 800);

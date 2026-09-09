@@ -533,17 +533,19 @@ body.fullscreen-mode .mobile-status-bar {
 .assistant-panel {
   display: flex;
   flex-direction: column;
-  height: 480px;
+  height: auto;
+  min-height: 220px;
+  max-height: 420px;
   background: var(--surface);
   border: 1px solid var(--surface-border);
   border-radius: var(--radius-md);
   box-shadow: var(--glass-shadow);
   overflow: hidden;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .assistant-header {
-  padding: 12px 14px;
+  padding: 10px 12px;
   background: var(--surface-card);
   border-bottom: 1px solid var(--surface-border);
   display: flex;
@@ -570,12 +572,15 @@ body.fullscreen-mode .mobile-status-bar {
 
 .assistant-messages {
   flex: 1;
-  padding: 14px;
+  padding: 10px 12px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  background: var(--bg);
+  gap: 8px;
+  background: var(--surface-hover);
+  border-radius: var(--radius-sm);
+  min-height: 80px;
+  max-height: 200px;
 }
 
 .chat-bubble {

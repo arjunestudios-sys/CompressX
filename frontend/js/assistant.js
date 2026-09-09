@@ -19,7 +19,7 @@ class DocholderAssistant {
 
     render() {
         this.container.innerHTML = `
-            <div class="assistant-panel glass-card cyber-card" style="margin-bottom: 12px; padding: 14px;">
+            <div class="assistant-panel" style="margin-bottom: 14px; padding: 12px;">
                 <div class="assistant-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div class="aura-orb-wrapper">

@@ -659,7 +659,162 @@ async function initMobileAppEnvironment() {
 
 document.addEventListener('DOMContentLoaded', () => {
     initMobileAppEnvironment();
+    initPullToRefresh();
 });
+
+/**
+ * Docholder Mobile Pull-To-Refresh Feature
+ * Enables smooth touch & pointer pull-down gestures from the top header to refresh page state
+ */
+function initPullToRefresh() {
+    if (document.getElementById('ptr-indicator-box')) return;
+
+    const scrollContainer = document.querySelector('.app-body') || document.body;
+    if (!scrollContainer) return;
+
+    const ptrBox = document.createElement('div');
+    ptrBox.id = 'ptr-indicator-box';
+    ptrBox.className = 'ptr-indicator';
+    ptrBox.style.cssText = `
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-60px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: var(--surface-card, #ffffff);
+        border: 1px solid var(--surface-border, rgba(0,240,255,0.3));
+        border-radius: 30px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+        font-family: var(--font-hud, monospace);
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--cyan-neon, #00f0ff);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.15s ease, transform 0.15s ease;
+    `;
+    ptrBox.innerHTML = `
+        <i id="ptr-icon" class="fa-solid fa-rotate-right" style="font-size: 0.9rem; transition: transform 0.1s ease;"></i>
+        <span id="ptr-text">Pull to refresh</span>
+    `;
+
+    const shell = document.querySelector('.mobile-app-shell') || document.body;
+    shell.appendChild(ptrBox);
+
+    const ptrIcon = ptrBox.querySelector('#ptr-icon');
+    const ptrText = ptrBox.querySelector('#ptr-text');
+
+    let startY = 0;
+    let pullDistance = 0;
+    let isPulling = false;
+    let isRefreshing = false;
+    const REFRESH_THRESHOLD = 75;
+
+    function onTouchStart(e) {
+        if (isRefreshing) return;
+        const pageY = e.touches ? e.touches[0].pageY : e.pageY;
+        if (scrollContainer.scrollTop <= 0) {
+            startY = pageY;
+            isPulling = true;
+        }
+    }
+
+    function onTouchMove(e) {
+        if (!isPulling || isRefreshing) return;
+        const pageY = e.touches ? e.touches[0].pageY : e.pageY;
+        const diff = pageY - startY;
+
+        if (diff > 0 && scrollContainer.scrollTop <= 0) {
+            pullDistance = Math.min(diff * 0.45, 110);
+            
+            if (pullDistance > 10) {
+                ptrBox.style.opacity = Math.min(pullDistance / REFRESH_THRESHOLD, 1);
+                ptrBox.style.transform = `translateX(-50%) translateY(${pullDistance - 50}px)`;
+
+                const rotation = Math.min(pullDistance * 4.5, 360);
+                ptrIcon.style.transform = `rotate(${rotation}deg)`;
+
+                if (pullDistance >= REFRESH_THRESHOLD) {
+                    ptrText.textContent = 'Release to refresh';
+                    ptrBox.style.borderColor = 'var(--emerald-neon, #00ff9d)';
+                    ptrIcon.style.color = 'var(--emerald-neon, #00ff9d)';
+                } else {
+                    ptrText.textContent = 'Pull to refresh';
+                    ptrBox.style.borderColor = 'var(--cyan-neon, #00f0ff)';
+                    ptrIcon.style.color = 'var(--cyan-neon, #00f0ff)';
+                }
+
+                if (e.cancelable && e.touches) {
+                    e.preventDefault();
+                }
+            }
+        } else {
+            isPulling = false;
+            resetPtr();
+        }
+    }
+
+    function onTouchEnd() {
+        if (!isPulling || isRefreshing) return;
+        isPulling = false;
+
+        if (pullDistance >= REFRESH_THRESHOLD) {
+            triggerRefresh();
+        } else {
+            resetPtr();
+        }
+    }
+
+    function triggerRefresh() {
+        isRefreshing = true;
+        ptrBox.style.opacity = '1';
+        ptrBox.style.transform = 'translateX(-50%) translateY(20px)';
+        ptrText.textContent = 'Refreshing workspace...';
+        ptrIcon.className = 'fa-solid fa-rotate-right fa-spin';
+        ptrIcon.style.color = 'var(--cyan-neon, #00f0ff)';
+        ptrBox.style.borderColor = 'var(--cyan-neon, #00f0ff)';
+
+        if (typeof showToast === 'function') {
+            showToast('Refreshing workspace state...', 'info', 2000);
+        }
+
+        setTimeout(() => {
+            window.location.reload();
+        }, 550);
+    }
+
+    function resetPtr() {
+        pullDistance = 0;
+        ptrBox.style.opacity = '0';
+        ptrBox.style.transform = 'translateX(-50%) translateY(-60px)';
+        if (ptrIcon) {
+            ptrIcon.className = 'fa-solid fa-rotate-right';
+            ptrIcon.style.transform = 'rotate(0deg)';
+        }
+    }
+
+    scrollContainer.addEventListener('touchstart', onTouchStart, { passive: true });
+    scrollContainer.addEventListener('touchmove', onTouchMove, { passive: false });
+    scrollContainer.addEventListener('touchend', onTouchEnd, { passive: true });
+
+    scrollContainer.addEventListener('mousedown', (e) => {
+        if (e.button === 0 && scrollContainer.scrollTop <= 0) {
+            onTouchStart(e);
+            const onMouseMove = (me) => onTouchMove(me);
+            const onMouseUp = () => {
+                onTouchEnd();
+                window.removeEventListener('mousemove', onMouseMove);
+                window.removeEventListener('mouseup', onMouseUp);
+            };
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+        }
+    });
+}
 
 // Format byte sizes into human readable text
 function formatBytes(bytes, decimals = 1) {

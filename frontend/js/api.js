@@ -769,22 +769,64 @@ function initPullToRefresh() {
         }
     }
 
-    function triggerRefresh() {
+    async function triggerRefresh() {
         isRefreshing = true;
         ptrBox.style.opacity = '1';
         ptrBox.style.transform = 'translateX(-50%) translateY(20px)';
-        ptrText.textContent = 'Refreshing workspace...';
+        ptrText.textContent = 'Syncing client workspace...';
         ptrIcon.className = 'fa-solid fa-rotate-right fa-spin';
         ptrIcon.style.color = 'var(--cyan-neon, #00f0ff)';
         ptrBox.style.borderColor = 'var(--cyan-neon, #00f0ff)';
 
-        if (typeof showToast === 'function') {
-            showToast('Refreshing workspace state...', 'info', 2000);
-        }
+        try {
+            const tasks = [];
+            if (typeof window.refreshWorkspaceData === 'function') {
+                tasks.push(window.refreshWorkspaceData());
+            }
+            if (typeof window.loadDashboardStats === 'function') {
+                tasks.push(window.loadDashboardStats());
+            }
+            if (typeof window.loadRecentFiles === 'function') {
+                tasks.push(window.loadRecentFiles());
+            }
+            if (typeof window.loadTransformationHistory === 'function') {
+                tasks.push(window.loadTransformationHistory());
+            }
+            if (typeof window.loadHistory === 'function') {
+                tasks.push(window.loadHistory());
+            }
+            if (typeof window.loadFiles === 'function') {
+                tasks.push(window.loadFiles());
+            }
 
-        setTimeout(() => {
-            window.location.reload();
-        }, 550);
+            if (tasks.length > 0) {
+                await Promise.allSettled(tasks);
+            }
+
+            if (typeof initMobileAppEnvironment === 'function') {
+                await initMobileAppEnvironment();
+            }
+
+            await new Promise(r => setTimeout(r, 400));
+
+            ptrText.textContent = 'Workspace Synced!';
+            ptrIcon.className = 'fa-solid fa-circle-check';
+            ptrIcon.style.color = 'var(--emerald-neon, #00ff9d)';
+            ptrBox.style.borderColor = 'var(--emerald-neon, #00ff9d)';
+
+            if (typeof showToast === 'function') {
+                showToast('Client workspace state refreshed!', 'success', 2200);
+            }
+        } catch(err) {
+            if (typeof showToast === 'function') {
+                showToast('Refreshed local workspace view', 'info', 2000);
+            }
+        } finally {
+            setTimeout(() => {
+                resetPtr();
+                isRefreshing = false;
+            }, 500);
+        }
     }
 
     function resetPtr() {

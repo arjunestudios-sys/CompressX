@@ -5,15 +5,18 @@
 let activeWorkspaceFile = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Parallelized dashboard loading for ultra-fast response
-    Promise.allSettled([
+    window.refreshWorkspaceData();
+    setupDropzone();
+    setupModals();
+});
+
+window.refreshWorkspaceData = async function() {
+    await Promise.allSettled([
         loadDashboardStats(),
         loadRecentFiles(),
         loadTransformationHistory()
     ]);
-    setupDropzone();
-    setupModals();
-});
+};
 
 async function loadDashboardStats() {
     try {

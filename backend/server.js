@@ -36,12 +36,37 @@ app.use(helmet({
 }));
 
 // CORS Configuration
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
+// Origins that are always allowed:
+//   • The Render deployment itself (frontend served from same host)
+//   • Capacitor Android/iOS native webview schemes
+//   • Local dev servers
+const DEFAULT_ALLOWED_ORIGINS = [
+    'https://compressx-backend.onrender.com',
+    // Capacitor native apps use these origins in their WebView
+    'capacitor://localhost',
+    'ionic://localhost',
+    'http://localhost',
+    'http://localhost:3000',
+    'http://localhost:5000',
+    'http://10.0.2.2:5000',   // Android emulator loopback
+    'null',                    // file:// origin (Capacitor file-served mode)
+];
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-    : true;
+    : DEFAULT_ALLOWED_ORIGINS;
 
 app.use(cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+        // Allow requests with no origin (Capacitor native, curl, Postman)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+            return callback(null, true);
+        }
+        // In development, allow all origins
+        if (!isProd) return callback(null, true);
+        return callback(new Error(`CORS: origin '${origin}' not allowed`));
+    },
     credentials: true
 }));
 

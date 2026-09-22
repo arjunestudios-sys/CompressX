@@ -518,40 +518,48 @@ function clearWorkspaceState(namespace) {
     } catch(e) {}
 }
 
-// Default Live Backend API Host (Render)
-window.API_BASE_URL = window.API_BASE_URL || 'https://compressx-backend.onrender.com';
+// ─── Cloud Backend Configuration ─────────────────────────────────────────────
+// Single source of truth for the production backend URL.
+// All API calls in Capacitor native builds (Android/iOS) resolve to this host.
+const CLOUD_API_HOST = 'https://compressx-backend.onrender.com';
+window.API_BASE_URL = window.API_BASE_URL || CLOUD_API_HOST;
 
-// Resolves API endpoint URL (supports Web, Render, and Capacitor Native Mobile)
+// Resolves an API endpoint URL for any runtime context:
+//   1. Custom host saved in Settings  (overrides everything)
+//   2. Web browser served by the Express server  (uses relative path)
+//   3. Capacitor native app / file://  (uses CLOUD_API_HOST)
 function resolveApiUrl(endpoint) {
     if (!endpoint || endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
         return endpoint;
     }
-    
-    // 1. Custom Host configured in settings
+
+    // 1. Custom host configured by the user in Settings
     let customHost = localStorage.getItem('docholder_api_host');
     if (customHost && customHost.trim() !== '') {
         let host = customHost.trim();
-        if ((window.Capacitor?.getPlatform() === 'android' || window.Capacitor?.isNativePlatform?.()) && (host.includes('localhost') || host.includes('127.0.0.1'))) {
+        // Remap localhost → Android emulator loopback only when using a local address
+        const isNativeCtx = window.Capacitor?.isNativePlatform?.() ||
+                            window.Capacitor?.getPlatform() === 'android' ||
+                            window.Capacitor?.getPlatform() === 'ios' ||
+                            window.location.protocol === 'file:';
+        if (isNativeCtx && (host.includes('localhost') || host.includes('127.0.0.1'))) {
             host = host.replace('localhost', '10.0.2.2').replace('127.0.0.1', '10.0.2.2');
         }
         return `${host.replace(/\/+$/, '')}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
     }
 
-    // 2. Standard Web Browser Environment (Served via Express server or local dev port)
-    const isNative = (window.Capacitor && (window.Capacitor.isNativePlatform?.() || window.Capacitor.getPlatform() === 'android' || window.Capacitor.getPlatform() === 'ios')) || window.location.protocol === 'file:';
-    
-    // Check if running on a standalone local static frontend server (port !== 5000)
-    const isLocalFrontendServer = !isNative && window.location.origin && (
-        ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '5000')
-    );
+    // 2. Running as a standard web page served by Express (same-origin)
+    const isNative = window.Capacitor?.isNativePlatform?.() ||
+                     window.Capacitor?.getPlatform() === 'android' ||
+                     window.Capacitor?.getPlatform() === 'ios' ||
+                     window.location.protocol === 'file:';
 
-    if (!isNative && window.location.origin && window.location.origin !== 'null' && !isLocalFrontendServer) {
+    if (!isNative && window.location.origin && window.location.origin !== 'null') {
         return `${window.location.origin}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
     }
 
-    // 3. Fallback to Render backend host
-    const baseUrl = window.API_BASE_URL || 'https://compressx-backend.onrender.com';
-    return `${baseUrl.replace(/\/+$/, '')}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+    // 3. Capacitor native app or file:// context → always use cloud backend
+    return `${CLOUD_API_HOST}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
 }
 
 // Main API Fetch Wrapper

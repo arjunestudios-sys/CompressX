@@ -3,7 +3,7 @@ const path = require('path');
 const sharp = require('sharp');
 
 async function buildAndroidIcons() {
-    const svgPath = path.join(__dirname, '../frontend/assets/logo.svg');
+    const logoSourcePath = path.join(__dirname, '../frontend/assets/logo-source.png');
     const resDir = path.join(__dirname, '../android/app/src/main/res');
 
     if (!fs.existsSync(resDir)) {
@@ -11,7 +11,7 @@ async function buildAndroidIcons() {
         return;
     }
 
-    const svgBuffer = fs.readFileSync(svgPath);
+    const imgBuffer = fs.readFileSync(logoSourcePath);
 
     const iconSizes = [
         { folder: 'mipmap-mdpi', size: 48 },

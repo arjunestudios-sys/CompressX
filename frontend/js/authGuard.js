@@ -23,9 +23,10 @@
 
     async function verifySession() {
         try {
-            const renderHost = window.API_BASE_URL || 'https://compressx-backend.onrender.com';
-            const defaultUrl = ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '5000') ? `${renderHost}/api/auth/me` : '/api/auth/me';
-            const url = (typeof resolveApiUrl === 'function') ? resolveApiUrl('/api/auth/me') : defaultUrl;
+            // Always resolve through the central URL resolver (cloud-aware, Capacitor-aware)
+            const url = (typeof resolveApiUrl === 'function')
+                ? resolveApiUrl('/api/auth/me')
+                : `${window.API_BASE_URL || 'https://compressx-backend.onrender.com'}/api/auth/me`;
             const headers = { 'Content-Type': 'application/json' };
             const authToken = localStorage.getItem('docholder_auth_token') || sessionStorage.getItem('docholder_auth_token');
             if (!authToken && mode === 'unauth') {

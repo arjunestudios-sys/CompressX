@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (currentCategory === 'favorites') {
                 const favIds = DocholderStorage.getFavorites();
-                files = files.filter(f => favIds.includes(Number(f.id)));
+                files = files.filter(f => favIds.has(String(f.id)) || favIds.has(Number(f.id)));
             } else if (currentCategory === 'recent') {
                 const recentList = DocholderStorage.getRecentFiles();
                 const recentIds = recentList.map(r => Number(r.id));
@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 else if (f.file_type === 'audio') studioUrl = `audio-tools.html?fileId=${f.id}`;
                 else if (f.file_type === 'doc') studioUrl = `document-tools.html?fileId=${f.id}`;
 
-                const isFav = DocholderStorage.getFavorites().includes(Number(f.id));
+                const isFav = DocholderStorage.isFavorite(f.id);
 
                 tr.innerHTML = `
                     <td style="width: 32px; vertical-align: middle; padding: 12px 6px;">

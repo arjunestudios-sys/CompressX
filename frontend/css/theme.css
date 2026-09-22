@@ -661,4 +661,37 @@ button {
   transform: translateX(20px);
 }
 
+/* Responsive Container & Padding Tokens for Mobile */
+@media (max-width: 768px) {
+  :root, [data-theme="light"], [data-theme="dark"] {
+    --card-padding: 16px 14px;
+    --card-radius: 16px;
+    --dropzone-padding: 22px 14px;
+    --dropzone-radius: 16px;
+    --dialog-padding: 18px 14px;
+    --dialog-radius: 20px;
+    --container-padding-md: 14px;
+    --container-gap-md: 12px;
+    --spacing-page-x: 14px;
+    --spacing-page-y: 12px;
+    --metric-box-padding: 10px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root, [data-theme="light"], [data-theme="dark"] {
+    --card-padding: 14px 12px;
+    --card-radius: 14px;
+    --dropzone-padding: 18px 12px;
+    --dropzone-radius: 14px;
+    --dialog-padding: 16px 12px;
+    --dialog-radius: 16px;
+    --container-padding-md: 12px;
+    --container-gap-md: 10px;
+    --spacing-page-x: 10px;
+    --spacing-page-y: 10px;
+    --metric-box-padding: 8px 10px;
+  }
+}
+
 

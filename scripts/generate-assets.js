@@ -3,23 +3,23 @@ const path = require('path');
 const sharp = require('sharp');
 
 async function generateAssets() {
-    const svgPath = path.join(__dirname, '../frontend/assets/logo.svg');
+    const logoSourcePath = path.join(__dirname, '../frontend/assets/logo-source.png');
     const resourcesDir = path.join(__dirname, '../resources');
     const assetsDir = path.join(__dirname, '../assets');
 
     if (!fs.existsSync(resourcesDir)) fs.mkdirSync(resourcesDir, { recursive: true });
     if (!fs.existsSync(assetsDir)) fs.mkdirSync(assetsDir, { recursive: true });
 
-    const svgBuffer = fs.readFileSync(svgPath);
+    const imgBuffer = fs.readFileSync(logoSourcePath);
 
     console.log('Generating Capacitor app icon (1024x1024)...');
-    await sharp(svgBuffer)
-        .resize(1024, 1024)
+    await sharp(imgBuffer)
+        .resize(1024, 1024, { fit: 'contain', background: { r: 11, g: 15, b: 25, alpha: 1 } })
         .png()
         .toFile(path.join(resourcesDir, 'icon.png'));
 
-    await sharp(svgBuffer)
-        .resize(1024, 1024)
+    await sharp(imgBuffer)
+        .resize(1024, 1024, { fit: 'contain', background: { r: 11, g: 15, b: 25, alpha: 1 } })
         .png()
         .toFile(path.join(assetsDir, 'icon.png'));
 

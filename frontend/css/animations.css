@@ -16,7 +16,7 @@
 
 /* Glass cards — consistent breathing room */
 .glass-card {
-  padding: 16px;
+  padding: var(--card-padding, 16px);
   margin-bottom: 12px;
 }
 
@@ -54,70 +54,41 @@
 .section-gap { margin-bottom: 18px; }
 
 /* ═══════════════════════════════════════════════════════════════
-   2. BOTTOM NAV — ICON VISUALIZATION & ACTIVE STATE
+   2. BOTTOM NAV — MICROANIMATIONS & ENTRANCE EFFECTS
    ═══════════════════════════════════════════════════════════════ */
 
+/* Staggered entrance for each nav item */
 .bottom-nav-item {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  width: 60px;
-  height: 100%;
-  color: var(--text-secondary);
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-  text-decoration: none;
-  transition: color 0.18s ease, transform 0.18s ease;
-  -webkit-tap-highlight-color: transparent;
+  animation: navItemFadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.bottom-nav-item:nth-child(1) { animation-delay: 0.06s; }
+.bottom-nav-item:nth-child(2) { animation-delay: 0.12s; }
+.bottom-nav-item:nth-child(3) { animation-delay: 0.18s; }
+.bottom-nav-item:nth-child(4) { animation-delay: 0.24s; }
+.bottom-nav-item:nth-child(5) { animation-delay: 0.30s; }
+
+@keyframes navItemFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.bottom-nav-item i {
-  font-size: 1.2rem;
-  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
-              color 0.18s ease,
-              filter 0.18s ease;
-}
-
-/* Active nav item — icon bounce + pill indicator */
-.bottom-nav-item.active {
-  color: var(--primary);
-}
-
+/* Active icon bounce on initial page load */
 .bottom-nav-item.active i {
-  transform: scale(1.22) translateY(-2px);
-  filter: drop-shadow(0 0 6px rgba(99,102,241,0.7));
+  animation: navIconBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s both;
 }
 
-/* Active pill indicator above the icon */
-.bottom-nav-item::before {
-  content: '';
-  position: absolute;
-  top: 7px;
-  left: 50%;
-  transform: translateX(-50%) scaleX(0);
-  width: 26px;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--primary);
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-              opacity 0.2s ease;
-  opacity: 0;
-}
-
-.bottom-nav-item.active::before {
-  transform: translateX(-50%) scaleX(1);
-  opacity: 1;
+@keyframes navIconBounce {
+  0%   { transform: scale(0.7) translateY(4px); }
+  60%  { transform: scale(1.32) translateY(-5px); }
+  80%  { transform: scale(1.22) translateY(-3px); }
+  100% { transform: scale(1.26) translateY(-3px); }
 }
 
 /* Hover lift for non-active nav items */
 .bottom-nav-item:not(.active):hover i {
-  transform: scale(1.1) translateY(-2px);
-  color: var(--text);
+  transform: scale(1.12) translateY(-2px);
 }
+
 
 /* ═══════════════════════════════════════════════════════════════
    3. ICON VISUALIZATION — WRAPPER SYSTEM

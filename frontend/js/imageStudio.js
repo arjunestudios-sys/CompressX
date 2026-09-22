@@ -19,7 +19,9 @@ const IMAGE_MODE_META = {
     rotate: { title: 'Rotate & Flip Image', icon: 'fa-rotate', color: '#10B981', subtitle: 'Rotate angles (0°–360°) and flip horizontally or vertically.' },
     convert: { title: 'Convert Image Format', icon: 'fa-arrow-right-arrow-left', color: '#F59E0B', subtitle: 'Convert between WebP, JPG, PNG, PDF, TIFF, and BMP.' },
     exif: { title: 'Strip EXIF Privacy Metadata', icon: 'fa-shield-halved', color: '#10B981', subtitle: 'Wipe camera model, location GPS, and device timestamp data.' },
-    'multi-pdf': { title: 'Combine Multi-Images to PDF', icon: 'fa-file-pdf', color: '#EF4444', subtitle: 'Assemble multiple image files into an organized PDF document.' }
+    'multi-pdf': { title: 'Combine Multi-Images to PDF', icon: 'fa-file-pdf', color: '#EF4444', subtitle: 'Assemble multiple image files into an organized PDF document.' },
+    'image-intelligence': { title: 'Image Intelligence & OCR', icon: 'fa-eye', color: '#8B5CF6', subtitle: 'Extract optical characters (OCR), detect printed labels & objects, and scan embedded QR/barcodes.' },
+    'document-scan': { title: 'Smart Document Scanner', icon: 'fa-camera-rotate', color: '#00F0FF', subtitle: 'Enhance document contrast, whiten backgrounds, eliminate shadows, and generate a clean archival PDF.' }
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -56,7 +58,7 @@ function setupModeChips() {
 }
 
 function switchMode(mode) {
-    const panels = ['compress', 'cyber', 'resize', 'crop', 'rotate', 'convert', 'exif', 'multi-pdf'];
+    const panels = ['compress', 'cyber', 'resize', 'crop', 'rotate', 'convert', 'exif', 'multi-pdf', 'image-intelligence', 'document-scan'];
     panels.forEach(p => {
         const el = document.getElementById(`panel-${p}`);
         if (el) el.classList.add('hidden');
@@ -1020,6 +1022,89 @@ function setupControls() {
                 setTimeout(() => {
                     if (progressWrapper) progressWrapper.classList.add('hidden');
                 }, 2000);
+            }
+        });
+    }
+
+    // 8. Image Intelligence & OCR
+    const btnImageIntel = document.getElementById('btn-run-image-intelligence');
+    if (btnImageIntel) {
+        btnImageIntel.addEventListener('click', async () => {
+            if (!currentImageFile) return showToast('Please select an image first.', 'warning');
+
+            btnImageIntel.disabled = true;
+            btnImageIntel.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Running Vision Analysis...';
+
+            try {
+                const data = await window.DocholderAPI.imageIntelligence({ fileId: currentImageFile.id });
+                const resBox = document.getElementById('image-intelligence-results');
+                if (resBox) {
+                    resBox.classList.remove('hidden');
+
+                    const objectsHtml = (data.detectedObjects || []).map(o => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:5px 8px; background:var(--surface); border-radius:4px; margin-bottom:4px; font-size:0.78rem;">
+                            <span>${o.label}</span>
+                            <span class="hud-badge hud-badge-pink" style="font-size:0.68rem;">${Math.round(o.confidence * 100)}% Match</span>
+                        </div>
+                    `).join('');
+
+                    const qrHtml = (data.qrBarcodeResults || []).map(q => `
+                        <div style="font-size:0.76rem; background:rgba(0,240,255,0.1); border:1px solid var(--cyan-neon); border-radius:4px; padding:6px 8px; margin-bottom:4px;">
+                            <span style="color:var(--cyan-neon); font-weight:700;">${q.type}:</span>
+                            <span style="font-family:var(--font-mono); color:var(--text); word-break:break-all;">${q.payload}</span>
+                        </div>
+                    `).join('');
+
+                    resBox.innerHTML = `
+                        <div style="font-weight:700; color:#8B5CF6; margin-bottom:8px; font-size:0.85rem;"><i class="fa-solid fa-eye"></i> Vision Diagnostics (${data.dimensions || 'N/A'})</div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:10px; font-size:0.75rem;">
+                            <div style="background:var(--surface); padding:6px; border-radius:4px;"><span style="color:var(--text-secondary);">Color Space:</span> <strong>${data.colorSpace || 'sRGB'}</strong></div>
+                            <div style="background:var(--surface); padding:6px; border-radius:4px;"><span style="color:var(--text-secondary);">Clarity Score:</span> <strong style="color:var(--emerald-neon);">${data.visualHealth?.clarityScore || 95}/100</strong></div>
+                        </div>
+                        <div style="font-weight:700; font-size:0.78rem; margin-bottom:6px; color:var(--cyan-neon);">Extracted Text (OCR):</div>
+                        <pre style="background:#0F172A; color:#38BDF8; font-family:var(--font-mono); font-size:0.75rem; padding:8px; border-radius:6px; max-height:120px; overflow-y:auto; white-space:pre-wrap; margin:0 0 10px 0;">${data.ocrText || 'No text detected'}</pre>
+                        <div style="font-weight:700; font-size:0.78rem; margin-bottom:6px; color:var(--emerald-neon);">Detected Objects & Signatures:</div>
+                        <div style="margin-bottom:10px;">${objectsHtml}</div>
+                        ${qrHtml ? `<div style="font-weight:700; font-size:0.78rem; margin-bottom:6px; color:var(--magenta-neon);">Detected QR / Barcodes:</div><div>${qrHtml}</div>` : ''}
+                    `;
+                }
+                showToast('Image intelligence analysis complete!', 'success');
+            } catch(err) {
+                showToast(err.message || 'Image analysis failed.', 'error');
+            } finally {
+                btnImageIntel.disabled = false;
+                btnImageIntel.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Analyze Vision Intelligence';
+            }
+        });
+    }
+
+    // 9. Smart Document Scanner
+    const btnDocScanner = document.getElementById('btn-run-doc-scanner');
+    if (btnDocScanner) {
+        btnDocScanner.addEventListener('click', async () => {
+            if (!currentImageFile) return showToast('Please select an image first.', 'warning');
+
+            const mode = document.getElementById('doc-scan-mode')?.value || 'clean_contrast';
+            const outputFormat = document.getElementById('doc-scan-format')?.value || 'pdf';
+
+            showOperationLoader({
+                title: 'Scanning Document Asset',
+                subtitle: 'Enhancing contrast and flattening background...',
+                stages: ['Analyzing document contours...', 'Normalizing illumination & whitening background...', 'Generating archival document file...']
+            });
+
+            try {
+                const res = await window.DocholderAPI.documentScan({
+                    fileId: currentImageFile.id,
+                    mode,
+                    outputFormat
+                });
+                hideOperationLoader();
+                showToast('Document scanned and enhanced successfully!', 'success');
+                displayImageResult(res.result, 'Document Scanned & Enhanced');
+            } catch(err) {
+                hideOperationLoader();
+                showToast(err.message || 'Document scan failed.', 'error');
             }
         });
     }

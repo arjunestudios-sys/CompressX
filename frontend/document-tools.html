@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Docholder —  Document & PDF Studio</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/animations.css">
@@ -16,12 +17,15 @@
             border-color: var(--primary) !important;
         }
         .color-dot-btn {
-            width: 26px;
-            height: 26px;
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            min-height: 36px;
             border-radius: 50%;
             border: 2px solid transparent;
             cursor: pointer;
             transition: transform 0.15s ease;
+            touch-action: manipulation;
         }
         .color-dot-btn.active {
             border-color: #FFFFFF;
@@ -44,50 +48,53 @@
 </head>
 <body>
     <div class="mobile-app-shell">
-        <div class="mobile-status-bar">
-            <span class="status-bar-time">9:41</span>
-            <div class="dynamic-island-notch">
-                <div class="notch-camera-dot"></div>
-            </div>
-            <div class="status-bar-icons">
-                <i class="fa-solid fa-signal"></i>
-                <i class="fa-solid fa-wifi"></i>
-                <i class="fa-solid fa-battery-full"></i>
-            </div>
-        </div>
 
         <header class="mobile-app-header">
             <button class="mobile-header-btn" onclick="handleSmartBack('tools.html?cat=doc')"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="mobile-header-title">
-                <span id="header-operation-title">PDF Studio</span>
+                <span id="header-operation-title">Document & PDF Studio</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
                 <a href="settings.html" class="mobile-header-btn" title="Settings"><i class="fa-solid fa-gear"></i></a>
-                <button class="theme-toggle-btn" onclick="toggleTheme()" style="width: 32px; height: 32px; font-size: 0.85rem;" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
             </div>
         </header>
 
         <span id="nav-user-email" class="hidden"></span>
 
-        <main class="app-body" style="padding-bottom: 90px;">
+        <main class="app-body">
             <div class="page-title-block">
-                <div id="op-breadcrumb" class="op-breadcrumb-badge"><i class="fa-solid fa-file-pdf"></i> PDF â†’ Protect PDF</div>
+                <div id="op-breadcrumb" class="op-breadcrumb-badge"><i class="fa-solid fa-file-pdf"></i> PDF Tools</div>
                 <h1 class="page-title" id="main-op-title"><i class="fa-solid fa-lock" style="color: #EF4444;"></i> Protect PDF</h1>
                 <p class="page-subtitle" id="main-op-subtitle">Secure your document with password encryption and access permissions.</p>
             </div>
 
             <!-- Mode Selector Chips -->
-            <div id="doc-mode-selector" class="action-chips" style="padding: 6px 0; margin-bottom: 12px; overflow-x: auto;">
+            <div id="doc-mode-selector" class="action-chips" style="padding: 4px 4px 10px 4px; margin-bottom: 12px; overflow-x: auto;">
                 <button class="action-chip active" data-mode="convert"><i class="fa-solid fa-rotate" style="color: var(--cyan-neon);"></i> Convert</button>
                 <button class="action-chip" data-mode="compress"><i class="fa-solid fa-compress" style="color: var(--emerald-neon);"></i> Compress</button>
+                <button class="action-chip" data-mode="ai-detector"><i class="fa-solid fa-brain" style="color: #8B5CF6;"></i> AI Rate Tracker</button>
+                <button class="action-chip" data-mode="humanize"><i class="fa-solid fa-user-pen" style="color: #06B6D4;"></i> Humanizer</button>
+                <button class="action-chip" data-mode="understand"><i class="fa-solid fa-file-circle-check" style="color: #EC4899;"></i> Understanding</button>
+                <button class="action-chip" data-mode="chat"><i class="fa-solid fa-comments" style="color: #3B82F6;"></i> Chat With File</button>
+                <button class="action-chip" data-mode="fact-check"><i class="fa-solid fa-check-double" style="color: #10B981;"></i> Fact Checker</button>
+                <button class="action-chip" data-mode="dna"><i class="fa-solid fa-fingerprint" style="color: #F59E0B;"></i> Document DNA</button>
+                <button class="action-chip" data-mode="health"><i class="fa-solid fa-notes-medical" style="color: #EF4444;"></i> Health Score</button>
+                <button class="action-chip" data-mode="fix-everything"><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--cyan-neon);"></i> Fix My File</button>
+                <button class="action-chip" data-mode="goal-optimize"><i class="fa-solid fa-bullseye" style="color: #8B5CF6;"></i> Goal Optimize</button>
+                <button class="action-chip" data-mode="privacy-scan"><i class="fa-solid fa-shield-cat" style="color: #EF4444;"></i> Privacy Scanner</button>
+                <button class="action-chip" data-mode="translate"><i class="fa-solid fa-language" style="color: #3B82F6;"></i> Translate</button>
+                <button class="action-chip" data-mode="spreadsheet-intelligence"><i class="fa-solid fa-table-cells-large" style="color: #10B981;"></i> Spreadsheet Q&A</button>
+                <button class="action-chip" data-mode="generate-charts"><i class="fa-solid fa-chart-pie" style="color: #10B981;"></i> Charts</button>
+                <button class="action-chip" data-mode="diff"><i class="fa-solid fa-code-fork" style="color: #06B6D4;"></i> Version Diff</button>
+                <button class="action-chip" data-mode="cross-intelligence"><i class="fa-solid fa-diagram-project" style="color: #EC4899;"></i> Cross-File</button>
+                <button class="action-chip" data-mode="smart-package"><i class="fa-solid fa-box-archive" style="color: #F59E0B;"></i> Smart Package</button>
+                <button class="action-chip" data-mode="suggest-name"><i class="fa-solid fa-tag" style="color: var(--cyan-neon);"></i> Auto-Name</button>
+                <button class="action-chip" data-mode="classify"><i class="fa-solid fa-layer-group" style="color: #8B5CF6;"></i> Classify & Tags</button>
                 <button class="action-chip" data-mode="merge"><i class="fa-solid fa-object-group"></i> Merge</button>
                 <button class="action-chip" data-mode="protect"><i class="fa-solid fa-lock"></i> Protect</button>
                 <button class="action-chip" data-mode="split"><i class="fa-solid fa-scissors"></i> Split</button>
-                <button class="action-chip" data-mode="extract"><i class="fa-solid fa-file-export"></i> Extract</button>
-                <button class="action-chip" data-mode="remove"><i class="fa-solid fa-trash-can"></i> Remove</button>
-                <button class="action-chip" data-mode="rotate"><i class="fa-solid fa-rotate"></i> Rotate</button>
                 <button class="action-chip" data-mode="watermark"><i class="fa-solid fa-stamp"></i> Watermark</button>
-                <button class="action-chip" data-mode="pagenum"><i class="fa-solid fa-list-ol"></i> Numbers</button>
                 <button class="action-chip" data-mode="pdfa"><i class="fa-solid fa-file-shield"></i> PDF/A</button>
                 <button class="action-chip" data-mode="compare"><i class="fa-solid fa-code-compare"></i> Compare</button>
             </div>
@@ -498,9 +505,9 @@
                 <div class="form-group">
                     <label class="form-label">Rotation Angle</label>
                     <select id="rotate-degrees" class="form-select">
-                        <option value="90" selected>90Â° Clockwise</option>
-                        <option value="180">180Â° Half Turn</option>
-                        <option value="270">270Â° Counter-Clockwise</option>
+                        <option value="90" selected>90° Clockwise</option>
+                        <option value="180">180° Half Turn</option>
+                        <option value="270">270° Counter-Clockwise</option>
                     </select>
                 </div>
                 <button id="btn-rotate-doc" class="btn btn-primary btn-block" style="margin-top: 8px;"><i class="fa-solid fa-rotate"></i> Rotate PDF</button>
@@ -553,6 +560,94 @@
                 <button id="btn-pdfa-doc" class="btn btn-primary btn-block"><i class="fa-solid fa-file-shield"></i> Convert to PDF/A</button>
             </div>
 
+            <!-- AI Content Rate Tracker Panel (Feature 1) -->
+            <div id="panel-ai-detector" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-brain" style="color: #8B5CF6;"></i> 2. AI Content Analysis</h4>
+                <div class="form-group">
+                    <label class="form-label">Input Text to Analyze</label>
+                    <textarea id="ai-text-input" class="form-input" rows="4" placeholder="Paste or upload text to analyze for AI-like signals..."></textarea>
+                </div>
+                <button id="btn-run-ai-detector" class="btn btn-primary btn-block"><i class="fa-solid fa-magnifying-glass"></i> Analyze AI Likeness</button>
+                <div id="ai-detector-results" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--surface-border);"></div>
+            </div>
+
+            <!-- Smart Humanizer Panel (Feature 2) -->
+            <div id="panel-humanize" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-user-pen" style="color: #06B6D4;"></i> 2. Smart Humanizer</h4>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.76rem;">
+                    <span style="color: var(--text-secondary);">Characters used: <strong id="humanize-used-count">0</strong> / 2,000</span>
+                    <span style="color: var(--cyan-neon);">Remaining: <strong id="humanize-remaining-count">2,000</strong></span>
+                </div>
+                <div class="form-group">
+                    <textarea id="humanize-text-input" class="form-input" rows="4" placeholder="Enter text to humanize..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Humanization Intensity</label>
+                    <select id="humanize-mode-select" class="form-select">
+                        <option value="Light">Light Touch</option>
+                        <option value="Natural" selected>Natural Phrasing (Recommended)</option>
+                        <option value="Strong">Strong Rewriting</option>
+                    </select>
+                </div>
+                <button id="btn-run-humanizer" class="btn btn-primary btn-block"><i class="fa-solid fa-user-pen"></i> Humanize Content</button>
+                <div id="humanizer-results" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--surface-border);"></div>
+            </div>
+
+            <!-- Fix My File Panel (Feature 10) -->
+            <div id="panel-fix-everything" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--cyan-neon);"></i> 2. One-Click Fix My File</h4>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px;">Automated pipeline: Repair â†’ Optimize â†’ OCR â†’ Clean Metadata â†’ Standardize Structure.</p>
+                <button id="btn-run-fix-everything" class="btn btn-primary btn-block"><i class="fa-solid fa-wand-magic-sparkles"></i> Fix Everything Now</button>
+                <div id="fix-everything-results" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--surface-border);"></div>
+            </div>
+
+            <!-- Goal-Based Optimization Panel (Feature 11) -->
+            <div id="panel-goal-optimize" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-bullseye" style="color: #8B5CF6;"></i> 2. Goal-Based File Optimization</h4>
+                <div class="form-group">
+                    <label class="form-label">What are you preparing this file for?</label>
+                    <select id="goal-preset-select" class="form-select">
+                        <option value="email" selected>ðŸ“§ Email Attachment (Under 10MB)</option>
+                        <option value="website">ðŸŒ Website Display (WebP / Web Ready)</option>
+                        <option value="mobile">ðŸ“± Mobile App / Messaging</option>
+                        <option value="printing">ðŸ–¨ High-Res Printing</option>
+                        <option value="archive">ðŸ“¦ Archival Storage (PDF/A)</option>
+                        <option value="cloud">â˜ Cloud Storage Backup</option>
+                        <option value="submission">ðŸ“‘ Official Document Submission</option>
+                    </select>
+                </div>
+                <button id="btn-run-goal-optimize" class="btn btn-primary btn-block"><i class="fa-solid fa-bullseye"></i> Optimize For Goal</button>
+                <div id="goal-optimize-results" class="hidden" style="margin-top: 12px;"></div>
+            </div>
+
+            <!-- Privacy Scanner & PII Redaction Panel (Features 16 & 17) -->
+            <div id="panel-privacy-scan" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-shield-cat" style="color: #EF4444;"></i> 2. Privacy Risk Scanner & PII Redactor</h4>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px;">Scans for sensitive PII (Names, Emails, Phones, Account Numbers, Addresses) and wipes underlying content.</p>
+                <button id="btn-run-privacy-scan" class="btn btn-primary btn-block"><i class="fa-solid fa-shield-cat"></i> Scan Privacy Risk</button>
+                <div id="privacy-scan-results" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--surface-border);"></div>
+            </div>
+
+            <!-- Translation Panel (Feature 18) -->
+            <div id="panel-translate" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-language" style="color: #3B82F6;"></i> 2. Universal Translation</h4>
+                <div class="form-group">
+                    <label class="form-label">Target Language</label>
+                    <select id="translate-target-lang" class="form-select">
+                        <option value="Tamil" selected>Tamil (à®¤à®®à®¿à®´à¯)</option>
+                        <option value="Hindi">Hindi (à¤¹à¤¿à¤‚à¤¦à¥€)</option>
+                        <option value="English">English</option>
+                        <option value="French">French (Français)</option>
+                        <option value="Spanish">Spanish (Español)</option>
+                        <option value="German">German (Deutsch)</option>
+                        <option value="Japanese">Japanese (æ—¥æœ¬èªž)</option>
+                        <option value="Chinese">Chinese (ä¸­æ–‡)</option>
+                    </select>
+                </div>
+                <button id="btn-run-translate" class="btn btn-primary btn-block"><i class="fa-solid fa-language"></i> Translate Document</button>
+                <div id="translate-results" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--surface-border);"></div>
+            </div>
+
             <!-- PDF Compare Panel -->
             <div id="panel-compare" class="glass-card hidden">
                 <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-code-compare" style="color: var(--accent);"></i> 2. Compare 2 PDF Documents</h4>
@@ -562,6 +657,125 @@
                 </div>
                 <button id="btn-compare-docs" class="btn btn-primary btn-block" style="margin-top: 8px;"><i class="fa-solid fa-code-compare"></i> Compare Text</button>
                 <div id="doc-compare-results" class="hidden" style="margin-top: 12px; font-size: 0.8rem;"></div>
+            </div>
+
+            <!-- Document Understanding Panel -->
+            <div id="panel-understand" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-file-circle-check" style="color: #EC4899;"></i> 2. Deep Document Understanding</h4>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px;">Extract comprehensive structural summary, key findings, critical dates, recognized entities, and action items.</p>
+                <button id="btn-run-understand" class="btn btn-primary btn-block"><i class="fa-solid fa-wand-magic-sparkles"></i> Analyze Document Structure</button>
+                <div id="understand-results" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--surface-border);"></div>
+            </div>
+
+            <!-- Chat With File Panel -->
+            <div id="panel-chat" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-comments" style="color: #3B82F6;"></i> 2. Conversational Document Q&A</h4>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px;">Ask any question about your document and get verified answers with page citations.</p>
+                <div id="doc-chat-history" style="max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid var(--surface-border); font-size: 0.8rem;">
+                    <div style="color: var(--text-secondary); text-align: center; font-size: 0.75rem; padding: 10px;">Ask anything about your selected document...</div>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                    <input type="text" id="doc-chat-input" class="form-input" placeholder="e.g. What is the total budget for 2026?">
+                    <button id="btn-send-doc-chat" class="btn btn-primary btn-sm"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+
+            <!-- Fact Checker Panel -->
+            <div id="panel-fact-check" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-check-double" style="color: #10B981;"></i> 2. Autonomous Document Fact Checker</h4>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px;">Verify claims, statistical assertions, and external statements against factual knowledge.</p>
+                <button id="btn-run-fact-check" class="btn btn-primary btn-block"><i class="fa-solid fa-shield-check"></i> Run Fact Check Verification</button>
+                <div id="fact-check-results" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--surface-border);"></div>
+            </div>
+
+            <!-- Document DNA Panel -->
+            <div id="panel-dna" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-fingerprint" style="color: #F59E0B;"></i> 2. Document DNA Fingerprint</h4>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px;">Generate structural fingerprint, entropy rating, reading level grade, and typographic metrics.</p>
+                <button id="btn-run-dna" class="btn btn-primary btn-block"><i class="fa-solid fa-fingerprint"></i> Scan Document DNA</button>
+                <div id="dna-results" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--surface-border);"></div>
+            </div>
+
+            <!-- Health Score Panel -->
+            <div id="panel-health" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-notes-medical" style="color: #EF4444;"></i> 2. Document Health Diagnostic</h4>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px;">Evaluate structure, fonts, PDF/A compliance, accessibility tags, and security risks.</p>
+                <button id="btn-run-health" class="btn btn-primary btn-block"><i class="fa-solid fa-notes-medical"></i> Calculate Health Score</button>
+                <div id="health-results" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--surface-border);"></div>
+            </div>
+
+            <!-- Spreadsheet Intelligence Panel -->
+            <div id="panel-spreadsheet-intelligence" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-table-cells-large" style="color: #10B981;"></i> 2. Spreadsheet Q&A & Analytics</h4>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px;">Natural language querying, revenue anomaly detection, and statistical synthesis on tabular data.</p>
+                <div class="form-group">
+                    <label class="form-label">Tabular Query</label>
+                    <input type="text" id="sheet-query-input" class="form-input" placeholder="e.g. Which product had the highest profit margin?">
+                </div>
+                <button id="btn-run-sheet-intel" class="btn btn-primary btn-block"><i class="fa-solid fa-magnifying-glass-chart"></i> Analyze Tabular Data</button>
+                <div id="sheet-intel-results" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--surface-border);"></div>
+            </div>
+
+            <!-- Automatic Chart Generator Panel -->
+            <div id="panel-generate-charts" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-chart-pie" style="color: #10B981;"></i> 2. Automatic Chart Generator</h4>
+                <div class="form-group">
+                    <label class="form-label">Chart Type</label>
+                    <select id="chart-type-select" class="form-select">
+                        <option value="bar" selected>Bar Chart (Categorical Comparisons)</option>
+                        <option value="line">Line Chart (Trends & Time-Series)</option>
+                        <option value="pie">Pie Chart (Proportions & Shares)</option>
+                        <option value="radar">Radar Chart (Multi-Variable Performance)</option>
+                    </select>
+                </div>
+                <button id="btn-run-generate-charts" class="btn btn-primary btn-block"><i class="fa-solid fa-chart-line"></i> Generate Visual Chart</button>
+                <div id="charts-results" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--surface-border);"></div>
+            </div>
+
+            <!-- Version Diff Panel -->
+            <div id="panel-diff" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-code-fork" style="color: #06B6D4;"></i> 2. Document Version Comparison (Diff)</h4>
+                <div class="form-group">
+                    <label class="form-label">Compare Against File</label>
+                    <select id="diff-second-file-select" class="form-select"></select>
+                </div>
+                <button id="btn-run-diff" class="btn btn-primary btn-block"><i class="fa-solid fa-code-compare"></i> Compare Document Versions</button>
+                <div id="diff-results" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--surface-border);"></div>
+            </div>
+
+            <!-- Cross-File Intelligence Panel -->
+            <div id="panel-cross-intelligence" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-diagram-project" style="color: #EC4899;"></i> 2. Cross-Document Synthesis</h4>
+                <div class="form-group">
+                    <label class="form-label">Synthesis Query</label>
+                    <input type="text" id="cross-intel-query" class="form-input" placeholder="e.g. Compare revenue metrics and find discrepancies">
+                </div>
+                <button id="btn-run-cross-intel" class="btn btn-primary btn-block"><i class="fa-solid fa-diagram-project"></i> Run Cross-File Synthesis</button>
+                <div id="cross-intel-results" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--surface-border);"></div>
+            </div>
+
+            <!-- Smart Packaging Panel -->
+            <div id="panel-smart-package" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-box-archive" style="color: #F59E0B;"></i> 2. Smart Submission Packaging</h4>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px;">Package workspace documents into a standardized submission zip bundle with an auto-generated manifest index.</p>
+                <button id="btn-run-smart-package" class="btn btn-primary btn-block"><i class="fa-solid fa-box-archive"></i> Generate Submission Package</button>
+                <div id="smart-package-results" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--surface-border);"></div>
+            </div>
+
+            <!-- Auto-Naming Panel -->
+            <div id="panel-suggest-name" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-tag" style="color: var(--cyan-neon);"></i> 2. AI Smart File Naming</h4>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px;">Analyze document contents to propose standardized, professional file names.</p>
+                <button id="btn-run-suggest-name" class="btn btn-primary btn-block"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate Smart Names</button>
+                <div id="suggest-name-results" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--surface-border);"></div>
+            </div>
+
+            <!-- Auto-Classification & Tags Panel -->
+            <div id="panel-classify" class="glass-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-layer-group" style="color: #8B5CF6;"></i> 2. Document Classification & Semantic Tags</h4>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px;">Automatically categorize documents into domains and tag with discoverable semantic labels.</p>
+                <button id="btn-run-classify" class="btn btn-primary btn-block"><i class="fa-solid fa-layer-group"></i> Classify Document</button>
+                <div id="classify-results" class="hidden" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--surface-border);"></div>
             </div>
 
             <!-- Result Card -->
@@ -587,32 +801,35 @@
                     <a id="doc-download-link" href="#" class="btn btn-primary btn-block"><i class="fa-solid fa-download"></i> Download</a>
                 </div>
                 <div style="display: flex; gap: 8px; margin-top: 8px;">
-                    <button id="doc-share-btn" class="btn btn-secondary btn-block" style="flex: 1;"><i class="fa-solid fa-share-nodes"></i> Share</button>
-                    <button id="doc-another-btn" class="btn btn-secondary btn-block" style="flex: 1;"><i class="fa-solid fa-rotate-left"></i> Process Another</button>
+                    <button id="doc-share-btn" class="btn btn-secondary btn-block" style="flex: 1; min-height: 44px;"><i class="fa-solid fa-share-nodes"></i> Share</button>
+                    <button id="doc-another-btn" class="btn btn-secondary btn-block" style="flex: 1; min-height: 44px;"><i class="fa-solid fa-rotate-left"></i> Process Another</button>
                 </div>
             </div>
+
+            <!-- Bottom Spacer for Navigation Clearance -->
+            <div class="bottom-nav-spacer"></div>
         </main>
 
         <nav class="bottom-nav-bar">
             <a href="dashboard.html" class="bottom-nav-item">
-                <i class="fa-solid fa-gauge"></i>
+                <i class="fa-solid fa-house"></i>
                 <span>Home</span>
             </a>
             <a href="tools.html" class="bottom-nav-item active">
-                <i class="fa-solid fa-layer-group"></i>
+                <i class="fa-solid fa-grip"></i>
                 <span>Tools</span>
             </a>
             <a href="convert.html" class="bottom-nav-item">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <i class="fa-solid fa-rotate"></i>
                 <span>Convert</span>
             </a>
             <a href="files.html" class="bottom-nav-item">
                 <i class="fa-solid fa-folder-open"></i>
                 <span>Files</span>
             </a>
-            <a href="settings.html" class="bottom-nav-item">
-                <i class="fa-solid fa-gear"></i>
-                <span>Settings</span>
+            <a href="history.html" class="bottom-nav-item">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>History</span>
             </a>
         </nav>
     </div>
@@ -626,3 +843,4 @@
     <script src="js/documentStudio.js"></script>
 </body>
 </html>
+

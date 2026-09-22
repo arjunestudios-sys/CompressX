@@ -12,7 +12,11 @@ let store = {
     users: [],
     files: [],
     compression_history: [],
-    transformations: []
+    transformations: [],
+    share_links: [],
+    vault_files: [],
+    automation_recipes: [],
+    push_notifications: []
 };
 
 if (fs.existsSync(dbPath)) {
@@ -22,7 +26,11 @@ if (fs.existsSync(dbPath)) {
             users: loaded.users || [],
             files: loaded.files || [],
             compression_history: loaded.compression_history || [],
-            transformations: loaded.transformations || []
+            transformations: loaded.transformations || [],
+            share_links: loaded.share_links || [],
+            vault_files: loaded.vault_files || [],
+            automation_recipes: loaded.automation_recipes || [],
+            push_notifications: loaded.push_notifications || []
         };
     } catch(e) {}
 }
@@ -128,6 +136,16 @@ class PreparedStmt {
             const user = store.users.find(u => String(u.id) === String(userId));
             if (user) { user.username = username; saveStore(); }
             return { changes: 1 };
+        } else if (this.sql.includes('UPDATE users SET usage_stats =')) {
+            const [stats, userId] = args;
+            const user = store.users.find(u => String(u.id) === String(userId));
+            if (user) { user.usage_stats = typeof stats === 'string' ? stats : JSON.stringify(stats); saveStore(); }
+            return { changes: 1 };
+        } else if (this.sql.includes('UPDATE users SET push_token =')) {
+            const [token, userId] = args;
+            const user = store.users.find(u => String(u.id) === String(userId));
+            if (user) { user.push_token = token; saveStore(); }
+            return { changes: 1 };
         } else if (this.sql.includes('UPDATE users SET notification_prefs =')) {
             const [prefs, userId] = args;
             const user = store.users.find(u => String(u.id) === String(userId));
@@ -187,6 +205,12 @@ class PreparedStmt {
             const targetEmail = (email || '').toLowerCase().trim();
             result = store.users.find(u => u.email && u.email.toLowerCase().trim() === targetEmail) || null;
         } else if (this.sql.includes('SELECT * FROM users WHERE id = ?')) {
+            const [id] = args;
+            result = store.users.find(u => String(u.id) === String(id)) || null;
+        } else if (this.sql.includes('SELECT usage_stats FROM users WHERE id = ?')) {
+            const [id] = args;
+            result = store.users.find(u => String(u.id) === String(id)) || null;
+        } else if (this.sql.includes('SELECT push_token, notification_prefs FROM users WHERE id = ?')) {
             const [id] = args;
             result = store.users.find(u => String(u.id) === String(id)) || null;
         } else if (this.sql.includes('SELECT id, username, email, date_of_birth, storage_used, notification_prefs, last_login, created_at FROM users WHERE id = ?')) {

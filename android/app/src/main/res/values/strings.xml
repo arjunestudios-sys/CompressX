@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Docholder</string>
+    <string name="title_activity_main">Docholder</string>
+    <string name="package_name">com.docholder.app</string>
+    <string name="custom_url_scheme">com.docholder.app</string>
+</resources>

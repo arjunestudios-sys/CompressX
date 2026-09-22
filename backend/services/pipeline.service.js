@@ -209,6 +209,37 @@ async function executePipeline(userIdOrPath, initialFileOrSteps, stepsArray = []
     };
 }
 
+/**
+ * 29. Reusable Automation Recipes
+ */
+const DEFAULT_RECIPES = [
+    {
+        id: 'recipe_web_img',
+        name: 'Website Image Optimization',
+        description: 'Convert to WebP, resize to 1600px, compress 80%, remove metadata',
+        steps: [
+            { operation: 'convert', options: { targetFormat: 'webp' } },
+            { operation: 'resize', options: { preset: '1600px' } },
+            { operation: 'compress', options: { quality: 80 } },
+            { operation: 'strip_exif', options: {} }
+        ]
+    },
+    {
+        id: 'recipe_video_audio',
+        name: 'Video Compression & MP3 Extraction',
+        description: 'Compress video to 720p and extract soundtrack as MP3',
+        steps: [
+            { operation: 'compress', options: { resolution: '720p' } },
+            { operation: 'extract_audio', options: { targetFormat: 'mp3' } }
+        ]
+    }
+];
+
+function getRecipes(userId) {
+    return DEFAULT_RECIPES;
+}
+
 module.exports = {
-    executePipeline
+    executePipeline,
+    getRecipes
 };

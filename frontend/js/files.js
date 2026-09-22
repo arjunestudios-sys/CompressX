@@ -125,6 +125,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const recentList = DocholderStorage.getRecentFiles();
                 const recentIds = recentList.map(r => Number(r.id));
                 files = files.filter(f => recentIds.includes(Number(f.id)));
+            } else if (currentCategory === 'vault') {
+                const vaultData = JSON.parse(localStorage.getItem('docholder_vault_files') || '[]');
+                const vaultIds = vaultData.map(v => Number(v.fileId));
+                files = files.filter(f => vaultIds.includes(Number(f.id)));
+            }
+
+            const vaultBanner = document.getElementById('vault-banner');
+            if (vaultBanner) {
+                vaultBanner.classList.toggle('hidden', currentCategory !== 'vault');
             }
 
             currentFilesList = files;
@@ -171,27 +180,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const isFav = DocholderStorage.getFavorites().includes(Number(f.id));
 
                 tr.innerHTML = `
-                    <td style="width: 24px; vertical-align: middle;">
-                        <input type="checkbox" class="file-row-checkbox" value="${f.id}" ${isSelected ? 'checked' : ''} style="cursor: pointer; accent-color: var(--primary);">
+                    <td style="width: 32px; vertical-align: middle; padding: 12px 6px;">
+                        <input type="checkbox" class="file-row-checkbox" value="${f.id}" ${isSelected ? 'checked' : ''} style="cursor: pointer; width: 22px; height: 22px; accent-color: var(--primary); touch-action: manipulation;">
                     </td>
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="openPreviewModalFromId(${f.id})">
-                            <i class="${iconClass}" style="color: ${color}; font-size: 1.1rem;"></i>
-                            <div>
-                                <strong style="font-size: 0.84rem; color: var(--text); display: block; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${f.original_name}</strong>
-                                <span style="font-size: 0.7rem; color: var(--text-secondary);">${new Date(f.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+                    <td style="padding: 10px 8px;">
+                        <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="openPreviewModalFromId(${f.id})">
+                            <i class="${iconClass}" style="color: ${color}; font-size: 1.25rem; min-width: 22px; text-align: center;"></i>
+                            <div style="min-width: 0;">
+                                <strong style="font-size: 0.88rem; color: var(--text); display: block; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${f.original_name}</strong>
+                                <span style="font-size: 0.72rem; color: var(--text-secondary);">${new Date(f.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
                             </div>
                         </div>
                     </td>
-                    <td style="font-size: 0.76rem; color: var(--text-secondary); white-space: nowrap;">${formatBytes(f.file_size)}</td>
-                    <td style="text-align: right; white-space: nowrap;">
-                        <div style="display: inline-flex; gap: 4px; flex-wrap: nowrap; justify-content: flex-end;">
-                            <button class="icon-btn fav-btn" data-id="${f.id}" title="Toggle Star" style="width:26px; height:26px; font-size:0.75rem; color: ${isFav ? '#F59E0B' : 'var(--text-muted)'};"><i class="fa-${isFav ? 'solid' : 'regular'} fa-star"></i></button>
-                            <button class="icon-btn prop-btn" data-id="${f.id}" title="Properties" style="width:26px; height:26px; font-size:0.75rem;"><i class="fa-solid fa-circle-info"></i></button>
-                            <button class="icon-btn preview-btn" data-id="${f.id}" title="Preview" style="width:26px; height:26px; font-size:0.75rem;"><i class="fa-solid fa-eye"></i></button>
-                            <a href="${studioUrl}" class="icon-btn" title="Open in Studio" style="width:26px; height:26px; font-size:0.75rem; color: var(--primary); text-decoration:none; display:inline-flex; align-items:center; justify-content:center;"><i class="fa-solid fa-wand-magic-sparkles"></i></a>
-                            <button class="icon-btn local-dl-btn" data-url="/api/files/${f.id}/download" data-name="${f.original_name}" data-id="${f.id}" title="Save Locally" style="width:26px; height:26px; font-size:0.75rem;"><i class="fa-solid fa-download"></i></button>
-                            <button class="icon-btn delete-btn" data-id="${f.id}" data-name="${f.original_name}" data-size="${f.file_size}" title="Delete" style="width:26px; height:26px; font-size:0.75rem; color: var(--danger);"><i class="fa-solid fa-trash-can"></i></button>
+                    <td style="font-size: 0.78rem; color: var(--text-secondary); white-space: nowrap; padding: 10px 8px;">${formatBytes(f.file_size)}</td>
+                    <td style="text-align: right; white-space: nowrap; padding: 10px 6px;">
+                        <div class="file-row-actions" style="display: inline-flex; gap: 5px; flex-wrap: nowrap; justify-content: flex-end; align-items: center;">
+                            <button class="icon-btn row-action-btn fav-btn" data-id="${f.id}" title="Toggle Star" style="color: ${isFav ? '#F59E0B' : 'var(--text-muted)'};"><i class="fa-${isFav ? 'solid' : 'regular'} fa-star"></i></button>
+                            <button class="icon-btn row-action-btn prop-btn" data-id="${f.id}" title="Properties"><i class="fa-solid fa-circle-info"></i></button>
+                            <button class="icon-btn row-action-btn preview-btn" data-id="${f.id}" title="Preview"><i class="fa-solid fa-eye"></i></button>
+                            <a href="${studioUrl}" class="icon-btn row-action-btn" title="Open in Studio" style="color: var(--primary); text-decoration:none;"><i class="fa-solid fa-wand-magic-sparkles"></i></a>
+                            <button class="icon-btn row-action-btn local-dl-btn" data-url="/api/files/${f.id}/download" data-name="${f.original_name}" data-id="${f.id}" title="Save Locally"><i class="fa-solid fa-download"></i></button>
+                            <button class="icon-btn row-action-btn delete-btn" data-id="${f.id}" data-name="${f.original_name}" data-size="${f.file_size}" title="Delete" style="color: var(--danger);"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                     </td>
                 `;
@@ -285,10 +294,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Modal Close Buttons
-    document.getElementById('close-preview-btn')?.addEventListener('click', () => document.getElementById('preview-modal').classList.add('hidden'));
-    document.getElementById('close-rename-btn')?.addEventListener('click', () => document.getElementById('rename-modal').classList.add('hidden'));
-    document.getElementById('cancel-rename-btn')?.addEventListener('click', () => document.getElementById('rename-modal').classList.add('hidden'));
-    document.getElementById('close-edit-btn')?.addEventListener('click', () => document.getElementById('edit-modal').classList.add('hidden'));
+    document.getElementById('close-preview-btn')?.addEventListener('click', () => document.getElementById('preview-modal')?.classList.add('hidden'));
+    document.getElementById('close-rename-btn')?.addEventListener('click', () => document.getElementById('rename-modal')?.classList.add('hidden'));
+    document.getElementById('cancel-rename-btn')?.addEventListener('click', () => document.getElementById('rename-modal')?.classList.add('hidden'));
+    document.getElementById('close-edit-btn')?.addEventListener('click', () => document.getElementById('edit-modal')?.classList.add('hidden'));
 });
 
 function openPreviewModalFromId(fileId) {
@@ -511,4 +520,112 @@ document.getElementById('btn-prop-local-save')?.addEventListener('click', async 
     DocholderStorage.addRecentFile(currentPropertyFile);
     showToast(`Saved "${currentPropertyFile.original_name}" to local storage`, 'success');
 });
+
+// ── Smart Share Link Logic ──────────────────────────────────────────
+function openShareModal(fileId = null) {
+    const modal = document.getElementById('share-link-modal');
+    const select = document.getElementById('share-file-select');
+    const resultBox = document.getElementById('share-result-box');
+    if (!modal) return;
+
+    if (select) {
+        select.innerHTML = currentFilesList.map(f => `
+            <option value="${f.id}" ${String(f.id) === String(fileId) ? 'selected' : ''}>${f.original_name} (${formatBytes(f.file_size)})</option>
+        `).join('');
+    }
+    if (resultBox) resultBox.classList.add('hidden');
+    modal.classList.remove('hidden');
+}
+
+document.getElementById('close-share-modal-btn')?.addEventListener('click', () => {
+    document.getElementById('share-link-modal')?.classList.add('hidden');
+});
+
+document.getElementById('btn-generate-share-link')?.addEventListener('click', async () => {
+    const fileId = document.getElementById('share-file-select')?.value;
+    const hours = parseInt(document.getElementById('share-expiration-select')?.value || '24', 10);
+    const password = document.getElementById('share-password-input')?.value || null;
+
+    if (!fileId) return showToast('Please select a file to share.', 'warning');
+
+    try {
+        const res = await window.DocholderAPI.shareLink({ fileId, expirationHours: hours, password });
+        const resultBox = document.getElementById('share-result-box');
+        const urlInput = document.getElementById('share-generated-url');
+        if (resultBox && urlInput) {
+            resultBox.classList.remove('hidden');
+            const shareUrl = res.shareUrl || `${window.location.origin}/share/${res.shareId || 'temp'}`;
+            urlInput.value = shareUrl;
+            showToast('Secure share link generated!', 'success');
+        }
+    } catch(err) {
+        showToast(err.message || 'Failed to create share link.', 'error');
+    }
+});
+
+document.getElementById('btn-copy-share-url')?.addEventListener('click', () => {
+    const input = document.getElementById('share-generated-url');
+    if (input && input.value) {
+        navigator.clipboard.writeText(input.value);
+        showToast('Share link copied to clipboard! ✓', 'success');
+    }
+});
+
+// ── Temporary File Vault Logic ───────────────────────────────────────
+function openVaultModal(fileId = null) {
+    const modal = document.getElementById('vault-modal');
+    const select = document.getElementById('vault-file-select');
+    if (!modal) return;
+
+    if (select) {
+        select.innerHTML = currentFilesList.map(f => `
+            <option value="${f.id}" ${String(f.id) === String(fileId) ? 'selected' : ''}>${f.original_name} (${formatBytes(f.file_size)})</option>
+        `).join('');
+    }
+    modal.classList.remove('hidden');
+}
+
+document.getElementById('btn-add-to-vault')?.addEventListener('click', () => {
+    openVaultModal();
+});
+
+document.getElementById('close-vault-modal-btn')?.addEventListener('click', () => {
+    document.getElementById('vault-modal')?.classList.add('hidden');
+});
+
+document.getElementById('btn-save-to-vault')?.addEventListener('click', async () => {
+    const fileId = document.getElementById('vault-file-select')?.value;
+    const retentionHours = parseInt(document.getElementById('vault-retention-select')?.value || '24', 10);
+
+    if (!fileId) return showToast('Please select a file to vault.', 'warning');
+
+    try {
+        await window.DocholderAPI.vault({ fileId, retentionHours });
+        const existing = JSON.parse(localStorage.getItem('docholder_vault_files') || '[]');
+        if (!existing.some(v => String(v.fileId) === String(fileId))) {
+            existing.push({ fileId: Number(fileId), addedAt: Date.now(), retentionHours });
+            localStorage.setItem('docholder_vault_files', JSON.stringify(existing));
+        }
+        document.getElementById('vault-modal')?.classList.add('hidden');
+        showToast(`Stored in self-destruct vault (${retentionHours}h retention)`, 'success');
+        // Activate vault category chip if not already
+        const vaultChip = document.getElementById('chip-vault');
+        if (vaultChip) vaultChip.click();
+    } catch(err) {
+        showToast(err.message || 'Failed to store in vault.', 'error');
+    }
+});
+
+// Check URL Params for deep actions
+(function handleUrlActions() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('action') === 'share') {
+        setTimeout(() => openShareModal(params.get('fileId')), 400);
+    } else if (params.get('vault') === 'true') {
+        setTimeout(() => {
+            const vaultChip = document.getElementById('chip-vault');
+            if (vaultChip) vaultChip.click();
+        }, 300);
+    }
+})();
 

@@ -1,46 +1,45 @@
-﻿<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Docholder —  Annotate PDF</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Docholder — Annotate & Edit PDF</title>
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/animations.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        (function() {
+            const t = localStorage.getItem('docholder_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
     <style>
-        #pdf-container {
-            position: relative;
-            margin: 0 auto;
+        .brand-doc-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: var(--surface-hover);
             border: 1px solid var(--surface-border);
-            background: white;
-            box-shadow: var(--glass-shadow);
-            border-radius: 8px;
+            border-radius: var(--radius-full);
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text);
+            max-width: 420px;
+            box-shadow: var(--card-shadow);
         }
-        #pdf-canvas {
-            display: block;
-            border-radius: 8px;
+        .brand-doc-pill span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
-        #overlay-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-        .annotation-box {
-            position: absolute;
-            pointer-events: auto;
-            border: 1px dashed #6366f1;
-            padding: 4px;
-            background: rgba(255, 255, 255, 0.85);
-            font-family: Arial, sans-serif;
-            outline: none;
-            white-space: pre-wrap;
-            min-width: 60px;
-            min-height: 24px;
-            border-radius: 4px;
+        .editor-tool-btn {
+            padding: 5px 12px;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
     </style>
 </head>
@@ -52,36 +51,61 @@
                     <img src="assets/logo.svg" alt="Docholder" class="brand-logo">
                     <span class="brand-title">Docholder</span>
                 </a>
-                <div style="font-size: 0.95rem; font-weight: 700; color: var(--text);" id="pdf-filename">Loading PDF...</div>
-                <div class="nav-actions">
+                <div class="brand-doc-pill">
+                    <i class="fa-solid fa-file-pdf" style="color: #EF4444; font-size: 1rem;"></i>
+                    <span id="pdf-filename">Loading PDF...</span>
+                </div>
+                <div class="nav-actions" style="display: flex; gap: 8px; align-items: center;">
+                    <button class="theme-toggle-btn" onclick="toggleTheme()" style="width: 34px; height: 34px; font-size: 0.85rem;" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
                     <a href="files.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Files</a>
                     <button class="btn btn-primary btn-sm" id="save-pdf-btn"><i class="fa-solid fa-floppy-disk"></i> Save Annotations</button>
                 </div>
             </div>
         </header>
 
-        <main class="main-container" style="max-width: 960px;">
-            <div class="glass-card" style="padding: 14px 20px; display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <button class="btn btn-secondary btn-sm" id="prev-page"><i class="fa-solid fa-chevron-left"></i></button>
-                    <span style="font-size: 0.88rem; font-weight: 600;">Page <span id="page-num">1</span> of <span id="page-count">1</span></span>
-                    <button class="btn btn-secondary btn-sm" id="next-page"><i class="fa-solid fa-chevron-right"></i></button>
+        <main class="main-container">
+            <!-- PDF Studio Toolbar Card -->
+            <div class="editor-toolbar-card cyber-card">
+                <!-- Page Navigator Controls -->
+                <div class="editor-page-control">
+                    <button class="btn btn-secondary btn-sm" id="prev-page" style="width: 38px; height: 38px; min-width: 38px; min-height: 38px; padding: 0; border-radius: 50%; font-size: 0.9rem;" title="Previous Page"><i class="fa-solid fa-chevron-left"></i></button>
+                    <span class="page-badge">PAGE <span id="page-num" style="color: var(--cyan-neon);">1</span> / <span id="page-count">1</span></span>
+                    <button class="btn btn-secondary btn-sm" id="next-page" style="width: 38px; height: 38px; min-width: 38px; min-height: 38px; padding: 0; border-radius: 50%; font-size: 0.9rem;" title="Next Page"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <label style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);">Color:</label>
-                    <input type="color" id="text-color" value="#000000" style="width: 32px; height: 32px; padding: 0; border: none; border-radius: 4px; cursor: pointer;">
-                    <select id="font-size" class="form-select" style="width: 85px; padding: 6px; font-size: 0.85rem;">
-                        <option value="12">12px</option>
-                        <option value="16">16px</option>
-                        <option value="20" selected>20px</option>
-                        <option value="24">24px</option>
-                        <option value="32">32px</option>
-                    </select>
-                    <button class="btn btn-secondary btn-sm" id="add-text-btn"><i class="fa-solid fa-i-cursor"></i> Add Text Box</button>
+
+                <!-- Zoom Controls -->
+                <div class="editor-tool-group">
+                    <button class="btn btn-secondary btn-sm" id="zoom-out-btn" style="width: 38px; height: 38px; min-width: 38px; min-height: 38px; padding: 0; font-size: 0.9rem;" title="Zoom Out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                    <span id="zoom-level-badge" style="font-size: 0.8rem; font-family: var(--font-mono); font-weight: 700; padding: 0 6px; color: var(--text-secondary);">150%</span>
+                    <button class="btn btn-secondary btn-sm" id="zoom-in-btn" style="width: 38px; height: 38px; min-width: 38px; min-height: 38px; padding: 0; font-size: 0.9rem;" title="Zoom In"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                </div>
+
+                <!-- Annotation Tools -->
+                <div class="editor-tool-group">
+                    <button class="btn btn-secondary btn-sm editor-tool-btn" id="add-text-btn" style="min-height: 38px; font-size: 0.84rem;"><i class="fa-solid fa-i-cursor"></i> Add Text Box</button>
+                    <div style="display: flex; align-items: center; gap: 6px; padding: 0 4px;">
+                        <input type="color" id="text-color" value="#2563EB" style="width: 38px; height: 38px; min-width: 38px; min-height: 38px; padding: 0; border: 1px solid var(--surface-border); border-radius: 6px; cursor: pointer; background: transparent; touch-action: manipulation;" title="Pick Text Color">
+                        <select id="font-size" class="form-select" style="width: 86px; min-height: 38px; padding: 4px 8px; font-size: 0.85rem;" title="Font Size">
+                            <option value="12">12px</option>
+                            <option value="16" selected>16px</option>
+                            <option value="20">20px</option>
+                            <option value="24">24px</option>
+                            <option value="32">32px</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="clear-annotations-btn" style="width: 38px; height: 38px; min-width: 38px; min-height: 38px; padding: 0; font-size: 0.9rem;" title="Clear Current Page Annotations"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+
+                <!-- Annotations Counter HUD Badge -->
+                <div>
+                    <span class="hud-badge hud-badge-pink" id="pdf-anno-badge" style="font-size: 0.74rem;">
+                        <i class="fa-solid fa-pen-nib"></i> <span id="anno-count-text">0 annotations</span>
+                    </span>
                 </div>
             </div>
 
-            <div style="text-align: center; overflow: auto; padding: 24px; background: #1e293b; border-radius: var(--radius-lg); border: 1px solid var(--surface-border);">
+            <!-- Document Stage Preview Card -->
+            <div class="document-preview-stage">
                 <div id="pdf-container">
                     <canvas id="pdf-canvas"></canvas>
                     <div id="overlay-layer"></div>

@@ -43,16 +43,97 @@
   --modal-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.22);
   
   --font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --font-body: var(--font-family);
   --font-hud: 'Orbitron', monospace, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   
   --radius-xs: 6px;
   --radius-sm: 10px;
-  --radius-md: 18px;
-  --radius-lg: 26px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
   --radius-full: 9999px;
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-smooth: 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Safe Area & Mobile Device Tokens */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --touch-target-min: 44px;
+  --touch-target-comfort: 48px;
+
+  /* Container Spacing & Layout Tokens */
+  --container-padding-xs: 8px;
+  --container-padding-sm: 12px;
+  --container-padding-md: 16px;
+  --container-padding-lg: 20px;
+  --container-padding-xl: 28px;
+  --container-gap-xs: 6px;
+  --container-gap-sm: 10px;
+  --container-gap-md: 14px;
+  --container-gap-lg: 20px;
+  --spacing-page-x: 16px;
+  --spacing-page-y: 16px;
+
+  /* Card Container Tokens (Light) */
+  --card-bg: #FFFFFF;
+  --card-fg: #0F172A;
+  --card-border: #E2E8F0;
+  --card-border-subtle: #F1F5F9;
+  --card-border-hover: #CBD5E1;
+  --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --card-shadow-hover: 0 12px 30px -4px rgba(15, 23, 42, 0.12), 0 4px 8px rgba(79, 70, 229, 0.08);
+  --card-radius: var(--radius-md);
+  --card-padding: 16px;
+
+  /* Elevated / Feature Card Tokens (Light) */
+  --card-elevated-bg: #FFFFFF;
+  --card-elevated-border: rgba(79, 70, 229, 0.25);
+  --card-elevated-shadow: 0 14px 34px -4px rgba(79, 70, 229, 0.12), 0 2px 10px rgba(15, 23, 42, 0.06);
+
+  /* Dialog / Modal Tokens (Light) */
+  --dialog-bg: #FFFFFF;
+  --dialog-fg: #0F172A;
+  --dialog-border: #CBD5E1;
+  --dialog-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.25);
+  --dialog-radius: var(--radius-lg);
+  --dialog-padding: 20px;
+  --dialog-overlay-bg: rgba(15, 23, 42, 0.6);
+
+  /* Table Tokens (Light) */
+  --table-bg: #FFFFFF;
+  --table-header-bg: #F8FAFC;
+  --table-header-fg: #475569;
+  --table-row-hover-bg: #F1F5F9;
+  --table-border: #E2E8F0;
+  --table-radius: var(--radius-sm);
+
+  /* Dropzone Tokens (Light) */
+  --dropzone-bg: rgba(79, 70, 229, 0.04);
+  --dropzone-bg-hover: rgba(79, 70, 229, 0.08);
+  --dropzone-border: #6366F1;
+  --dropzone-border-hover: #4F46E5;
+  --dropzone-radius: var(--radius-md);
+  --dropzone-padding: 24px 16px;
+
+  /* Media Preview Tokens (Light) */
+  --preview-bg: #0B0F19;
+  --preview-border: #CBD5E1;
+  --preview-radius: var(--radius-sm);
+  --preview-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+
+  /* Metric / Stat Box Tokens (Light) */
+  --metric-box-bg: #F8FAFC;
+  --metric-box-border: #E2E8F0;
+  --metric-box-radius: var(--radius-sm);
+  --metric-box-padding: 12px 14px;
+
+  /* Progress Track Tokens (Light) */
+  --progress-track-bg: #E2E8F0;
+  --progress-track-border: transparent;
+  --progress-bar-radius: var(--radius-full);
 }
 
 /* Futuristic Cyber Dark Mode (Deep Void Obsidian) */
@@ -95,6 +176,64 @@
   --glass-shadow: 0 12px 35px rgba(0, 0, 0, 0.65), 0 0 1px rgba(0, 240, 255, 0.3);
   --glass-shadow-hover: 0 22px 50px rgba(0, 0, 0, 0.8), 0 0 24px rgba(0, 240, 255, 0.4);
   --modal-shadow: 0 30px 70px rgba(0, 0, 0, 0.92), 0 0 30px rgba(99, 102, 241, 0.3);
+
+  /* Card Container Tokens (Dark) */
+  --card-bg: rgba(17, 26, 48, 0.82);
+  --card-fg: #F1F5F9;
+  --card-border: rgba(0, 240, 255, 0.25);
+  --card-border-subtle: rgba(255, 255, 255, 0.08);
+  --card-border-hover: rgba(0, 240, 255, 0.5);
+  --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 1px rgba(0, 240, 255, 0.25);
+  --card-shadow-hover: 0 20px 45px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 240, 255, 0.35);
+  --card-radius: var(--radius-md);
+  --card-padding: 16px;
+
+  /* Elevated / Feature Card Tokens (Dark) */
+  --card-elevated-bg: rgba(23, 34, 62, 0.9);
+  --card-elevated-border: rgba(99, 102, 241, 0.45);
+  --card-elevated-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 24px rgba(99, 102, 241, 0.4);
+
+  /* Dialog / Modal Tokens (Dark) */
+  --dialog-bg: rgba(13, 20, 38, 0.95);
+  --dialog-fg: #F1F5F9;
+  --dialog-border: rgba(0, 240, 255, 0.35);
+  --dialog-shadow: 0 30px 75px rgba(0, 0, 0, 0.95), 0 0 30px rgba(99, 102, 241, 0.3);
+  --dialog-radius: var(--radius-lg);
+  --dialog-padding: 20px;
+  --dialog-overlay-bg: rgba(2, 6, 23, 0.8);
+
+  /* Table Tokens (Dark) */
+  --table-bg: rgba(15, 23, 42, 0.6);
+  --table-header-bg: rgba(26, 38, 70, 0.7);
+  --table-header-fg: #94A3B8;
+  --table-row-hover-bg: rgba(30, 41, 59, 0.8);
+  --table-border: rgba(255, 255, 255, 0.1);
+  --table-radius: var(--radius-sm);
+
+  /* Dropzone Tokens (Dark) */
+  --dropzone-bg: rgba(99, 102, 241, 0.12);
+  --dropzone-bg-hover: rgba(99, 102, 241, 0.22);
+  --dropzone-border: var(--primary);
+  --dropzone-border-hover: var(--cyan-neon);
+  --dropzone-radius: var(--radius-md);
+  --dropzone-padding: 24px 16px;
+
+  /* Media Preview Tokens (Dark) */
+  --preview-bg: #000000;
+  --preview-border: rgba(0, 240, 255, 0.25);
+  --preview-radius: var(--radius-sm);
+  --preview-shadow: inset 0 0 25px rgba(0, 0, 0, 0.9), 0 0 15px rgba(0, 240, 255, 0.15);
+
+  /* Metric / Stat Box Tokens (Dark) */
+  --metric-box-bg: rgba(15, 23, 42, 0.75);
+  --metric-box-border: rgba(255, 255, 255, 0.08);
+  --metric-box-radius: var(--radius-sm);
+  --metric-box-padding: 12px 14px;
+
+  /* Progress Track Tokens (Dark) */
+  --progress-track-bg: rgba(30, 41, 59, 0.8);
+  --progress-track-border: rgba(255, 255, 255, 0.05);
+  --progress-bar-radius: var(--radius-full);
 }
 
 /* System Theme Media Query Support */
@@ -252,6 +391,24 @@ button {
   --magenta-neon: #BE185D;
   --emerald-neon: #059669;
   --amber-neon: #D97706;
+
+  /* Light mode container tokens */
+  --card-bg: #FFFFFF;
+  --card-fg: #0F172A;
+  --card-border: #CBD5E1;
+  --card-border-hover: #94A3B8;
+  --dialog-bg: #FFFFFF;
+  --dialog-border: #CBD5E1;
+  --table-bg: #FFFFFF;
+  --table-header-bg: #F8FAFC;
+  --table-header-fg: #475569;
+  --table-border: #E2E8F0;
+  --dropzone-bg: rgba(79, 70, 229, 0.04);
+  --dropzone-border: #6366F1;
+  --preview-bg: #0F172A;
+  --preview-border: #CBD5E1;
+  --metric-box-bg: #F8FAFC;
+  --metric-box-border: #E2E8F0;
 }
 
 [data-theme="light"] body {
@@ -458,4 +615,50 @@ button {
   color: #0F172A !important;
   border-color: #CBD5E1 !important;
 }
+
+/* Mobile Touch & Toggle Switch System */
+.toggle-switch-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-switch-wrap input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-switch-track {
+  width: 48px;
+  height: 28px;
+  background: var(--surface-border);
+  border-radius: var(--radius-full);
+  position: relative;
+  transition: background-color var(--transition-fast);
+}
+
+.toggle-switch-thumb {
+  width: 22px;
+  height: 22px;
+  background: #FFFFFF;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+  transition: transform var(--transition-fast);
+}
+
+.toggle-switch-wrap input[type="checkbox"]:checked + .toggle-switch-track {
+  background: var(--primary);
+}
+
+.toggle-switch-wrap input[type="checkbox"]:checked + .toggle-switch-track .toggle-switch-thumb {
+  transform: translateX(20px);
+}
+
 

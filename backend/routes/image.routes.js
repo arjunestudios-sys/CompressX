@@ -11,5 +11,7 @@ router.post('/crop', imageController.cropImage);
 router.post('/rotate-flip', imageController.rotateFlipImage);
 router.post('/strip-exif', imageController.stripExif);
 router.post('/multi-pdf', imageController.imagesToPdf);
+router.post('/analyze', imageController.analyzeImage);
+router.post('/document-scan', imageController.documentScan);
 
 module.exports = router;

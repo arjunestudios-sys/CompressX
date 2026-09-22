@@ -56,13 +56,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const idLabel = document.createElement('div');
                 idLabel.className = 'text-block-id';
                 idLabel.innerHTML = `
-                    <span>Block #${block.id}</span>
-                    <span class="block-char-count">${block.text.length} chars</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="hud-badge" style="font-size: 0.65rem;"><i class="fa-solid fa-cube"></i> SEGMENT #${block.id}</span>
+                        <span class="hud-badge hud-badge-pink block-char-count" style="font-size: 0.62rem;">${block.text.length} chars</span>
+                    </div>
+                    <div class="text-block-actions">
+                        <button type="button" class="text-block-btn btn-copy-block" title="Copy segment text"><i class="fa-solid fa-copy"></i> Copy</button>
+                        <button type="button" class="text-block-btn btn-reset-block" title="Revert to original text"><i class="fa-solid fa-rotate-left"></i> Revert</button>
+                    </div>
                 `;
                 
                 const textarea = document.createElement('textarea');
                 textarea.value = block.text;
                 textarea.dataset.original = block.text;
+                textarea.placeholder = "Enter text content for this block...";
                 
                 setTimeout(() => {
                     textarea.style.height = 'auto';
@@ -76,6 +83,34 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (charCountSpan) charCountSpan.textContent = `${this.value.length} chars`;
                 });
 
+                // Card actions
+                const btnCopy = idLabel.querySelector('.btn-copy-block');
+                if (btnCopy) {
+                    btnCopy.addEventListener('click', async () => {
+                        try {
+                            await navigator.clipboard.writeText(textarea.value);
+                            btnCopy.innerHTML = '<i class="fa-solid fa-check" style="color: var(--emerald-neon);"></i> Copied';
+                            setTimeout(() => {
+                                btnCopy.innerHTML = '<i class="fa-solid fa-copy"></i> Copy';
+                            }, 1500);
+                        } catch(err) {
+                            showToast('Failed to copy text', 'warning');
+                        }
+                    });
+                }
+
+                const btnReset = idLabel.querySelector('.btn-reset-block');
+                if (btnReset) {
+                    btnReset.addEventListener('click', () => {
+                        textarea.value = textarea.dataset.original || '';
+                        textarea.style.height = 'auto';
+                        textarea.style.height = textarea.scrollHeight + 'px';
+                        const charCountSpan = div.querySelector('.block-char-count');
+                        if (charCountSpan) charCountSpan.textContent = `${textarea.value.length} chars`;
+                        showToast(`Segment #${block.id} restored to original`, 'info');
+                    });
+                }
+
                 div.appendChild(idLabel);
                 div.appendChild(textarea);
                 container.appendChild(div);
@@ -83,7 +118,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (statsBadge) {
-            statsBadge.textContent = `${visibleCount} text blocks • ~${totalWords} words`;
+            statsBadge.innerHTML = `<i class="fa-solid fa-align-left"></i> ${visibleCount} blocks • ~${totalWords} words`;
         }
 
         if (!hasEditableText) {

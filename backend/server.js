@@ -95,6 +95,7 @@ app.use('/api/convert', require('./routes/convert.routes'));
 app.use('/api/media', require('./routes/media.routes'));
 app.use('/api/image', require('./routes/image.routes'));
 app.use('/api/pipeline', require('./routes/pipeline.routes'));
+app.use('/api/ai', require('./routes/ai.routes'));
 
 // Catch-all route to serve static frontend pages
 app.get('*', (req, res, next) => {

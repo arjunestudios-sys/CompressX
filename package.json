@@ -1,18 +1,19 @@
 {
   "name": "docholder",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Docholder — Intelligent Document Management & Universal Transformation Platform",
   "main": "backend/server.js",
   "type": "commonjs",
   "scripts": {
     "start": "node backend/server.js",
-    "start:prod": "NODE_ENV=production node backend/server.js",
+    "start:prod": "node -e \"process.env.NODE_ENV='production'; require('./backend/server.js')\"",
     "dev": "nodemon backend/server.js",
     "build": "npx cap sync",
     "cap:sync": "npx cap sync android",
     "cap:open": "npx cap open android",
     "build:apk": "npx cap sync android && cd android && gradlew.bat assembleDebug",
-    "build:apk:release": "npx cap sync android && cd android && gradlew.bat assembleRelease"
+    "build:apk:release": "npx cap sync android && cd android && gradlew.bat assembleRelease",
+    "build:bundle:release": "npx cap sync android && cd android && gradlew.bat bundleRelease"
   },
   "engines": {
     "node": "20.x"

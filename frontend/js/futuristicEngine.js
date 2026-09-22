@@ -324,7 +324,7 @@ class CyberStarfield {
 
 // Holographic 3D Card Tilt Engine
 function initHoloTilt() {
-    if (window.innerWidth <= 480) return;
+    if (window.innerWidth <= 768 || ('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)) return;
     const cards = document.querySelectorAll('.glass-card, .stat-card');
 
     cards.forEach(card => {

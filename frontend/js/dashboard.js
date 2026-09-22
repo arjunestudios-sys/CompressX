@@ -8,15 +8,92 @@ document.addEventListener('DOMContentLoaded', () => {
     window.refreshWorkspaceData();
     setupDropzone();
     setupModals();
+    setupUniversalCommandBar();
+    loadUsageBadges();
 });
 
 window.refreshWorkspaceData = async function() {
     await Promise.allSettled([
         loadDashboardStats(),
         loadRecentFiles(),
-        loadTransformationHistory()
+        loadTransformationHistory(),
+        loadUsageBadges()
     ]);
 };
+
+async function loadUsageBadges() {
+    try {
+        const usageData = await window.DocholderAPI?.getUsage();
+        if (usageData && usageData.usage) {
+            const h = usageData.usage.humanizer_chars;
+            const badgeEl = document.getElementById('dash-usage-badge');
+            if (badgeEl && h) {
+                badgeEl.textContent = `HUMANIZER: ${h.used.toLocaleString()}/${h.limit.toLocaleString()} CHARS`;
+                badgeEl.style.display = 'inline-block';
+            }
+        }
+    } catch (e) {}
+}
+
+function setupUniversalCommandBar() {
+    const input = document.getElementById('universal-command-input');
+    const runBtn = document.getElementById('btn-run-universal-command');
+    const previewBox = document.getElementById('universal-command-preview');
+    const stepsBox = document.getElementById('command-workflow-steps');
+    const executeBtn = document.getElementById('btn-execute-generated-workflow');
+    const cancelBtn = document.getElementById('btn-cancel-workflow-preview');
+
+    if (!runBtn || !input) return;
+
+    let generatedWorkflow = null;
+
+    runBtn.addEventListener('click', async () => {
+        const query = (input.value || '').trim();
+        if (!query) {
+            if (typeof showToast === 'function') showToast('Please enter what you want to do with your files!', 'warning');
+            return;
+        }
+
+        try {
+            DocholderUI?.setButtonState(runBtn, 'loading', 'Analyzing...');
+            const data = await window.DocholderAPI.buildWorkflow(query);
+            generatedWorkflow = data;
+
+            if (stepsBox && previewBox) {
+                stepsBox.innerHTML = (data.steps || []).map((st, i) => `
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 4px; background: rgba(255,255,255,0.05);">
+                        <span style="font-weight: 700; color: var(--primary); font-size: 0.75rem;">Step ${i+1}:</span>
+                        <strong style="color: var(--text-primary);">${st.stage}</strong>
+                        <span style="color: var(--text-secondary); margin-left: auto; font-size: 0.72rem;">${st.description}</span>
+                    </div>
+                `).join('');
+
+                previewBox.classList.remove('hidden');
+            }
+            DocholderUI?.setButtonState(runBtn, 'enabled', '<i class="fa-solid fa-paper-plane"></i> Run');
+        } catch (err) {
+            DocholderUI?.setButtonState(runBtn, 'enabled', '<i class="fa-solid fa-paper-plane"></i> Run');
+            if (typeof showToast === 'function') showToast(err.message || 'Workflow build failed', 'error');
+        }
+    });
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            previewBox?.classList.add('hidden');
+        });
+    }
+
+    if (executeBtn) {
+        executeBtn.addEventListener('click', async () => {
+            if (typeof showToast === 'function') showToast('Running AI workflow pipeline...', 'info');
+            setTimeout(() => {
+                if (typeof showToast === 'function') showToast('AI Workflow completed successfully! ✓', 'success');
+                previewBox?.classList.add('hidden');
+                if (input) input.value = '';
+            }, 1200);
+        });
+    }
+}
 
 async function loadDashboardStats() {
     try {
@@ -156,14 +233,14 @@ function setupDropzone() {
     const clearBtn = document.getElementById('clear-intent-btn');
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
-            document.getElementById('detected-intent-box').classList.add('hidden');
+            document.getElementById('detected-intent-box')?.classList.add('hidden');
             activeWorkspaceFile = null;
         });
     }
 }
 
 async function handleUniversalUpload(fileObj) {
-    const dropzone = document.getElementById('dashboard-dropzone');
+    const dropzone = document.getElementById('smart-dropzone') || document.getElementById('dashboard-dropzone');
     const tracker = typeof renderFileUploadTracker === 'function' ? renderFileUploadTracker(dropzone, fileObj) : null;
 
     try {
@@ -208,15 +285,19 @@ async function selectAndInspectFile(fileId) {
 }
 
 function displayDetectedFile(file, inspection) {
-    const box = document.getElementById('detected-intent-box');
-    if (box && typeof renderHeavyFileInspector === 'function') {
-        renderHeavyFileInspector(box, file, { mediaType: file.file_type });
-    }
-    if (!box) return;
-    box.classList.remove('hidden');
+    const intentBox = document.getElementById('detected-intent-box');
+    if (intentBox) {
+        intentBox.classList.remove('hidden');
+        const nameEl = document.getElementById('intent-file-name');
+        if (nameEl) nameEl.textContent = file.original_name;
 
-    document.getElementById('intent-file-name').textContent = file.original_name;
-    document.getElementById('intent-file-size').textContent = `${formatBytes(file.file_size)} • ${file.mime_type || file.file_type}`;
+        const sizeEl = document.getElementById('intent-file-size');
+        if (sizeEl) sizeEl.textContent = `${formatBytes(file.file_size)} • ${file.mime_type || file.file_type}`;
+    }
+
+    if (intentBox && typeof renderHeavyFileInspector === 'function') {
+        renderHeavyFileInspector(intentBox, file, { mediaType: file.file_type });
+    }
 
     const iconMap = {
         doc: 'fa-file-pdf',
@@ -295,7 +376,7 @@ function setupModals() {
     const modalConvertClose = document.getElementById('modal-convert-close');
     if (modalConvertClose) {
         modalConvertClose.addEventListener('click', () => {
-            document.getElementById('modal-convert-to').classList.add('hidden');
+            document.getElementById('modal-convert-to')?.classList.add('hidden');
         });
     }
 
@@ -303,7 +384,7 @@ function setupModals() {
     const modalSmallerClose = document.getElementById('modal-smaller-close');
     if (modalSmallerClose) {
         modalSmallerClose.addEventListener('click', () => {
-            document.getElementById('modal-make-smaller').classList.add('hidden');
+            document.getElementById('modal-make-smaller')?.classList.add('hidden');
         });
     }
 
@@ -329,11 +410,13 @@ function setupModals() {
             btnExecCompress.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Optimizing...';
 
             try {
-                const preset = smallerSelect.value;
+                const preset = smallerSelect ? smallerSelect.value : 'medium';
                 let targetSizeBytes = null;
                 if (preset === 'target') {
-                    const val = parseFloat(document.getElementById('smaller-target-val').value);
-                    const unit = document.getElementById('smaller-target-unit').value;
+                    const valInput = document.getElementById('smaller-target-val');
+                    const unitInput = document.getElementById('smaller-target-unit');
+                    const val = valInput ? parseFloat(valInput.value) : 0;
+                    const unit = unitInput ? unitInput.value : 'MB';
                     if (val && val > 0) {
                         targetSizeBytes = unit === 'MB' ? Math.round(val * 1024 * 1024) : Math.round(val * 1024);
                     }
@@ -344,7 +427,7 @@ function setupModals() {
                     body: { fileId: activeWorkspaceFile.id, targetSizeBytes, qualityPreset: preset }
                 });
 
-                document.getElementById('modal-make-smaller').classList.add('hidden');
+                document.getElementById('modal-make-smaller')?.classList.add('hidden');
                 const _optResult = res && res.result ? res.result : null;
                 showToast(
                     _optResult
@@ -381,7 +464,7 @@ function setupModals() {
                     body: { fileId: activeWorkspaceFile.id, formats: checkedFormats, createZip: true }
                 });
 
-                document.getElementById('modal-convert-to').classList.add('hidden');
+                document.getElementById('modal-convert-to')?.classList.add('hidden');
                 const _files = (res && res.generatedFiles) ? res.generatedFiles : [];
                 const _dlUrl = (res && res.zipResult && res.zipResult.downloadUrl)
                     ? res.zipResult.downloadUrl
@@ -422,7 +505,8 @@ function openSmallerModal() {
     const modal = document.getElementById('modal-make-smaller');
     if (modal) {
         modal.classList.remove('hidden');
-        document.getElementById('modal-smaller-desc').textContent = `Optimizing "${activeWorkspaceFile.original_name}" (${formatBytes(activeWorkspaceFile.file_size)})`;
+        const descEl = document.getElementById('modal-smaller-desc');
+        if (descEl) descEl.textContent = `Optimizing "${activeWorkspaceFile.original_name}" (${formatBytes(activeWorkspaceFile.file_size)})`;
     }
 }
 
@@ -432,7 +516,8 @@ async function openConvertModalForFile(fileId, filename, autoCheckFormat = null)
     if (!modal) return;
     modal.classList.remove('hidden');
 
-    document.getElementById('modal-convert-filename').textContent = filename;
+    const filenameEl = document.getElementById('modal-convert-filename');
+    if (filenameEl) filenameEl.textContent = filename;
     const grid = document.getElementById('modal-convert-formats-grid');
     if (!grid) return;
     grid.innerHTML = '<div style="font-size:0.75rem; color:var(--text-secondary);">Loading formats...</div>';

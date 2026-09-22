@@ -1,82 +1,124 @@
-﻿<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Docholder —  All Tools Directory</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Docholder — Tool Catalog (50+ File Tools)</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/animations.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 10px;
+        }
+        .tool-card {
+            background: var(--surface-hover);
+            border: 1px solid var(--surface-border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            text-decoration: none;
+            color: var(--text);
+            transition: all var(--transition-fast);
+        }
+        .tool-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.12);
+            background: var(--surface);
+        }
+        .tool-card-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-xs);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+        .tool-card-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .tool-card-desc {
+            font-size: 0.76rem;
+            color: var(--text-secondary);
+            line-height: 1.35;
+        }
+        @media (max-width: 600px) {
+            .tool-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="mobile-app-shell">
-        <div class="mobile-status-bar">
-            <span class="status-bar-time">9:41</span>
-            <div class="dynamic-island-notch">
-                <div class="notch-camera-dot"></div>
-            </div>
-            <div class="status-bar-icons">
-                <i class="fa-solid fa-signal"></i>
-                <i class="fa-solid fa-wifi"></i>
-                <i class="fa-solid fa-battery-full"></i>
-            </div>
-        </div>
-
         <header class="mobile-app-header">
             <button class="mobile-header-btn" onclick="handleSmartBack('dashboard.html')"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="mobile-header-title">
                 <span>Tools Catalog</span>
             </div>
-            <button class="theme-toggle-btn" onclick="toggleTheme()" style="width: 32px; height: 32px; font-size: 0.85rem;" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+            <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
         </header>
 
         <span id="nav-user-email" class="hidden"></span>
 
         <main class="app-body">
-            <div class="page-title-block">
-                <h1 class="page-title"><i class="fa-solid fa-grid-2" style="color: var(--primary);"></i> Tool Catalog</h1>
-                <p class="page-subtitle">50+ universal processing tools for every file.</p>
+            <div class="page-title-block" style="margin-bottom: 12px;">
+                <h1 class="page-title"><i class="fa-solid fa-grip" style="color: var(--primary);"></i> Tool Catalog</h1>
+                <p class="page-subtitle">50+ file tools to compress, convert, edit, protect, and analyze files.</p>
             </div>
 
             <!-- Search Bar -->
             <div class="search-bar" style="margin-bottom: 12px;">
                 <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="tool-search-input" class="search-input" placeholder="Search any operation (e.g. compress video, convert PDF, trim)...">
+                <input type="text" id="tool-search-input" class="search-input" placeholder="Search any tool (e.g. compress PDF, convert image, sign)...">
             </div>
 
             <!-- Category Filter Chips -->
-            <div class="category-nav-bar">
+            <div class="category-nav-bar" style="margin-bottom: 12px;">
                 <button class="action-chip active" data-cat="all"><i class="fa-solid fa-layer-group"></i> All Tools</button>
                 <button class="action-chip" data-cat="doc"><i class="fa-solid fa-file-pdf" style="color: #EF4444;"></i> Documents</button>
-                <button class="action-chip" data-cat="word"><i class="fa-solid fa-file-word" style="color: #3B82F6;"></i> Word</button>
                 <button class="action-chip" data-cat="image"><i class="fa-solid fa-image" style="color: #8B5CF6;"></i> Images</button>
                 <button class="action-chip" data-cat="video"><i class="fa-solid fa-video" style="color: #EC4899;"></i> Videos</button>
                 <button class="action-chip" data-cat="audio"><i class="fa-solid fa-music" style="color: #10B981;"></i> Audio</button>
-                <button class="action-chip" data-cat="convert"><i class="fa-solid fa-rotate" style="color: #06B6D4;"></i> Convert</button>
-                <button class="action-chip" data-cat="compress"><i class="fa-solid fa-compress" style="color: #F59E0B;"></i> Compress</button>
-                <button class="action-chip" data-cat="archive"><i class="fa-solid fa-file-zipper" style="color: #EAB308;"></i> Archives</button>
+                <button class="action-chip" data-cat="word"><i class="fa-solid fa-file-word" style="color: #3B82F6;"></i> Word</button>
+                <button class="action-chip" data-cat="ai"><i class="fa-solid fa-brain" style="color: #8B5CF6;"></i> AI Tools</button>
+                <button class="action-chip" data-cat="security"><i class="fa-solid fa-shield-cat" style="color: #EF4444;"></i> Privacy & Security</button>
+                <button class="action-chip" data-cat="data"><i class="fa-solid fa-table-cells-large" style="color: #10B981;"></i> Data & Charts</button>
             </div>
 
             <!-- Tools Grid Container -->
-            <div id="tools-container" style="display: flex; flex-direction: column; gap: 16px; margin-top: 10px;">
+            <div id="tools-container" style="display: flex; flex-direction: column; gap: 14px;">
                 <!-- Dynamically populated categories and cards -->
             </div>
+
+            <!-- Bottom Spacer for Navigation Clearance -->
+            <div class="bottom-nav-spacer"></div>
         </main>
 
         <!-- Bottom Navigation -->
         <nav class="bottom-nav-bar">
             <a href="dashboard.html" class="bottom-nav-item">
-                <i class="fa-solid fa-gauge"></i>
+                <i class="fa-solid fa-house"></i>
                 <span>Home</span>
             </a>
             <a href="tools.html" class="bottom-nav-item active">
-                <i class="fa-solid fa-grid-2"></i>
+                <i class="fa-solid fa-grip"></i>
                 <span>Tools</span>
             </a>
             <a href="convert.html" class="bottom-nav-item">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <i class="fa-solid fa-rotate"></i>
                 <span>Convert</span>
             </a>
             <a href="files.html" class="bottom-nav-item">

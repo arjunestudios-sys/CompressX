@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Docholder —  Transformation History</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/animations.css">
@@ -12,24 +13,15 @@
 </head>
 <body>
     <div class="mobile-app-shell">
-        <div class="mobile-status-bar">
-            <span class="status-bar-time">9:41</span>
-            <div class="dynamic-island-notch">
-                <div class="notch-camera-dot"></div>
-            </div>
-            <div class="status-bar-icons">
-                <i class="fa-solid fa-signal"></i>
-                <i class="fa-solid fa-wifi"></i>
-                <i class="fa-solid fa-battery-full"></i>
-            </div>
-        </div>
-
         <header class="mobile-app-header">
             <button class="mobile-header-btn" onclick="window.location.href='dashboard.html'"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="mobile-header-title">
                 <span>Activity History</span>
             </div>
-            <button id="btn-refresh-history" class="icon-btn" title="Refresh"><i class="fa-solid fa-rotate-right"></i></button>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+                <button id="btn-refresh-history" class="mobile-header-btn" title="Refresh"><i class="fa-solid fa-rotate-right"></i></button>
+            </div>
         </header>
 
         <span id="nav-user-email" class="hidden"></span>
@@ -50,20 +42,23 @@
             <div id="history-items-list" style="display: flex; flex-direction: column; gap: 10px;">
                 <div style="text-align: center; color: var(--text-secondary); padding: 30px;">Loading history...</div>
             </div>
+
+            <!-- Bottom Spacer for Navigation Clearance -->
+            <div class="bottom-nav-spacer"></div>
         </main>
 
         <!-- Bottom Navigation -->
         <nav class="bottom-nav-bar">
             <a href="dashboard.html" class="bottom-nav-item">
-                <i class="fa-solid fa-gauge"></i>
+                <i class="fa-solid fa-house"></i>
                 <span>Home</span>
             </a>
             <a href="tools.html" class="bottom-nav-item">
-                <i class="fa-solid fa-grid-2"></i>
+                <i class="fa-solid fa-grip"></i>
                 <span>Tools</span>
             </a>
             <a href="convert.html" class="bottom-nav-item">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <i class="fa-solid fa-rotate"></i>
                 <span>Convert</span>
             </a>
             <a href="files.html" class="bottom-nav-item">
@@ -86,3 +81,4 @@
     <script src="js/history.js"></script>
 </body>
 </html>
+

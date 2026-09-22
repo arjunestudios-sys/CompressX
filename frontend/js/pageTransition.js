@@ -3,11 +3,24 @@
  * Smooth fade-out before navigating to any internal page.
  */
 (function () {
-    // Inject the overlay div once
-    const overlay = document.createElement('div');
-    overlay.className = 'page-transition-overlay';
-    overlay.id = '__page-transition-overlay';
-    document.body.appendChild(overlay);
+    let overlay = null;
+
+    function getOverlay() {
+        if (!overlay) {
+            overlay = document.getElementById('__page-transition-overlay');
+            if (!overlay && document.body) {
+                overlay = document.createElement('div');
+                overlay.className = 'page-transition-overlay';
+                overlay.id = '__page-transition-overlay';
+                document.body.appendChild(overlay);
+            }
+        }
+        return overlay;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        getOverlay();
+    });
 
     // Intercept internal navigation links
     document.addEventListener('click', (e) => {
@@ -29,7 +42,8 @@
 
         e.preventDefault();
 
-        overlay.classList.add('active');
+        const ov = getOverlay();
+        if (ov) ov.classList.add('active');
         setTimeout(() => {
             window.location.href = href;
         }, 160);
@@ -38,7 +52,8 @@
     // Also intercept programmatic JS navigations via a helper
     window.__navigateTo = function (href) {
         if (!href) return;
-        overlay.classList.add('active');
+        const ov = getOverlay();
+        if (ov) ov.classList.add('active');
         setTimeout(() => {
             window.location.href = href;
         }, 160);

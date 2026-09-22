@@ -12,7 +12,9 @@ const VIDEO_MODE_TITLES = {
     resize: 'Scale Video Resolution',
     trim: 'Trim Video Duration',
     gif: 'Convert Video to Animated GIF',
-    merge: 'Merge Multiple Videos'
+    merge: 'Merge Multiple Videos',
+    'video-intelligence': 'Video Intelligence',
+    'subtitles': 'Automatic Subtitles'
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -47,7 +49,7 @@ function setupModeChips() {
 }
 
 function switchMode(mode) {
-    const panels = ['compress', 'extract', 'convert', 'resize', 'trim', 'gif', 'merge'];
+    const panels = ['compress', 'extract', 'convert', 'resize', 'trim', 'gif', 'merge', 'video-intelligence', 'subtitles'];
     panels.forEach(p => {
         const el = document.getElementById(`panel-${p}`);
         if (el) el.classList.add('hidden');
@@ -97,7 +99,7 @@ async function loadWorkspaceVideos() {
                 const fId = e.target.value;
                 if (!fId) {
                     currentVideoFile = null;
-                    document.getElementById('selected-video-preview-container').classList.add('hidden');
+                    document.getElementById('selected-video-preview-container')?.classList.add('hidden');
                     return;
                 }
                 currentVideoFile = workspaceVideos.find(f => String(f.id) === String(fId)) || null;
@@ -120,15 +122,30 @@ function renderVideoMultiList() {
         list.innerHTML = '<div style="font-size:0.75rem; color:var(--text-secondary);">No videos found in workspace.</div>';
         return;
     }
-    list.innerHTML = workspaceVideos.map(f => `
-        <label style="display:flex; align-items:center; gap:8px; font-size:0.8rem; background:var(--surface); padding:6px 10px; border-radius:var(--radius-xs); border:1px solid var(--surface-border); cursor:pointer;">
+    list.innerHTML = workspaceVideos.map((f, idx) => `
+        <div class="video-merge-row" data-id="${f.id}" style="display:flex; align-items:center; gap:8px; font-size:0.8rem; background:var(--surface); padding:6px 10px; border-radius:var(--radius-xs); border:1px solid var(--surface-border);">
             <input type="checkbox" class="video-merge-checkbox" value="${f.id}" checked>
             <i class="fa-solid fa-file-video" style="color:#EC4899;"></i>
             <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${f.original_name}</span>
             <span style="color:var(--text-secondary); font-size:0.72rem;">${formatBytes(f.file_size)}</span>
-        </label>
+            <div style="display:flex; gap:2px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="moveVideoRow(this, -1)" style="padding:2px 6px; font-size:0.65rem;" title="Move Up"><i class="fa-solid fa-arrow-up"></i></button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="moveVideoRow(this, 1)" style="padding:2px 6px; font-size:0.65rem;" title="Move Down"><i class="fa-solid fa-arrow-down"></i></button>
+            </div>
+        </div>
     `).join('');
 }
+
+window.moveVideoRow = function(btn, dir) {
+    const row = btn.closest('.video-merge-row');
+    if (!row) return;
+    const parent = row.parentNode;
+    if (dir === -1 && row.previousElementSibling) {
+        parent.insertBefore(row, row.previousElementSibling);
+    } else if (dir === 1 && row.nextElementSibling) {
+        parent.insertBefore(row.nextElementSibling, row);
+    }
+};
 
 async function renderSelectedVideo(file) {
     const prevContainer = document.getElementById('selected-video-preview-container');
@@ -450,7 +467,115 @@ function setupControls() {
             }
         });
     }
+
+    // 8. Video Intelligence
+    const btnIntel = document.getElementById('btn-run-video-intelligence');
+    if (btnIntel) {
+        btnIntel.addEventListener('click', async () => {
+            if (!currentVideoFile) return showToast('Please select a video file first.', 'warning');
+
+            btnIntel.disabled = true;
+            btnIntel.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyzing Video...';
+
+            try {
+                const data = await window.DocholderAPI.videoIntelligence({ fileId: currentVideoFile.id });
+                const resBox = document.getElementById('video-intelligence-results');
+                if (resBox) {
+                    resBox.classList.remove('hidden');
+                    const chaptersHtml = (data.chapters || []).map(ch => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px; background:var(--surface); border-radius:4px; margin-bottom:4px; font-size:0.78rem;">
+                            <span style="color:var(--text);">${ch.title}</span>
+                            <span class="hud-badge hud-badge-pink" style="font-family:var(--font-mono); font-size:0.7rem; cursor:pointer;" onclick="jumpVideoTime('${ch.timestamp}')">${ch.timestamp}</span>
+                        </div>
+                    `).join('');
+
+                    const momentsHtml = (data.keyMoments || []).map(m => `
+                        <li style="margin-bottom:4px; font-size:0.78rem; color:var(--text);">${m}</li>
+                    `).join('');
+
+                    resBox.innerHTML = `
+                        <div style="font-weight:700; color:#EC4899; margin-bottom:8px; font-size:0.85rem;"><i class="fa-solid fa-film"></i> Video Intelligence Summary</div>
+                        <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:12px; line-height:1.4;">${data.summary || 'Summary unavailable'}</p>
+                        <div style="font-weight:700; font-size:0.8rem; margin-bottom:6px; color:var(--cyan-neon);">Timeline Chapters:</div>
+                        <div style="margin-bottom:12px;">${chaptersHtml}</div>
+                        <div style="font-weight:700; font-size:0.8rem; margin-bottom:6px; color:var(--emerald-neon);">Key Moments:</div>
+                        <ul style="padding-left:18px; margin:0;">${momentsHtml}</ul>
+                    `;
+                }
+                showToast('Video intelligence analysis complete!', 'success');
+            } catch(err) {
+                showToast(err.message || 'Intelligence analysis failed.', 'error');
+            } finally {
+                btnIntel.disabled = false;
+                btnIntel.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Analyze Video Intelligence';
+            }
+        });
+    }
+
+    // 9. Automatic Subtitles
+    const btnSubtitles = document.getElementById('btn-run-subtitles');
+    if (btnSubtitles) {
+        btnSubtitles.addEventListener('click', async () => {
+            if (!currentVideoFile) return showToast('Please select a video file first.', 'warning');
+
+            const format = document.getElementById('subtitles-format-select')?.value || 'srt';
+            btnSubtitles.disabled = true;
+            btnSubtitles.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating Subtitles...';
+
+            try {
+                const data = await window.DocholderAPI.subtitles({ fileId: currentVideoFile.id, format });
+                const resBox = document.getElementById('subtitles-results');
+                if (resBox) {
+                    resBox.classList.remove('hidden');
+                    resBox.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <span style="font-weight:700; color:#06B6D4; font-size:0.85rem;"><i class="fa-solid fa-closed-captioning"></i> Generated Captions (${(data.format || format).toUpperCase()})</span>
+                            <div style="display:flex; gap:6px;">
+                                <button type="button" id="btn-copy-subs" class="btn btn-secondary btn-sm" style="padding:3px 8px; font-size:0.72rem;"><i class="fa-solid fa-copy"></i> Copy</button>
+                                <button type="button" id="btn-dl-subs" class="btn btn-primary btn-sm" style="padding:3px 8px; font-size:0.72rem;"><i class="fa-solid fa-download"></i> Download</button>
+                            </div>
+                        </div>
+                        <pre id="subs-text-content" style="background:#0F172A; color:#38BDF8; font-family:var(--font-mono); font-size:0.75rem; padding:10px; border-radius:6px; max-height:160px; overflow-y:auto; white-space:pre-wrap; margin:0;">${data.subtitleText || ''}</pre>
+                    `;
+
+                    document.getElementById('btn-copy-subs')?.addEventListener('click', () => {
+                        navigator.clipboard.writeText(data.subtitleText || '');
+                        showToast('Subtitles copied to clipboard!', 'info');
+                    });
+
+                    document.getElementById('btn-dl-subs')?.addEventListener('click', () => {
+                        const blob = new Blob([data.subtitleText || ''], { type: 'text/plain' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        const base = currentVideoFile.original_name.substring(0, currentVideoFile.original_name.lastIndexOf('.')) || 'subtitles';
+                        a.download = `${base}.${format}`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        showToast('Downloaded subtitle file!', 'success');
+                    });
+                }
+                showToast('Subtitles generated successfully!', 'success');
+            } catch(err) {
+                showToast(err.message || 'Subtitle generation failed.', 'error');
+            } finally {
+                btnSubtitles.disabled = false;
+                btnSubtitles.innerHTML = '<i class="fa-solid fa-closed-captioning"></i> Generate Subtitles';
+            }
+        });
+    }
 }
+
+window.jumpVideoTime = function(timestamp) {
+    const player = document.getElementById('selected-video-player');
+    if (!player) return;
+    const parts = timestamp.split(':').map(Number);
+    let sec = 0;
+    if (parts.length === 2) sec = parts[0] * 60 + parts[1];
+    if (parts.length === 3) sec = parts[0] * 3600 + parts[1] * 60 + parts[2];
+    player.currentTime = sec;
+    player.play().catch(() => {});
+};
 
 function displayResult(result) {
     const card = document.getElementById('video-result-card');
@@ -458,9 +583,14 @@ function displayResult(result) {
     card.classList.remove('hidden');
     if (window.DocholderAudio) window.DocholderAudio.playSuccess();
 
-    document.getElementById('vid-before-val').textContent = formatBytes(result.originalSize);
-    document.getElementById('vid-after-val').textContent = formatBytes(result.convertedSize);
-    document.getElementById('vid-result-saved').textContent = `${result.percentageSaved || 0}% Saved`;
+    const beforeVal = document.getElementById('vid-before-val');
+    if (beforeVal) beforeVal.textContent = formatBytes(result.originalSize);
+
+    const afterVal = document.getElementById('vid-after-val');
+    if (afterVal) afterVal.textContent = formatBytes(result.convertedSize);
+
+    const savedVal = document.getElementById('vid-result-saved');
+    if (savedVal) savedVal.textContent = `${result.percentageSaved || 0}% Saved`;
 
     const mediaCont = document.getElementById('vid-result-media-container');
     if (mediaCont) {

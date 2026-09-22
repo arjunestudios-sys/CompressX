@@ -1,7 +1,19 @@
 const path = require('path');
 const fs = require('fs');
 const { PDFDocument, rgb, degrees, StandardFonts } = require('pdf-lib');
-const pdfParse = require('pdf-parse');
+const rawPdfParse = require('pdf-parse');
+async function safePdfParse(buffer) {
+    if (typeof rawPdfParse === 'function') return await rawPdfParse(buffer);
+    if (rawPdfParse.default && typeof rawPdfParse.default === 'function') return await rawPdfParse.default(buffer);
+    if (rawPdfParse.PDFParse) {
+        const parser = new rawPdfParse.PDFParse({ data: buffer });
+        const res = await parser.getText();
+        if (parser.destroy) await parser.destroy();
+        return res;
+    }
+    return { text: '' };
+}
+const pdfParse = safePdfParse;
 const mammoth = require('mammoth');
 const docx = require('docx');
 const xlsx = require('xlsx');
@@ -454,15 +466,9 @@ async function comparePdfs(pdfPath1, pdfPath2) {
     let text2 = '';
 
     try {
-        const { PDFParse } = require('pdf-parse');
-        const parser1 = new PDFParse({ data: buf1 });
-        const res1 = await parser1.getText();
-        await parser1.destroy();
+        const res1 = await safePdfParse(buf1);
         text1 = res1.text || '';
-
-        const parser2 = new PDFParse({ data: buf2 });
-        const res2 = await parser2.getText();
-        await parser2.destroy();
+        const res2 = await safePdfParse(buf2);
         text2 = res2.text || '';
     } catch(e) {
         console.warn('PDF text extraction error:', e);

@@ -380,8 +380,10 @@ function setupControls() {
             
             let targetBytes = parseInt(targetPreset.value, 10);
             if (targetPreset.value === 'custom') {
-                const customVal = parseFloat(document.getElementById('custom-size-input').value);
-                const unit = document.getElementById('custom-size-unit').value;
+                const customValInput = document.getElementById('custom-size-input');
+                const customUnitInput = document.getElementById('custom-size-unit');
+                const customVal = customValInput ? parseFloat(customValInput.value) : 0;
+                const unit = customUnitInput ? customUnitInput.value : 'MB';
                 targetBytes = unit === 'MB' ? Math.round(customVal * 1024 * 1024) : Math.round(customVal * 1024);
             }
 
@@ -579,10 +581,17 @@ function displayResult(result, originalSize = 0) {
     const newSize = result.convertedSize || result.fileSize || 0;
     const pct = result.percentageSaved || (origSize > 0 && newSize < origSize ? Math.round(((origSize - newSize) / origSize) * 100) : 0);
 
-    document.getElementById('res-orig-size').textContent = formatBytes(origSize);
-    document.getElementById('res-new-size').textContent = formatBytes(newSize);
-    document.getElementById('res-savings-badge').textContent = `${pct}% Saved`;
-    document.getElementById('res-file-name').textContent = result.originalName || 'output.zip';
+    const origEl = document.getElementById('res-orig-size');
+    if (origEl) origEl.textContent = formatBytes(origSize);
+
+    const newEl = document.getElementById('res-new-size');
+    if (newEl) newEl.textContent = formatBytes(newSize);
+
+    const badgeEl = document.getElementById('res-savings-badge');
+    if (badgeEl) badgeEl.textContent = `${pct}% Saved`;
+
+    const fileNameEl = document.getElementById('res-file-name');
+    if (fileNameEl) fileNameEl.textContent = result.originalName || 'output.zip';
 
     const dl = document.getElementById('res-download-btn');
     if (dl) {

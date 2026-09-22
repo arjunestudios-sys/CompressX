@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Docholder —  Profile</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/animations.css">
@@ -12,24 +13,12 @@
 </head>
 <body>
     <div class="mobile-app-shell">
-        <div class="mobile-status-bar">
-            <span class="status-bar-time">9:41</span>
-            <div class="dynamic-island-notch">
-                <div class="notch-camera-dot"></div>
-            </div>
-            <div class="status-bar-icons">
-                <i class="fa-solid fa-signal"></i>
-                <i class="fa-solid fa-wifi"></i>
-                <i class="fa-solid fa-battery-full"></i>
-            </div>
-        </div>
-
         <header class="mobile-app-header">
             <button class="mobile-header-btn" onclick="window.location.href='dashboard.html'"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="mobile-header-title">
                 <span>Profile</span>
             </div>
-            <button class="theme-toggle-btn" onclick="toggleTheme()" style="width: 32px; height: 32px; font-size: 0.85rem;" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+            <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
         </header>
 
         <span id="nav-user-email" class="hidden"></span>
@@ -37,68 +26,95 @@
         <main class="app-body">
             <div class="page-title-block">
                 <h1 class="page-title"><i class="fa-solid fa-user-gear" style="color: var(--primary);"></i> Account</h1>
-                <p class="page-subtitle">Manage your mobile profile and security.</p>
+                <p class="page-subtitle">Manage your mobile profile and preferences.</p>
             </div>
 
-            <div class="glass-card" style="padding: 20px 14px;">
-                <div id="prof-avatar-box" style="margin: 0 auto 16px auto; width: 68px; height: 68px;"></div>
+            <div class="glass-card" style="padding: 20px 16px;">
+                <div id="prof-avatar-box" style="margin: 0 auto 16px auto; width: 72px; height: 72px;"></div>
                 
                 <form id="profile-form">
-                    <div class="form-group">
-                        <label class="form-label" style="font-size: 0.8rem;">Display Name</label>
-                        <input type="text" id="prof-name" class="form-input" style="font-size: 0.85rem;">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label class="form-label" style="font-size: 0.82rem;">Display Name</label>
+                        <input type="text" id="prof-name" class="form-input" style="font-size: 0.9rem; min-height: 46px;">
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" style="font-size: 0.8rem;">Email (Read-Only)</label>
-                        <input type="email" id="prof-email" class="form-input" readonly style="background: var(--surface-hover); cursor: not-allowed; font-size: 0.85rem;">
+                    <div class="form-group" style="margin-bottom: 14px;">
+                        <label class="form-label" style="font-size: 0.82rem;">Email (Read-Only)</label>
+                        <input type="email" id="prof-email" class="form-input" readonly style="background: var(--surface-hover); cursor: not-allowed; font-size: 0.9rem; min-height: 46px;">
                     </div>
 
-                    <div class="mobile-row-grid" style="margin: 14px 0;">
-                        <div class="stat-card" style="padding: 8px 10px;">
+                    <div class="mobile-row-grid" style="margin: 14px 0; gap: 8px;">
+                        <div class="stat-card" style="padding: 10px 12px;">
                             <div>
-                                <div style="font-size: 0.72rem; color: var(--text-secondary);">Account</div>
-                                <strong id="prof-auth-type" style="color: var(--primary); font-size: 0.82rem;">Docholder</strong>
+                                <div style="font-size: 0.74rem; color: var(--text-secondary);">Account</div>
+                                <strong id="prof-auth-type" style="color: var(--primary); font-size: 0.86rem;">Docholder</strong>
                             </div>
                         </div>
-                        <div class="stat-card" style="padding: 8px 10px;">
+                        <div class="stat-card" style="padding: 10px 12px;">
                             <div>
-                                <div style="font-size: 0.72rem; color: var(--text-secondary);">Member</div>
-                                <strong id="prof-created" style="font-size: 0.82rem;">Active</strong>
+                                <div style="font-size: 0.74rem; color: var(--text-secondary);">Member</div>
+                                <strong id="prof-created" style="font-size: 0.86rem;">Active</strong>
                             </div>
                         </div>
                     </div>
 
                     <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px;">
-                        <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-floppy-disk"></i> Save Profile</button>
-                        <button type="button" onclick="handleLogout()" class="btn btn-danger btn-sm">
-                            <i class="fa-solid fa-right-from-bracket"></i> Sign Out
-                        </button>
+                        <button type="submit" class="btn btn-primary btn-block" style="min-height: 46px; font-size: 0.92rem; font-weight: 700;"><i class="fa-solid fa-floppy-disk"></i> Save Profile</button>
                     </div>
                 </form>
             </div>
+
+            <!-- Appearance & Theme Selector Card on Profile Page -->
+            <div class="glass-card" style="padding: 16px; margin-top: 14px;">
+                <h4 style="margin-bottom: 8px; font-size: 0.9rem;"><i class="fa-solid fa-palette" style="color: var(--primary);"></i> Theme & Appearance</h4>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 12px;">Choose your preferred color theme for Docholder.</p>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                    <button type="button" id="btn-prof-light" class="btn btn-secondary btn-sm" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 6px; min-height: 64px;">
+                        <i class="fa-solid fa-sun" style="font-size: 1.2rem; color: #F59E0B;"></i>
+                        <span style="font-size: 0.76rem; font-weight: 600;">Light</span>
+                    </button>
+                    <button type="button" id="btn-prof-dark" class="btn btn-secondary btn-sm" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 6px; min-height: 64px;">
+                        <i class="fa-solid fa-moon" style="font-size: 1.2rem; color: #8B5CF6;"></i>
+                        <span style="font-size: 0.76rem; font-weight: 600;">Dark</span>
+                    </button>
+                    <button type="button" id="btn-prof-system" class="btn btn-secondary btn-sm" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 6px; min-height: 64px;">
+                        <i class="fa-solid fa-circle-half-stroke" style="font-size: 1.2rem; color: #06B6D4;"></i>
+                        <span style="font-size: 0.76rem; font-weight: 600;">System</span>
+                    </button>
+                </div>
+            </div>
+
+            <div style="margin-top: 14px;">
+                <button type="button" onclick="handleLogout()" class="btn btn-danger btn-block" style="min-height: 46px; font-size: 0.92rem; font-weight: 700;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                </button>
+            </div>
+
+            <!-- Bottom Spacer for Navigation Clearance -->
+            <div class="bottom-nav-spacer"></div>
         </main>
 
         <nav class="bottom-nav-bar">
             <a href="dashboard.html" class="bottom-nav-item">
-                <i class="fa-solid fa-gauge"></i>
+                <i class="fa-solid fa-house"></i>
                 <span>Home</span>
             </a>
+            <a href="tools.html" class="bottom-nav-item">
+                <i class="fa-solid fa-grip"></i>
+                <span>Tools</span>
+            </a>
             <a href="convert.html" class="bottom-nav-item">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                <span>Transform</span>
+                <i class="fa-solid fa-rotate"></i>
+                <span>Convert</span>
             </a>
             <a href="files.html" class="bottom-nav-item">
                 <i class="fa-solid fa-folder-open"></i>
                 <span>Files</span>
             </a>
-            <a href="compress.html" class="bottom-nav-item">
-                <i class="fa-solid fa-file-zipper"></i>
-                <span>Compress</span>
-            </a>
-            <a href="settings.html" class="bottom-nav-item">
-                <i class="fa-solid fa-sliders"></i>
-                <span>Settings</span>
+            <a href="history.html" class="bottom-nav-item">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>History</span>
             </a>
         </nav>
     </div>
@@ -111,3 +127,4 @@
     <script src="js/profile.js"></script>
 </body>
 </html>
+

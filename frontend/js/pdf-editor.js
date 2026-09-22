@@ -44,7 +44,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const pdfBytes = await pdfDataRes.arrayBuffer();
 
         pdfDoc = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
-        document.getElementById('page-count').textContent = pdfDoc.numPages;
+        const pageCountEl = document.getElementById('page-count');
+        if (pageCountEl) pageCountEl.textContent = pdfDoc.numPages;
         
         renderPage(pageNum);
     } catch(e) {
@@ -57,7 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Save current annotations on screen to map before switching
         saveCurrentAnnotationsToMap();
-        overlayLayer.innerHTML = '';
+        if (overlayLayer) overlayLayer.innerHTML = '';
 
         pdfDoc.getPage(num).then(page => {
             const viewport = page.getViewport({ scale });
@@ -79,7 +80,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        document.getElementById('page-num').textContent = num;
+        const pageNumEl = document.getElementById('page-num');
+        if (pageNumEl) pageNumEl.textContent = num;
     }
 
     function queueRenderPage(num) {
@@ -90,13 +92,49 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    document.getElementById('prev-page').addEventListener('click', () => {
+    function updateAnnotationCount() {
+        saveCurrentAnnotationsToMap();
+        let total = 0;
+        Object.values(annotationsMap).forEach(arr => {
+            total += arr.length;
+        });
+        const badgeText = document.getElementById('anno-count-text');
+        if (badgeText) {
+            badgeText.textContent = `${total} annotation${total === 1 ? '' : 's'}`;
+        }
+    }
+
+    // Zoom Controls
+    const zoomLevelBadge = document.getElementById('zoom-level-badge');
+    document.getElementById('zoom-in-btn')?.addEventListener('click', () => {
+        if (scale >= 2.5) return;
+        scale = Math.min(2.5, +(scale + 0.25).toFixed(2));
+        if (zoomLevelBadge) zoomLevelBadge.textContent = `${Math.round(scale * 100)}%`;
+        queueRenderPage(pageNum);
+    });
+
+    document.getElementById('zoom-out-btn')?.addEventListener('click', () => {
+        if (scale <= 0.75) return;
+        scale = Math.max(0.75, +(scale - 0.25).toFixed(2));
+        if (zoomLevelBadge) zoomLevelBadge.textContent = `${Math.round(scale * 100)}%`;
+        queueRenderPage(pageNum);
+    });
+
+    // Clear Annotations Button
+    document.getElementById('clear-annotations-btn')?.addEventListener('click', () => {
+        if (overlayLayer) overlayLayer.innerHTML = '';
+        annotationsMap[pageNum] = [];
+        updateAnnotationCount();
+        showToast("Cleared annotations on current page", "info");
+    });
+
+    document.getElementById('prev-page')?.addEventListener('click', () => {
         if (pageNum <= 1) return;
         pageNum--;
         queueRenderPage(pageNum);
     });
 
-    document.getElementById('next-page').addEventListener('click', () => {
+    document.getElementById('next-page')?.addEventListener('click', () => {
         if (pageNum >= pdfDoc.numPages) return;
         pageNum++;
         queueRenderPage(pageNum);
@@ -106,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let isAddingText = false;
     const addTextBtn = document.getElementById('add-text-btn');
 
-    addTextBtn.addEventListener('click', () => {
+    addTextBtn?.addEventListener('click', () => {
         isAddingText = !isAddingText;
         addTextBtn.classList.toggle('btn-primary');
         addTextBtn.classList.toggle('btn-secondary');
@@ -118,7 +156,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    overlayLayer.addEventListener('click', (e) => {
+    overlayLayer?.addEventListener('click', (e) => {
         if (!isAddingText) return;
         if (e.target !== overlayLayer) return; // clicked on existing box
 
@@ -133,6 +171,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         addTextBtn.classList.add('btn-secondary');
         overlayLayer.style.pointerEvents = 'none';
         container.style.cursor = 'default';
+        updateAnnotationCount();
     });
 
     function createTextBox(x, y, text = '', color = null, size = null) {
@@ -142,8 +181,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         box.style.left = x + 'px';
         box.style.top = y + 'px';
         
-        const selColor = color || document.getElementById('text-color').value;
-        const selSize = size || document.getElementById('font-size').value;
+        const colorInput = document.getElementById('text-color');
+        const sizeInput = document.getElementById('font-size');
+        const selColor = color || (colorInput ? colorInput.value : '#2563EB');
+        const selSize = size || (sizeInput ? sizeInput.value : 16);
         
         box.style.color = selColor;
         box.style.fontSize = selSize + 'px';
@@ -179,6 +220,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (box.innerText.trim() === '') {
                 box.remove();
             }
+            updateAnnotationCount();
         });
 
         overlayLayer.appendChild(box);
@@ -191,13 +233,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const boxes = document.querySelectorAll('.annotation-box');
         const anns = [];
         boxes.forEach(box => {
-            anns.push({
-                x: parseFloat(box.style.left),
-                y: parseFloat(box.style.top),
-                text: box.innerText,
-                color: box.dataset.color,
-                fontSize: box.dataset.fontSize
-            });
+            if (box.innerText.trim()) {
+                anns.push({
+                    x: parseFloat(box.style.left),
+                    y: parseFloat(box.style.top),
+                    text: box.innerText,
+                    color: box.dataset.color,
+                    fontSize: box.dataset.fontSize
+                });
+            }
         });
         annotationsMap[pageNum] = anns;
     }
@@ -207,10 +251,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         anns.forEach(ann => {
             createTextBox(ann.x, ann.y, ann.text, ann.color, ann.fontSize);
         });
+        updateAnnotationCount();
     }
 
     // Save PDF
-    document.getElementById('save-pdf-btn').addEventListener('click', async () => {
+    document.getElementById('save-pdf-btn')?.addEventListener('click', async () => {
         saveCurrentAnnotationsToMap();
         
         const payload = [];

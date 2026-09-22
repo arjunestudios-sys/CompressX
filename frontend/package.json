@@ -4,6 +4,9 @@
   "description": "Docholder Frontend Static Web Assets",
   "scripts": {
     "build": "npm --prefix .. run build",
-    "cap:sync": "npx cap sync android"
+    "cap:sync": "npm --prefix .. run cap:sync",
+    "cap:open": "npm --prefix .. run cap:open",
+    "build:apk": "npm --prefix .. run build:apk",
+    "build:apk:release": "npm --prefix .. run build:apk:release"
   }
 }

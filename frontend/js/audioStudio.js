@@ -12,7 +12,8 @@ const AUDIO_MODE_TITLES = {
     merge: 'Merge Audio Tracks',
     compress: 'Compress Audio Track',
     trim: 'Trim Audio Duration',
-    transcribe: 'Transcribe Audio to Text'
+    transcribe: 'Transcribe Audio to Text',
+    'meeting-intelligence': 'Meeting & Audio Intelligence'
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -47,7 +48,7 @@ function setupModeChips() {
 }
 
 function switchMode(mode) {
-    const panels = ['convert', 'volume', 'merge', 'compress', 'trim', 'transcribe'];
+    const panels = ['convert', 'volume', 'merge', 'compress', 'trim', 'transcribe', 'meeting-intelligence'];
     panels.forEach(p => {
         const el = document.getElementById(`panel-${p}`);
         if (el) el.classList.add('hidden');
@@ -97,7 +98,7 @@ async function loadWorkspaceAudios() {
                 const fId = e.target.value;
                 if (!fId) {
                     currentAudioFile = null;
-                    document.getElementById('selected-audio-preview-container').classList.add('hidden');
+                    document.getElementById('selected-audio-preview-container')?.classList.add('hidden');
                     return;
                 }
                 currentAudioFile = workspaceAudios.find(f => String(f.id) === String(fId)) || null;
@@ -529,6 +530,64 @@ function setupControls() {
             hideOperationLoader();
             showToast(e.message || 'Export failed.', 'error');
         }
+    }
+
+    // 7. Meeting & Audio Intelligence
+    const btnMeetingIntel = document.getElementById('btn-run-meeting-intelligence');
+    if (btnMeetingIntel) {
+        btnMeetingIntel.addEventListener('click', async () => {
+            if (!currentAudioFile) return showToast('Please select an audio file first.', 'warning');
+
+            btnMeetingIntel.disabled = true;
+            btnMeetingIntel.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyzing Meeting Audio...';
+
+            try {
+                const data = await window.DocholderAPI.meetingIntelligence({ fileId: currentAudioFile.id });
+                const resBox = document.getElementById('meeting-intelligence-results');
+                if (resBox) {
+                    resBox.classList.remove('hidden');
+
+                    const decisionsHtml = (data.keyDecisions || []).map(d => `
+                        <li style="margin-bottom:4px; font-size:0.78rem; color:var(--text);"><i class="fa-solid fa-check" style="color:var(--emerald-neon); margin-right:4px;"></i>${d}</li>
+                    `).join('');
+
+                    const actionHtml = (data.actionItems || []).map(a => `
+                        <li style="margin-bottom:4px; font-size:0.78rem; color:var(--text);"><i class="fa-solid fa-arrow-right" style="color:var(--cyan-neon); margin-right:4px;"></i>${a}</li>
+                    `).join('');
+
+                    const topicsHtml = (data.topics || []).map(t => `
+                        <span class="hud-badge hud-badge-pink" style="font-size:0.68rem; margin-right:4px;">${t}</span>
+                    `).join('');
+
+                    const partsHtml = (data.participants || []).map(p => `
+                        <span class="hud-badge hud-badge-green" style="font-size:0.68rem; margin-right:4px;">${p}</span>
+                    `).join('');
+
+                    resBox.innerHTML = `
+                        <div style="font-weight:700; color:#F59E0B; margin-bottom:8px; font-size:0.85rem;"><i class="fa-solid fa-users"></i> Meeting Intelligence Brief (${data.duration || 'Audio Track'})</div>
+                        <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:12px; line-height:1.4;">${data.summary || 'Summary unavailable'}</p>
+                        <div style="margin-bottom:10px;">
+                            <div style="font-size:0.75rem; font-weight:700; color:var(--text-secondary); margin-bottom:4px;">Topics Covered:</div>
+                            <div style="display:flex; flex-wrap:wrap; gap:4px;">${topicsHtml}</div>
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <div style="font-size:0.75rem; font-weight:700; color:var(--text-secondary); margin-bottom:4px;">Participants:</div>
+                            <div style="display:flex; flex-wrap:wrap; gap:4px;">${partsHtml}</div>
+                        </div>
+                        <div style="font-weight:700; font-size:0.8rem; margin-bottom:6px; color:var(--emerald-neon);">Key Decisions:</div>
+                        <ul style="list-style:none; padding-left:0; margin:0 0 12px 0;">${decisionsHtml}</ul>
+                        <div style="font-weight:700; font-size:0.8rem; margin-bottom:6px; color:var(--cyan-neon);">Action Items:</div>
+                        <ul style="list-style:none; padding-left:0; margin:0;">${actionHtml}</ul>
+                    `;
+                }
+                showToast('Meeting intelligence analysis complete!', 'success');
+            } catch(err) {
+                showToast(err.message || 'Meeting analysis failed.', 'error');
+            } finally {
+                btnMeetingIntel.disabled = false;
+                btnMeetingIntel.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Analyze Meeting Audio';
+            }
+        });
     }
 }
 

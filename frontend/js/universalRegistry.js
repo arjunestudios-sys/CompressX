@@ -131,7 +131,7 @@ const DocholderOperationRegistry = {
             category: 'doc',
             supportedInputFormats: ['pdf'],
             supportedOutputFormats: ['pdf'],
-            description: 'Reduce PDF file size with smart stream, font, and object optimization.',
+            description: 'Reduce PDF file size while keeping the document readable.',
             icon: 'fa-compress',
             workspace: 'document-tools.html?tool=compress',
             backendHandler: '/api/pdf/compress',
@@ -143,7 +143,7 @@ const DocholderOperationRegistry = {
             category: 'doc',
             supportedInputFormats: ['pdf'],
             supportedOutputFormats: ['pdf'],
-            description: 'Secure your document with standard password encryption and fine-grained permissions.',
+            description: 'Lock your PDF with a password and set printing or copy permissions.',
             icon: 'fa-lock',
             workspace: 'document-tools.html?tool=protect',
             backendHandler: '/api/pdf/protect',
@@ -155,7 +155,7 @@ const DocholderOperationRegistry = {
             category: 'doc',
             supportedInputFormats: ['pdf'],
             supportedOutputFormats: ['pdf'],
-            description: 'Draw, type, or upload an authentic signature and stamp directly onto any page.',
+            description: 'Draw, type, or upload a signature and place it anywhere on your PDF.',
             icon: 'fa-signature',
             workspace: 'document-tools.html?tool=sign',
             backendHandler: '/api/pdf/sign',
@@ -167,7 +167,7 @@ const DocholderOperationRegistry = {
             category: 'doc',
             supportedInputFormats: ['pdf'],
             supportedOutputFormats: ['pdf'],
-            description: 'Add highlights, notes, stamps, and shapes directly embedded into the document.',
+            description: 'Add highlights, notes, stamps, and shapes to your document.',
             icon: 'fa-highlighter',
             workspace: 'document-tools.html?tool=annotate',
             backendHandler: '/api/pdf/annotate',
@@ -179,7 +179,7 @@ const DocholderOperationRegistry = {
             category: 'doc',
             supportedInputFormats: ['pdf'],
             supportedOutputFormats: ['pdf'],
-            description: 'Permanently blackout sensitive personal, financial, or confidential data.',
+            description: 'Permanently blackout sensitive personal, financial, or private data.',
             icon: 'fa-eraser',
             workspace: 'document-tools.html?tool=redact',
             backendHandler: '/api/pdf/redact',
@@ -191,7 +191,7 @@ const DocholderOperationRegistry = {
             category: 'doc',
             supportedInputFormats: ['pdf'],
             supportedOutputFormats: ['pdf'],
-            description: 'Combine multiple PDF documents into a single organized file.',
+            description: 'Combine multiple PDF files into one single document.',
             icon: 'fa-object-group',
             workspace: 'document-tools.html?tool=merge',
             backendHandler: '/api/pdf/merge'
@@ -202,7 +202,7 @@ const DocholderOperationRegistry = {
             category: 'doc',
             supportedInputFormats: ['pdf'],
             supportedOutputFormats: ['pdf'],
-            description: 'Extract specific page ranges into a separate document.',
+            description: 'Separate PDF pages into individual files or custom page ranges.',
             icon: 'fa-scissors',
             workspace: 'document-tools.html?tool=split',
             backendHandler: '/api/pdf/split'
@@ -213,7 +213,7 @@ const DocholderOperationRegistry = {
             category: 'doc',
             supportedInputFormats: ['docx', 'doc'],
             supportedOutputFormats: ['docx', 'pdf', 'txt'],
-            description: 'Edit text, find and replace content, format paragraphs, and export to PDF.',
+            description: 'Edit Word text, change formatting, and export to PDF.',
             icon: 'fa-file-word',
             workspace: 'docx-editor.html',
             backendHandler: '/api/docx',
@@ -306,29 +306,382 @@ const DocholderOperationRegistry = {
             backendHandler: '/api/media/convert-video'
         },
 
-        // Audio Operations
+        // Feature 1: AI Content Rate Tracker
         {
-            id: 'audio-transcribe',
-            name: 'Audio → Text',
-            category: 'audio',
-            supportedInputFormats: ['mp3', 'wav', 'aac', 'ogg', 'm4a', 'flac'],
-            supportedOutputFormats: ['txt', 'docx', 'pdf'],
-            description: 'Transcribe speech into formatted editable text with export to TXT, DOCX, and PDF.',
-            icon: 'fa-file-lines',
-            workspace: 'audio-tools.html?tool=transcribe',
-            backendHandler: '/api/media/transcribe',
-            capabilities: ['timestamps', 'export_txt', 'export_docx', 'export_pdf']
+            id: 'ai-content-tracker',
+            name: 'AI Content Rate Tracker',
+            category: 'ai',
+            supportedInputFormats: ['txt', 'docx', 'doc', 'pdf', 'md'],
+            supportedOutputFormats: ['json'],
+            description: 'Probabilistic AI-likeness assessment & structural signal analysis.',
+            icon: 'fa-brain',
+            workspace: 'document-tools.html?tool=ai-detector',
+            backendHandler: '/api/files/ai-detector',
+            capabilities: ['ai_detection', 'signal_analysis']
         },
+        // Feature 2: Smart Humanizer
         {
-            id: 'audio-compress',
-            name: 'Compress Audio',
+            id: 'ai-humanizer',
+            name: 'Smart Humanizer',
+            category: 'ai',
+            supportedInputFormats: ['txt', 'docx', 'doc', 'pdf', 'md'],
+            supportedOutputFormats: ['txt', 'docx'],
+            description: 'Controlled AI humanization with character limits and before/after comparison.',
+            icon: 'fa-user-pen',
+            workspace: 'document-tools.html?tool=humanize',
+            backendHandler: '/api/files/humanize',
+            capabilities: ['character_limit', 'mode_selection', 'diff_view']
+        },
+        // Feature 3: AI Document Understanding
+        {
+            id: 'doc-understanding',
+            name: 'Document Understanding',
+            category: 'ai',
+            supportedInputFormats: ['pdf', 'docx', 'txt', 'xlsx'],
+            supportedOutputFormats: ['json'],
+            description: 'Extract summary, key findings, dates, action items, and entities.',
+            icon: 'fa-file-circle-check',
+            workspace: 'document-tools.html?tool=understand',
+            backendHandler: '/api/files/understand',
+            capabilities: ['summary', 'entities', 'action_items']
+        },
+        // Feature 4: Chat With Any File
+        {
+            id: 'doc-chat',
+            name: 'Chat With Any File',
+            category: 'ai',
+            supportedInputFormats: ['pdf', 'docx', 'txt', 'pptx', 'xlsx', 'jpg', 'png', 'mp3', 'mp4'],
+            supportedOutputFormats: ['json'],
+            description: 'Universal document Q&A with page and section citations.',
+            icon: 'fa-comments',
+            workspace: 'document-tools.html?tool=chat',
+            backendHandler: '/api/files/chat',
+            capabilities: ['citations', 'qa']
+        },
+        // Feature 5: Cross-File Intelligence
+        {
+            id: 'cross-file-intelligence',
+            name: 'Cross-File Intelligence',
+            category: 'ai',
+            supportedInputFormats: ['pdf', 'docx', 'xlsx', 'pptx', 'txt'],
+            supportedOutputFormats: ['json'],
+            description: 'Compare facts, revenue data, and discrepancies across multiple uploaded files.',
+            icon: 'fa-network-wired',
+            workspace: 'document-tools.html?tool=cross-intelligence',
+            backendHandler: '/api/files/cross-intelligence',
+            capabilities: ['multi_file_compare', 'synthesis']
+        },
+        // Feature 6: Document Fact Checker
+        {
+            id: 'doc-fact-checker',
+            name: 'Document Fact Checker',
+            category: 'ai',
+            supportedInputFormats: ['pdf', 'docx', 'txt'],
+            supportedOutputFormats: ['json'],
+            description: 'Extract and classify factual claims (Supported, Requires Verification, Unverified).',
+            icon: 'fa-check-double',
+            workspace: 'document-tools.html?tool=fact-check',
+            backendHandler: '/api/files/fact-check',
+            capabilities: ['claim_extraction', 'verification']
+        },
+        // Feature 7: Document Version Diff
+        {
+            id: 'doc-version-diff',
+            name: 'Document Version Diff',
+            category: 'doc',
+            supportedInputFormats: ['pdf', 'docx', 'txt'],
+            supportedOutputFormats: ['json'],
+            description: 'Page-by-page comparison showing additions, removals, and modifications.',
+            icon: 'fa-code-compare',
+            workspace: 'document-tools.html?tool=diff',
+            backendHandler: '/api/files/diff',
+            capabilities: ['visual_diff', 'text_diff']
+        },
+        // Feature 8: Document DNA
+        {
+            id: 'doc-dna',
+            name: 'Document DNA',
+            category: 'doc',
+            supportedInputFormats: ['pdf', 'docx', 'xlsx', 'pptx', 'jpg', 'png'],
+            supportedOutputFormats: ['json'],
+            description: 'Deep metadata fingerprint, image/table count, OCR status, and stable hash.',
+            icon: 'fa-fingerprint',
+            workspace: 'document-tools.html?tool=dna',
+            backendHandler: '/api/files/dna',
+            capabilities: ['hash', 'metadata_profile']
+        },
+        // Feature 9: Document Health Score
+        {
+            id: 'doc-health-score',
+            name: 'Document Health Score',
+            category: 'doc',
+            supportedInputFormats: ['pdf', 'docx', 'jpg', 'png'],
+            supportedOutputFormats: ['json'],
+            description: 'Calculate 0-100 quality score checking size, OCR, structure, and images.',
+            icon: 'fa-notes-medical',
+            workspace: 'document-tools.html?tool=health',
+            backendHandler: '/api/files/health',
+            capabilities: ['health_checks', 'scoring']
+        },
+        // Feature 10: One-Click Fix My File
+        {
+            id: 'fix-my-file',
+            name: 'Fix My File',
+            category: 'doc',
+            supportedInputFormats: ['pdf', 'jpg', 'png', 'docx'],
+            supportedOutputFormats: ['pdf'],
+            description: 'Automated repair, optimization, OCR, metadata clean, and structure fix pipeline.',
+            icon: 'fa-wand-magic-sparkles',
+            workspace: 'document-tools.html?tool=fix-everything',
+            backendHandler: '/api/files/fix-everything',
+            capabilities: ['pipeline_repair', 'one_click_fix']
+        },
+        // Feature 11: Goal-Based File Optimization
+        {
+            id: 'goal-optimization',
+            name: 'Goal-Based File Optimization',
+            category: 'doc',
+            supportedInputFormats: ['pdf', 'jpg', 'png', 'webp', 'docx'],
+            supportedOutputFormats: ['pdf', 'webp', 'jpg', 'zip'],
+            description: 'Preset optimization for Email, Website, Mobile, Printing, Archive, Submission.',
+            icon: 'fa-bullseye',
+            workspace: 'document-tools.html?tool=goal-optimize',
+            backendHandler: '/api/files/goal-optimize',
+            capabilities: ['goal_presets', 'auto_compression']
+        },
+        // Feature 12: Smart File Packaging
+        {
+            id: 'smart-packaging',
+            name: 'Smart File Packaging',
+            category: 'doc',
+            supportedInputFormats: ['pdf', 'docx', 'xlsx', 'jpg', 'png'],
+            supportedOutputFormats: ['zip'],
+            description: 'Validate, convert, compress, standardize naming, strip metadata, and package ZIP.',
+            icon: 'fa-box-archive',
+            workspace: 'document-tools.html?tool=smart-package',
+            backendHandler: '/api/files/smart-package',
+            capabilities: ['submission_manifest', 'batch_zip']
+        },
+        // Feature 13: AI Automatic File Naming
+        {
+            id: 'ai-file-naming',
+            name: 'AI Automatic File Naming',
+            category: 'doc',
+            supportedInputFormats: ['pdf', 'docx', 'txt', 'csv'],
+            supportedOutputFormats: ['json'],
+            description: 'Analyze file contents and recommend standardized, meaningful filenames.',
+            icon: 'fa-tag',
+            workspace: 'document-tools.html?tool=suggest-name',
+            backendHandler: '/api/files/suggest-name',
+            capabilities: ['naming_recommendation']
+        },
+        // Feature 14 & 15: Document Classification & Auto-Tagging
+        {
+            id: 'doc-classification',
+            name: 'Automatic Classification & Tagging',
+            category: 'doc',
+            supportedInputFormats: ['pdf', 'docx', 'txt', 'csv'],
+            supportedOutputFormats: ['json'],
+            description: 'Auto classify into Invoices, Contracts, Reports, Financials, and generate tags.',
+            icon: 'fa-tags',
+            workspace: 'document-tools.html?tool=classify',
+            backendHandler: '/api/files/classify',
+            capabilities: ['category_detect', 'tag_generation']
+        },
+        // Feature 16: Privacy Risk Scanner
+        {
+            id: 'privacy-scanner',
+            name: 'Privacy Risk Scanner',
+            category: 'security',
+            supportedInputFormats: ['pdf', 'docx', 'txt'],
+            supportedOutputFormats: ['json'],
+            description: 'Detect sensitive PII (Names, Emails, Phone numbers, Account numbers, SSNs).',
+            icon: 'fa-shield-cat',
+            workspace: 'document-tools.html?tool=privacy-scan',
+            backendHandler: '/api/files/privacy-scan',
+            capabilities: ['pii_detection', 'risk_scoring']
+        },
+        // Feature 17: Smart PII Redaction
+        {
+            id: 'pii-redaction',
+            name: 'Smart PII Redaction',
+            category: 'security',
+            supportedInputFormats: ['pdf', 'docx', 'txt'],
+            supportedOutputFormats: ['pdf', 'txt'],
+            description: 'Wipe underlying sensitive text and apply blackout overlays.',
+            icon: 'fa-user-shield',
+            workspace: 'document-tools.html?tool=redact-pii',
+            backendHandler: '/api/files/redact-pii',
+            capabilities: ['text_wiping', 'blackout_box']
+        },
+        // Feature 18: Universal Translation Workspace
+        {
+            id: 'universal-translation',
+            name: 'Universal Translation',
+            category: 'doc',
+            supportedInputFormats: ['pdf', 'docx', 'txt', 'jpg', 'png'],
+            supportedOutputFormats: ['pdf', 'docx', 'txt'],
+            description: 'Translate documents to Tamil, Hindi, English, French, Spanish, German, Japanese, Chinese.',
+            icon: 'fa-language',
+            workspace: 'document-tools.html?tool=translate',
+            backendHandler: '/api/files/translate',
+            capabilities: ['layout_preservation', 'multi_language']
+        },
+        // Feature 19: Meeting Intelligence
+        {
+            id: 'meeting-intelligence',
+            name: 'Meeting / Audio Intelligence',
             category: 'audio',
-            supportedInputFormats: ['mp3', 'wav', 'aac', 'ogg', 'm4a', 'flac'],
-            supportedOutputFormats: ['mp3', 'aac'],
-            description: 'Optimize audio bitrate and channels for podcasts, music, and voice notes.',
-            icon: 'fa-compress',
-            workspace: 'audio-tools.html?tool=compress',
-            backendHandler: '/api/media/compress-audio'
+            supportedInputFormats: ['mp3', 'wav', 'm4a', 'aac', 'flac'],
+            supportedOutputFormats: ['txt', 'docx', 'pdf'],
+            description: 'Generate transcript, summary, key decisions, action items, and participant lists.',
+            icon: 'fa-users-gear',
+            workspace: 'audio-tools.html?tool=meeting-intelligence',
+            backendHandler: '/api/media/meeting-intelligence',
+            capabilities: ['transcript', 'summary', 'action_items']
+        },
+        // Feature 20: Video Intelligence
+        {
+            id: 'video-intelligence',
+            name: 'Video Intelligence',
+            category: 'video',
+            supportedInputFormats: ['mp4', 'webm', 'mov', 'avi'],
+            supportedOutputFormats: ['json'],
+            description: 'Extract transcript, summary, timestamped chapters, and key moments.',
+            icon: 'fa-film',
+            workspace: 'video-tools.html?tool=video-intelligence',
+            backendHandler: '/api/media/video-intelligence',
+            capabilities: ['chapters', 'key_moments']
+        },
+        // Feature 21: Automatic Subtitle Generator
+        {
+            id: 'subtitle-generator',
+            name: 'Automatic Subtitle Generator',
+            category: 'video',
+            supportedInputFormats: ['mp4', 'webm', 'mov', 'mp3', 'wav'],
+            supportedOutputFormats: ['srt', 'vtt'],
+            description: 'Speech recognition timestamped subtitle generator with inline editing & export.',
+            icon: 'fa-closed-captioning',
+            workspace: 'video-tools.html?tool=subtitles',
+            backendHandler: '/api/media/subtitles',
+            capabilities: ['srt_vtt_export', 'timestamp_editor']
+        },
+        // Feature 22: Image Intelligence
+        {
+            id: 'image-intelligence',
+            name: 'Image Intelligence',
+            category: 'image',
+            supportedInputFormats: ['jpg', 'jpeg', 'png', 'webp', 'tiff', 'bmp'],
+            supportedOutputFormats: ['json', 'pdf', 'txt'],
+            description: 'OCR text extraction, object detection, QR/barcode scanning, and table detection.',
+            icon: 'fa-eye',
+            workspace: 'image-tools.html?tool=image-intelligence',
+            backendHandler: '/api/image/analyze',
+            capabilities: ['ocr', 'object_detection', 'qr_scanner']
+        },
+        // Feature 23: Smart Document Scanner
+        {
+            id: 'smart-document-scanner',
+            name: 'Smart Document Scanner',
+            category: 'image',
+            supportedInputFormats: ['jpg', 'jpeg', 'png', 'webp'],
+            supportedOutputFormats: ['pdf'],
+            description: 'Boundary detection, perspective correction, background cleanup, shadow reduction, OCR.',
+            icon: 'fa-camera-rotate',
+            workspace: 'image-tools.html?tool=document-scan',
+            backendHandler: '/api/image/document-scan',
+            capabilities: ['perspective_correction', 'searchable_pdf']
+        },
+        // Feature 24: Spreadsheet Intelligence
+        {
+            id: 'spreadsheet-intelligence',
+            name: 'Spreadsheet Intelligence',
+            category: 'spreadsheet',
+            supportedInputFormats: ['xlsx', 'xls', 'csv'],
+            supportedOutputFormats: ['json'],
+            description: 'Tabular Q&A, highest revenue detection, anomaly analysis, and statistical summary.',
+            icon: 'fa-table-cells-large',
+            workspace: 'document-tools.html?tool=spreadsheet-intelligence',
+            backendHandler: '/api/files/spreadsheet-intelligence',
+            capabilities: ['tabular_qa', 'anomaly_detection']
+        },
+        // Feature 25: Automatic Chart Generator
+        {
+            id: 'chart-generator',
+            name: 'Automatic Chart Generator',
+            category: 'spreadsheet',
+            supportedInputFormats: ['xlsx', 'xls', 'csv'],
+            supportedOutputFormats: ['png', 'pdf'],
+            description: 'Render Bar, Line, Pie, Comparison, and Trend charts from spreadsheet data.',
+            icon: 'fa-chart-pie',
+            workspace: 'document-tools.html?tool=generate-charts',
+            backendHandler: '/api/files/generate-charts',
+            capabilities: ['chart_render', 'chart_export']
+        },
+        // Feature 26: Smart Share Links
+        {
+            id: 'smart-share-links',
+            name: 'Smart Share Links',
+            category: 'security',
+            supportedInputFormats: ['pdf', 'docx', 'xlsx', 'jpg', 'png', 'mp4', 'zip'],
+            supportedOutputFormats: ['link'],
+            description: 'Create secure expiration links (1h/1d/7d), password protection, download limit.',
+            icon: 'fa-link',
+            workspace: 'files.html?action=share',
+            backendHandler: '/api/files/share-link',
+            capabilities: ['expiration_link', 'password_protection']
+        },
+        // Feature 27: Temporary File Vault
+        {
+            id: 'temporary-vault',
+            name: 'Temporary File Vault',
+            category: 'security',
+            supportedInputFormats: ['pdf', 'docx', 'xlsx', 'jpg', 'png', 'mp4', 'zip'],
+            supportedOutputFormats: ['vault'],
+            description: 'Secure temporary workspace with live expiration timer and auto-purging.',
+            icon: 'fa-clock-rotate-left',
+            workspace: 'files.html?vault=true',
+            backendHandler: '/api/files/vault',
+            capabilities: ['auto_purge', 'vault_timer']
+        },
+        // Feature 28: AI Workflow Builder
+        {
+            id: 'ai-workflow-builder',
+            name: 'AI Workflow Builder',
+            category: 'automation',
+            supportedInputFormats: ['jpg', 'png', 'pdf', 'mp4', 'mp3'],
+            supportedOutputFormats: ['pipeline'],
+            description: 'Visual multi-step node pipeline generation from natural language commands.',
+            icon: 'fa-diagram-project',
+            workspace: 'tools.html?tool=workflow-builder',
+            backendHandler: '/api/pipeline/builder',
+            capabilities: ['visual_workflow', 'node_pipeline']
+        },
+        // Feature 29: Reusable Automation Recipes
+        {
+            id: 'automation-recipes',
+            name: 'Reusable Automation Recipes',
+            category: 'automation',
+            supportedInputFormats: ['jpg', 'png', 'pdf', 'mp4', 'mp3'],
+            supportedOutputFormats: ['recipe'],
+            description: 'Save, run, edit, duplicate, and delete multi-operation workflows.',
+            icon: 'fa-cubes',
+            workspace: 'tools.html?tool=recipes',
+            backendHandler: '/api/pipeline/recipes',
+            capabilities: ['save_recipe', 'preset_execution']
+        },
+        // Feature 30: Universal Command Center
+        {
+            id: 'universal-command-bar',
+            name: 'Universal DO ANYTHING Command',
+            category: 'automation',
+            supportedInputFormats: ['*'],
+            supportedOutputFormats: ['*'],
+            description: 'Primary Docholder natural language prompt bar to parse intent and execute workflows.',
+            icon: 'fa-sparkles',
+            workspace: 'dashboard.html',
+            backendHandler: '/api/pipeline/builder',
+            capabilities: ['intent_parsing', 'universal_execution']
         }
     ],
 

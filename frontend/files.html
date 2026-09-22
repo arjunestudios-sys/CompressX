@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Docholder — My Files Library</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/animations.css">
@@ -13,26 +14,14 @@
 </head>
 <body>
     <div class="mobile-app-shell">
-        <div class="mobile-status-bar">
-            <span class="status-bar-time">9:41</span>
-            <div class="dynamic-island-notch">
-                <div class="notch-camera-dot"></div>
-            </div>
-            <div class="status-bar-icons">
-                <i class="fa-solid fa-signal"></i>
-                <i class="fa-solid fa-wifi"></i>
-                <i class="fa-solid fa-battery-full"></i>
-            </div>
-        </div>
-
         <header class="mobile-app-header">
             <button class="mobile-header-btn" onclick="handleSmartBack('dashboard.html')"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="mobile-header-title">
                 <span>My Files</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
                 <a href="settings.html" class="mobile-header-btn" title="Settings"><i class="fa-solid fa-gear"></i></a>
-                <button class="theme-toggle-btn" onclick="toggleTheme()" style="width: 32px; height: 32px; font-size: 0.85rem;" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
                 <a href="upload.html" class="mobile-header-btn" title="Upload"><i class="fa-solid fa-plus"></i></a>
             </div>
         </header>
@@ -72,12 +61,24 @@
                 <button class="chip active" data-category="all">All</button>
                 <button class="chip" data-category="favorites"><i class="fa-solid fa-star" style="color: #F59E0B;"></i> Starred</button>
                 <button class="chip" data-category="recent"><i class="fa-solid fa-clock-rotate-left" style="color: var(--cyan-neon);"></i> Recent</button>
+                <button class="chip" data-category="vault" id="chip-vault"><i class="fa-solid fa-vault" style="color: #EC4899;"></i> Vault</button>
                 <button class="chip" data-category="doc"><i class="fa-solid fa-file-word"></i> Docs</button>
                 <button class="chip" data-category="image"><i class="fa-solid fa-file-image"></i> Images</button>
                 <button class="chip" data-category="video"><i class="fa-solid fa-file-video"></i> Video</button>
                 <button class="chip" data-category="audio"><i class="fa-solid fa-file-audio"></i> Audio</button>
                 <button class="chip" data-category="archive"><i class="fa-solid fa-file-zipper"></i> Zip</button>
                 <button class="chip" data-category="text"><i class="fa-solid fa-file-code"></i> Code</button>
+            </div>
+
+            <!-- Vault Banner -->
+            <div id="vault-banner" class="glass-card hidden" style="background: rgba(236, 72, 153, 0.1); border-color: #EC4899; padding: 12px; margin-bottom: 10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h4 style="margin:0; font-size:0.88rem; color:#EC4899;"><i class="fa-solid fa-vault"></i> Temporary File Vault (Self-Destructing)</h4>
+                        <p style="margin:2px 0 0 0; font-size:0.75rem; color:var(--text-secondary);">Encrypted files automatically purged upon expiry.</p>
+                    </div>
+                    <button id="btn-add-to-vault" class="btn btn-primary btn-sm" style="font-size:0.75rem; padding:4px 10px; background:#EC4899; border-color:#EC4899;"><i class="fa-solid fa-plus"></i> Add File</button>
+                </div>
             </div>
 
             <!-- Batch Action Bar -->
@@ -110,6 +111,9 @@
                     </table>
                 </div>
             </div>
+
+            <!-- Bottom Spacer for Navigation Clearance -->
+            <div class="bottom-nav-spacer"></div>
         </main>
 
         <!-- Universal Media Preview Modal -->
@@ -187,18 +191,76 @@
             </div>
         </div>
 
+        <!-- Smart Share Link Modal -->
+        <div id="share-link-modal" class="modal-overlay hidden">
+            <div class="modal-card" style="max-width: 380px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="margin: 0; font-size: 0.95rem; color: var(--cyan-neon);"><i class="fa-solid fa-share-nodes"></i> Smart Share Link</h4>
+                    <button id="close-share-modal-btn" class="icon-btn"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label class="form-label">Select File to Share</label>
+                    <select id="share-file-select" class="form-select"></select>
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label class="form-label">Link Expiration</label>
+                    <select id="share-expiration-select" class="form-select">
+                        <option value="1">1 Hour</option>
+                        <option value="24" selected>24 Hours (1 Day)</option>
+                        <option value="168">7 Days</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label class="form-label">Access Password (Optional)</label>
+                    <input type="password" id="share-password-input" class="form-input" placeholder="Leave blank for open access">
+                </div>
+                <button id="btn-generate-share-link" class="btn btn-primary btn-block"><i class="fa-solid fa-link"></i> Generate Secure Link</button>
+                <div id="share-result-box" class="hidden" style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.4); border-radius: 6px; border: 1px solid var(--surface-border);">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px;">Shareable Secure Link:</div>
+                    <div style="display: flex; gap: 6px;">
+                        <input type="text" id="share-generated-url" class="form-input" readonly style="font-family: var(--font-mono); font-size: 0.75rem;">
+                        <button id="btn-copy-share-url" class="btn btn-secondary btn-sm"><i class="fa-solid fa-copy"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add to Vault Modal -->
+        <div id="vault-modal" class="modal-overlay hidden">
+            <div class="modal-card" style="max-width: 380px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="margin: 0; font-size: 0.95rem; color: #EC4899;"><i class="fa-solid fa-vault"></i> Secure Vault Storage</h4>
+                    <button id="close-vault-modal-btn" class="icon-btn"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label class="form-label">File to Vault</label>
+                    <select id="vault-file-select" class="form-select"></select>
+                </div>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label class="form-label">Self-Destruct Retention</label>
+                    <select id="vault-retention-select" class="form-select">
+                        <option value="1">1 Hour</option>
+                        <option value="24" selected>24 Hours (Standard)</option>
+                        <option value="48">48 Hours</option>
+                        <option value="168">7 Days</option>
+                    </select>
+                </div>
+                <button id="btn-save-to-vault" class="btn btn-primary btn-block" style="background:#EC4899; border-color:#EC4899;"><i class="fa-solid fa-shield-halved"></i> Store In Vault</button>
+            </div>
+        </div>
+
         <!-- Mobile Bottom Tab Navigation -->
         <nav class="bottom-nav-bar">
             <a href="dashboard.html" class="bottom-nav-item">
-                <i class="fa-solid fa-gauge"></i>
+                <i class="fa-solid fa-house"></i>
                 <span>Home</span>
             </a>
             <a href="tools.html" class="bottom-nav-item">
-                <i class="fa-solid fa-grid-2"></i>
+                <i class="fa-solid fa-grip"></i>
                 <span>Tools</span>
             </a>
             <a href="convert.html" class="bottom-nav-item">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <i class="fa-solid fa-rotate"></i>
                 <span>Convert</span>
             </a>
             <a href="files.html" class="bottom-nav-item active">
@@ -222,3 +284,4 @@
     <script src="js/files.js"></script>
 </body>
 </html>
+

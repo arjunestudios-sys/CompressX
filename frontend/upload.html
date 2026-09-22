@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Docholder —  Upload</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/animations.css">
@@ -12,18 +13,6 @@
 </head>
 <body>
     <div class="mobile-app-shell">
-        <div class="mobile-status-bar">
-            <span class="status-bar-time">9:41</span>
-            <div class="dynamic-island-notch">
-                <div class="notch-camera-dot"></div>
-            </div>
-            <div class="status-bar-icons">
-                <i class="fa-solid fa-signal"></i>
-                <i class="fa-solid fa-wifi"></i>
-                <i class="fa-solid fa-battery-full"></i>
-            </div>
-        </div>
-
         <header class="mobile-app-header">
             <button class="mobile-header-btn" onclick="window.location.href='dashboard.html'"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="mobile-header-title">
@@ -40,15 +29,23 @@
                 <p class="page-subtitle">Upload files up to 200MB into your workspace.</p>
             </div>
 
-            <div class="glass-card">
-                <div id="upload-dropzone" class="dropzone" style="padding: 36px 16px;">
+            <div class="glass-card" style="padding: 12px;">
+                <div id="upload-dropzone" class="smart-dropzone">
                     <input type="file" id="file-input" class="hidden">
-                    <i class="fa-solid fa-cloud-arrow-up dropzone-icon" style="font-size: 2.8rem; margin-bottom: 12px;"></i>
-                    <h3 class="dropzone-title">Tap to browse files</h3>
-                    <p class="dropzone-desc">or drag and drop into this zone</p>
-                    <p style="font-size: 0.72rem; color: var(--text-muted); margin-top: 10px;">PDF, Word, Excel, CSV, Images, Code, Archives</p>
+                    <div class="dropzone-icon-ring">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <div class="dropzone-primary-text">Tap to browse documents</div>
+                    <div class="dropzone-sub-text">or drag and drop into this workspace</div>
+                    <div class="dropzone-chips">
+                        <span class="dropzone-badge">PDF</span>
+                        <span class="dropzone-badge">DOCX</span>
+                        <span class="dropzone-badge">XLSX</span>
+                        <span class="dropzone-badge">JPG / PNG</span>
+                        <span class="dropzone-badge">ZIP</span>
+                    </div>
 
-                    <div id="upload-progress-container" class="hidden" style="margin-top: 18px;">
+                    <div id="upload-progress-container" class="hidden" style="margin-top: 18px; width: 100%;">
                         <div class="progress-bar-container">
                             <div id="upload-progress-fill" class="progress-bar-fill"></div>
                         </div>
@@ -69,6 +66,8 @@
                     <button id="btn-upload-another" class="btn btn-secondary btn-sm"><i class="fa-solid fa-plus"></i> Upload Another</button>
                 </div>
             </div>
+
+            <div class="bottom-nav-spacer"></div>
         </main>
 
         <nav class="bottom-nav-bar">
@@ -76,20 +75,20 @@
                 <i class="fa-solid fa-gauge"></i>
                 <span>Home</span>
             </a>
+            <a href="tools.html" class="bottom-nav-item">
+                <i class="fa-solid fa-grip"></i>
+                <span>Tools</span>
+            </a>
             <a href="convert.html" class="bottom-nav-item">
                 <i class="fa-solid fa-wand-magic-sparkles"></i>
-                <span>Transform</span>
+                <span>Convert</span>
             </a>
             <a href="files.html" class="bottom-nav-item">
                 <i class="fa-solid fa-folder-open"></i>
                 <span>Files</span>
             </a>
-            <a href="compress.html" class="bottom-nav-item">
-                <i class="fa-solid fa-file-zipper"></i>
-                <span>Compress</span>
-            </a>
             <a href="settings.html" class="bottom-nav-item">
-                <i class="fa-solid fa-sliders"></i>
+                <i class="fa-solid fa-gear"></i>
                 <span>Settings</span>
             </a>
         </nav>
@@ -102,3 +101,4 @@
     <script src="js/upload.js"></script>
 </body>
 </html>
+

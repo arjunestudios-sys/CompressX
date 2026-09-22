@@ -15,8 +15,17 @@ function authMiddleware(req, res, next) {
         token = req.headers.authorization.split(' ')[1];
     }
 
+    const guestUser = {
+        id: 'guest',
+        username: 'Guest',
+        email: 'guest@docholder.local',
+        storage_used: 0,
+        isGuest: true
+    };
+
     if (!token) {
-        return res.status(401).json({ error: 'Authentication required. Please sign in.' });
+        req.user = guestUser;
+        return next();
     }
 
     try {
@@ -25,17 +34,17 @@ function authMiddleware(req, res, next) {
             'SELECT id, username, email, date_of_birth, storage_used, notification_prefs, last_login, created_at FROM users WHERE id = ?'
         ).get(decoded.id);
 
-        if (!user) {
-            return res.status(401).json({ error: 'Authentication required. Please sign in.' });
+        if (user) {
+            const { password_hash, ...safeUser } = user;
+            req.user = safeUser;
+            return next();
         }
-
-        // Never expose the password hash to routes
-        const { password_hash, ...safeUser } = user;
-        req.user = safeUser;
-        next();
     } catch (err) {
-        return res.status(401).json({ error: 'Authentication required. Please sign in.' });
+        // Fall back to guest on invalid token
     }
+
+    req.user = guestUser;
+    next();
 }
 
 module.exports = authMiddleware;

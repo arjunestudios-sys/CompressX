@@ -9,8 +9,9 @@
 
 /* Inner body: safe bottom padding so content never hides behind nav */
 .app-body {
-  padding: 14px 14px 90px 14px;
+  padding: 16px 16px calc(110px + max(var(--sab, 0px), 16px)) 16px;
   scroll-behavior: smooth;
+  box-sizing: border-box;
 }
 
 /* Glass cards — consistent breathing room */

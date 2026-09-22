@@ -31,4 +31,55 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
     } catch(e) {}
+
+    // Theme Switcher Handler on Profile Page
+    const currentTheme = localStorage.getItem('docholder_theme') || 'light';
+    updateProfileThemeButtons(currentTheme);
+
+    const btnLight = document.getElementById('btn-prof-light');
+    const btnDark = document.getElementById('btn-prof-dark');
+    const btnSystem = document.getElementById('btn-prof-system');
+
+    if (btnLight) {
+        btnLight.addEventListener('click', () => {
+            setAppTheme('light', true);
+            updateProfileThemeButtons('light');
+        });
+    }
+    if (btnDark) {
+        btnDark.addEventListener('click', () => {
+            setAppTheme('dark', true);
+            updateProfileThemeButtons('dark');
+        });
+    }
+    if (btnSystem) {
+        btnSystem.addEventListener('click', () => {
+            setAppTheme('system', true);
+            updateProfileThemeButtons('system');
+        });
+    }
 });
+
+function updateProfileThemeButtons(activeTheme) {
+    const btnLight = document.getElementById('btn-prof-light');
+    const btnDark = document.getElementById('btn-prof-dark');
+    const btnSystem = document.getElementById('btn-prof-system');
+
+    [btnLight, btnDark, btnSystem].forEach(b => {
+        if (b) {
+            b.classList.remove('btn-primary');
+            b.classList.add('btn-secondary');
+        }
+    });
+
+    if (activeTheme === 'light' && btnLight) {
+        btnLight.classList.remove('btn-secondary');
+        btnLight.classList.add('btn-primary');
+    } else if (activeTheme === 'dark' && btnDark) {
+        btnDark.classList.remove('btn-secondary');
+        btnDark.classList.add('btn-primary');
+    } else if (activeTheme === 'system' && btnSystem) {
+        btnSystem.classList.remove('btn-secondary');
+        btnSystem.classList.add('btn-primary');
+    }
+}

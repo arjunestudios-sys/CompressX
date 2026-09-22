@@ -4,7 +4,19 @@ const crypto = require('crypto');
 const db = require('../config/db');
 const sharp = require('sharp');
 const PDFDocument = require('pdfkit');
-const pdfParse = require('pdf-parse');
+const rawPdfParse = require('pdf-parse');
+async function safePdfParse(buffer) {
+    if (typeof rawPdfParse === 'function') return await rawPdfParse(buffer);
+    if (rawPdfParse.default && typeof rawPdfParse.default === 'function') return await rawPdfParse.default(buffer);
+    if (rawPdfParse.PDFParse) {
+        const parser = new rawPdfParse.PDFParse({ data: buffer });
+        const res = await parser.getText();
+        if (parser.destroy) await parser.destroy();
+        return res;
+    }
+    return { text: '' };
+}
+const pdfParse = safePdfParse;
 const mammoth = require('mammoth');
 const docx = require('docx');
 const xlsx = require('xlsx');

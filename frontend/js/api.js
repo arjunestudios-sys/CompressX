@@ -1,7 +1,15 @@
 // Docholder API Client, Mobile State & Notifications
+(function checkNativePlatform() {
+    const isNative = (window.Capacitor && (window.Capacitor.isNativePlatform?.() || window.Capacitor.getPlatform() === 'android' || window.Capacitor.getPlatform() === 'ios')) || window.location.protocol === 'file:';
+    if (isNative) {
+        document.documentElement.classList.add('is-native-app');
+        if (document.body) document.body.classList.add('is-native-app');
+        else document.addEventListener('DOMContentLoaded', () => document.body.classList.add('is-native-app'));
+    }
+})();
 
 // Initialize Theme
-const savedTheme = localStorage.getItem('docholder_theme') || 'dark';
+const savedTheme = localStorage.getItem('docholder_theme') || 'light';
 setAppTheme(savedTheme, false);
 
 // Initialize View Mode (Mobile Frame vs Fullscreen)
@@ -29,7 +37,7 @@ function updateViewModeButtonText() {
 }
 
 function setAppTheme(theme, showNotice = false) {
-    const validTheme = ['light', 'dark', 'system'].includes(theme) ? theme : 'dark';
+    const validTheme = ['light', 'dark', 'system'].includes(theme) ? theme : 'light';
     document.documentElement.setAttribute('data-theme', validTheme);
     if (document.body) document.body.setAttribute('data-theme', validTheme);
     localStorage.setItem('docholder_theme', validTheme);
@@ -47,7 +55,7 @@ function setAppTheme(theme, showNotice = false) {
 }
 
 function toggleTheme() {
-    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
     const next = current === 'dark' ? 'light' : 'dark';
     setAppTheme(next, true);
 }
@@ -218,7 +226,7 @@ async function requestDocholderPermission(type = 'storage', reason = 'access you
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    updateThemeIcons(localStorage.getItem('docholder_theme') || 'dark');
+    updateThemeIcons(localStorage.getItem('docholder_theme') || 'light');
 });
 
 // Docholder Settings Helper
@@ -228,7 +236,7 @@ function getDocholderSettings() {
         if (raw) return JSON.parse(raw);
     } catch(e) {}
     return {
-        theme: 'dark',
+        theme: 'light',
         notificationsEnabled: true,
         notificationDuration: 4000,
         reducedMotion: false,
@@ -429,19 +437,25 @@ function showOperationLoader(options = {}) {
         document.body.appendChild(modal);
     }
 
-    document.getElementById('op-loader-title').textContent = title;
-    document.getElementById('op-loader-subtitle').textContent = subtitle;
+    const titleEl = document.getElementById('op-loader-title');
+    if (titleEl) titleEl.textContent = title;
+
+    const subtitleEl = document.getElementById('op-loader-subtitle');
+    if (subtitleEl) subtitleEl.textContent = subtitle;
 
     const stagesList = document.getElementById('op-loader-stages');
-    stagesList.innerHTML = stages.map((s, idx) => `
-        <div class="op-stage-item ${idx === initialIndex ? 'active' : (idx < initialIndex ? 'completed' : '')}" id="op-stage-${idx}">
-            <i class="fa-solid ${idx < initialIndex ? 'fa-circle-check' : (idx === initialIndex ? 'fa-circle-notch fa-spin' : 'fa-circle')} op-stage-icon"></i>
-            <span>${s}</span>
-        </div>
-    `).join('');
+    if (stagesList) {
+        stagesList.innerHTML = stages.map((s, idx) => `
+            <div class="op-stage-item ${idx === initialIndex ? 'active' : (idx < initialIndex ? 'completed' : '')}" id="op-stage-${idx}">
+                <i class="fa-solid ${idx < initialIndex ? 'fa-circle-check' : (idx === initialIndex ? 'fa-circle-notch fa-spin' : 'fa-circle')} op-stage-icon"></i>
+                <span>${s}</span>
+            </div>
+        `).join('');
+    }
 
     const fillPercent = Math.min(100, Math.round(((initialIndex + 1) / stages.length) * 100));
-    document.getElementById('op-loader-bar-fill').style.width = `${fillPercent}%`;
+    const fillEl = document.getElementById('op-loader-bar-fill');
+    if (fillEl) fillEl.style.width = `${fillPercent}%`;
 
     modal.classList.add('visible');
 }
@@ -563,13 +577,7 @@ async function apiFetch(endpoint, options = {}) {
         const fullUrl = resolveApiUrl(endpoint);
         const response = await fetch(fullUrl, options);
 
-        if (response.status === 401) {
-            const currentPath = window.location.pathname;
-            if (!currentPath.endsWith('login.html') && !currentPath.endsWith('register.html') && !currentPath.endsWith('welcome.html') && currentPath !== '/') {
-                window.location.href = '/login.html';
-                return;
-            }
-        }
+        // 401 response handling (no forced redirect to login, return data/error gracefully)
 
         const data = await response.json();
 
@@ -1139,4 +1147,72 @@ const DocholderUI = {
         }
     }
 };
+
+/**
+ * Universal Docholder Client API Object
+ */
+window.DocholderAPI = {
+    apiFetch,
+    getUsage: () => apiFetch('/api/files/usage'),
+    registerPushToken: (deviceToken, platform) => apiFetch('/api/files/push-token', { method: 'POST', body: { deviceToken, platform } }),
+    aiDetector: (formDataOrText) => {
+        if (typeof formDataOrText === 'string') {
+            return apiFetch('/api/files/ai-detector', { method: 'POST', body: { text: formDataOrText } });
+        }
+        return apiFetch('/api/files/ai-detector', { method: 'POST', body: formDataOrText });
+    },
+    humanize: (payload) => apiFetch('/api/files/humanize', { method: 'POST', body: payload }),
+    understand: (formData) => apiFetch('/api/files/understand', { method: 'POST', body: formData }),
+    chat: (payload) => apiFetch('/api/files/chat', { method: 'POST', body: payload }),
+    crossIntelligence: (payload) => apiFetch('/api/files/cross-intelligence', { method: 'POST', body: payload }),
+    factCheck: (formDataOrText) => {
+        if (typeof formDataOrText === 'string') {
+            return apiFetch('/api/files/fact-check', { method: 'POST', body: { text: formDataOrText } });
+        }
+        return apiFetch('/api/files/fact-check', { method: 'POST', body: formDataOrText });
+    },
+    diff: (formData) => apiFetch('/api/files/diff', { method: 'POST', body: formData }),
+    dna: (formData) => apiFetch('/api/files/dna', { method: 'POST', body: formData }),
+    health: (formData) => apiFetch('/api/files/health', { method: 'POST', body: formData }),
+    fixEverything: (formData) => apiFetch('/api/files/fix-everything', { method: 'POST', body: formData }),
+    goalOptimize: (formData) => apiFetch('/api/files/goal-optimize', { method: 'POST', body: formData }),
+    smartPackage: (formData) => apiFetch('/api/files/smart-package', { method: 'POST', body: formData }),
+    suggestName: (formData) => apiFetch('/api/files/suggest-name', { method: 'POST', body: formData }),
+    classify: (formData) => apiFetch('/api/files/classify', { method: 'POST', body: formData }),
+    privacyScan: (formData) => apiFetch('/api/files/privacy-scan', { method: 'POST', body: formData }),
+    redactPii: (formData) => apiFetch('/api/files/redact-pii', { method: 'POST', body: formData }),
+    translate: (formData) => apiFetch('/api/files/translate', { method: 'POST', body: formData }),
+    meetingIntelligence: (payload) => apiFetch('/api/media/meeting-intelligence', { method: 'POST', body: payload }),
+    videoIntelligence: (payload) => apiFetch('/api/media/video-intelligence', { method: 'POST', body: payload }),
+    subtitles: (payload) => apiFetch('/api/media/subtitles', { method: 'POST', body: payload }),
+    spreadsheetIntelligence: (formData) => apiFetch('/api/files/spreadsheet-intelligence', { method: 'POST', body: formData }),
+    generateCharts: (formData) => apiFetch('/api/files/generate-charts', { method: 'POST', body: formData }),
+    shareLink: (payload) => apiFetch('/api/files/share-link', { method: 'POST', body: payload }),
+    vault: (payload) => apiFetch('/api/files/vault', { method: 'POST', body: payload }),
+    buildWorkflow: (query) => apiFetch('/api/pipeline/builder', { method: 'POST', body: { query } }),
+    getRecipes: () => apiFetch('/api/pipeline/recipes'),
+    imageIntelligence: (payload) => apiFetch('/api/image/analyze', { method: 'POST', body: payload }),
+    documentScan: (payload) => apiFetch('/api/image/document-scan', { method: 'POST', body: payload })
+};
+
+// Real-time live status bar clock updater
+(function initStatusBarClock() {
+    function updateClock() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const formatted = `${hours % 12 || 12}:${minutes}`;
+        document.querySelectorAll('.status-bar-time').forEach(el => {
+            el.textContent = formatted;
+        });
+    }
+    if (typeof document !== 'undefined') {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateClock);
+        } else {
+            updateClock();
+        }
+        setInterval(updateClock, 10000);
+    }
+})();
 

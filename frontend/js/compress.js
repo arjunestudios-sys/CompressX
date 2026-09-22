@@ -47,11 +47,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            const format = document.getElementById('archive-format').value;
-            const level = parseInt(document.getElementById('archive-level').value, 10);
-            const password = document.getElementById('archive-password').value.trim();
-            const customName = document.getElementById('archive-name').value.trim();
-            const deleteOriginals = document.getElementById('delete-originals').checked;
+            const formatInput = document.getElementById('archive-format');
+            const levelInput = document.getElementById('archive-level');
+            const passwordInput = document.getElementById('archive-password');
+            const customNameInput = document.getElementById('archive-name');
+            const deleteOriginalsInput = document.getElementById('delete-originals');
+
+            const format = formatInput ? formatInput.value : 'zip';
+            const level = levelInput ? parseInt(levelInput.value, 10) : 5;
+            const password = passwordInput ? passwordInput.value.trim() : '';
+            const customName = customNameInput ? customNameInput.value.trim() : '';
+            const deleteOriginals = deleteOriginalsInput ? deleteOriginalsInput.checked : false;
 
             startBtn.disabled = true;
             startBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Compressing ${fileIds.length} file(s)...`;
@@ -75,10 +81,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (resultCard) {
                     resultCard.classList.remove('hidden');
-                    document.getElementById('res-archive-name').textContent = result.originalName;
-                    document.getElementById('res-orig-size').textContent = formatBytes(result.originalSize);
-                    document.getElementById('res-comp-size').textContent = formatBytes(result.compressedSize);
-                    document.getElementById('res-saved-percent').textContent = `${result.percentageSaved}% Saved`;
+                    const nameEl = document.getElementById('res-archive-name');
+                    if (nameEl) nameEl.textContent = result.originalName;
+
+                    const origEl = document.getElementById('res-orig-size');
+                    if (origEl) origEl.textContent = formatBytes(result.originalSize);
+
+                    const compEl = document.getElementById('res-comp-size');
+                    if (compEl) compEl.textContent = formatBytes(result.compressedSize);
+
+                    const savedEl = document.getElementById('res-saved-percent');
+                    if (savedEl) savedEl.textContent = `${result.percentageSaved}% Saved`;
 
                     const downloadBtn = document.getElementById('res-download-btn');
                     if (downloadBtn) {

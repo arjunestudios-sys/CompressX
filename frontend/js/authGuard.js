@@ -77,23 +77,18 @@
         const user = await verifySession();
 
         if (mode === 'unauth') {
-            // Auth pages: if already logged in → send to dashboard
             removeOverlay();
-            if (user) {
+            if (user && !user.isGuest) {
                 window.location.replace(DASHBOARD_PAGE);
             }
         } else {
-            // Protected pages: if NOT logged in → send to login
-            if (!user) {
-                window.location.replace(LOGIN_PAGE);
-            } else {
-                window.__authUser = user;
-                removeOverlay();
-                // Populate any username/greeting elements
-                document.querySelectorAll('[data-auth-username]').forEach(el => {
-                    el.textContent = user.username || user.email || 'User';
-                });
-            }
+            const activeUser = user || { id: 'guest', username: 'Guest', email: 'guest@docholder.local', isGuest: true };
+            window.__authUser = activeUser;
+            removeOverlay();
+            // Populate any username/greeting elements
+            document.querySelectorAll('[data-auth-username]').forEach(el => {
+                el.textContent = activeUser.username || activeUser.email || 'User';
+            });
         }
     });
 })();

@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Docholder —  Audio Studio</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/animations.css">
@@ -12,26 +13,14 @@
 </head>
 <body>
     <div class="mobile-app-shell">
-        <div class="mobile-status-bar">
-            <span class="status-bar-time">9:41</span>
-            <div class="dynamic-island-notch">
-                <div class="notch-camera-dot"></div>
-            </div>
-            <div class="status-bar-icons">
-                <i class="fa-solid fa-signal"></i>
-                <i class="fa-solid fa-wifi"></i>
-                <i class="fa-solid fa-battery-full"></i>
-            </div>
-        </div>
-
         <header class="mobile-app-header">
             <button class="mobile-header-btn" onclick="handleSmartBack('tools.html?cat=audio')"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="mobile-header-title">
                 <span>Audio Studio</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
                 <a href="settings.html" class="mobile-header-btn" title="Settings"><i class="fa-solid fa-gear"></i></a>
-                <button class="theme-toggle-btn" onclick="toggleTheme()" style="width: 32px; height: 32px; font-size: 0.85rem;" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
             </div>
         </header>
 
@@ -44,31 +33,31 @@
             </div>
 
             <!-- Mode Selector Chips -->
-            <div class="category-nav-bar">
+            <div class="action-chips">
                 <button class="action-chip active" data-mode="convert"><i class="fa-solid fa-rotate"></i> Convert</button>
                 <button class="action-chip" data-mode="volume"><i class="fa-solid fa-volume-high"></i> Volume</button>
                 <button class="action-chip" data-mode="merge"><i class="fa-solid fa-object-group"></i> Merge</button>
                 <button class="action-chip" data-mode="compress"><i class="fa-solid fa-compress"></i> Compress</button>
                 <button class="action-chip" data-mode="trim"><i class="fa-solid fa-scissors"></i> Trim</button>
                 <button class="action-chip" data-mode="transcribe"><i class="fa-solid fa-file-lines"></i> Transcribe</button>
+                <button class="action-chip" data-mode="meeting-intelligence"><i class="fa-solid fa-users" style="color: #F59E0B;"></i> Meeting Intelligence</button>
             </div>
 
             <!-- Step 1: Select Audio -->
             <div class="glass-card">
-                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-square-check" style="color: var(--primary);"></i> 1. Select Audio</h4>
+                <h4 style="font-size: 0.92rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-circle-check" style="color: var(--primary);"></i> 1. Select Audio</h4>
                 
-                <div class="form-group" style="margin-bottom: 8px;">
-                    <select id="audio-file-select" class="form-select" style="font-size: 0.85rem;">
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <select id="audio-file-select" class="form-select" style="font-size: 0.88rem;">
                         <option value="">-- Choose from Workspace --</option>
                     </select>
                 </div>
 
-                <div id="audio-dropzone" class="dropzone" style="padding: 14px; position: relative; overflow: hidden;">
-                    <div class="laser-scanner-line"></div>
+                <div id="audio-dropzone" class="smart-dropzone" style="cursor: pointer;">
                     <input type="file" id="audio-file-input" accept="audio/*" class="hidden">
-                    <i class="fa-solid fa-cloud-arrow-up dropzone-icon" style="font-size: 1.5rem; margin-bottom: 4px; color: var(--emerald-neon);"></i>
-                    <div style="font-weight: 700; font-size: 0.85rem; font-family: var(--font-hud); letter-spacing: 0.5px;">Tap or Drop Sonic Track</div>
-                    <div style="font-size: 0.72rem; color: var(--text-secondary); font-family: var(--font-mono);">MP3, WAV, AAC, OGG, M4A, FLAC</div>
+                    <i class="fa-solid fa-cloud-arrow-up dropzone-icon" style="font-size: 2.2rem; color: var(--primary);"></i>
+                    <h3 class="dropzone-title">Tap or Drop Audio File</h3>
+                    <p class="dropzone-desc">MP3, WAV, AAC, OGG, M4A, FLAC</p>
                 </div>
 
                 <!-- Live Audio Visualizer & Preview Player -->
@@ -77,7 +66,7 @@
                         <canvas id="audio-waveform-canvas" class="audio-visualizer-canvas"></canvas>
                         <div class="visualizer-hud-badge"><i class="fa-solid fa-wave-square"></i> QUANTUM SPECTRUM // 48kHz</div>
                     </div>
-                    <div class="media-preview-container" style="background: var(--surface-card);">
+                    <div class="media-preview-container">
                         <audio id="selected-audio-player" controls style="width: 100%;"></audio>
                     </div>
                     <div id="selected-audio-meta-badge" style="font-size: 0.76rem; color: var(--cyan-neon); font-family: var(--font-mono); text-align: center; margin-top: 6px;"></div>
@@ -117,17 +106,17 @@
             </div>
 
             <!-- Convert Panel -->
-            <div id="panel-convert" class="glass-card">
+            <div id="panel-convert" class="glass-card cyber-card">
                 <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-rotate" style="color: var(--accent);"></i> 2. Target Audio Format</h4>
                 <div class="form-group">
                     <label class="form-label">Format</label>
                     <select id="aud-target-format" class="form-select">
-                        <option value="mp3" selected>MP3 (.mp3) —  Universal</option>
-                        <option value="wav">WAV (.wav) —  Lossless PCM</option>
-                        <option value="aac">AAC (.aac) —  Apple Standard</option>
-                        <option value="ogg">OGG (.ogg) —  Open Audio</option>
+                        <option value="mp3" selected>MP3 (.mp3) — Universal</option>
+                        <option value="wav">WAV (.wav) — Lossless PCM</option>
+                        <option value="aac">AAC (.aac) — Apple Standard</option>
+                        <option value="ogg">OGG (.ogg) — Open Audio</option>
                         <option value="m4a">M4A (.m4a)</option>
-                        <option value="flac">FLAC (.flac) —  Studio Lossless</option>
+                        <option value="flac">FLAC (.flac) — Studio Lossless</option>
                     </select>
                 </div>
 
@@ -145,7 +134,7 @@
             </div>
 
             <!-- Compress Panel -->
-            <div id="panel-compress" class="glass-card hidden">
+            <div id="panel-compress" class="glass-card cyber-card hidden">
                 <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-compress" style="color: var(--accent);"></i> 2. Audio Compression</h4>
                 <div class="form-group">
                     <label class="form-label">Target Bitrate</label>
@@ -166,7 +155,7 @@
             </div>
 
             <!-- Trim Panel -->
-            <div id="panel-trim" class="glass-card hidden">
+            <div id="panel-trim" class="glass-card cyber-card hidden">
                 <h4 style="font-size: 0.88rem; margin-bottom: 10px;"><i class="fa-solid fa-scissors" style="color: var(--accent);"></i> 2. Trim Audio Track</h4>
                 <div style="display: flex; gap: 8px;">
                     <div class="form-group" style="flex: 1;">
@@ -194,7 +183,7 @@
                 </p>
 
                 <!-- Audio Metadata Pill -->
-                <div id="transcribe-audio-meta" style="display: flex; gap: 8px; font-size: 0.75rem; background: var(--surface-hover); padding: 8px 10px; border-radius: var(--radius-xs); border: 1px solid var(--surface-border); margin-bottom: 12px;">
+                <div id="transcribe-audio-meta" class="card-inner-box" style="display: flex; gap: 8px; font-size: 0.75rem; margin-bottom: 12px;">
                     <div style="flex: 1;"><strong style="color: var(--text);">Format:</strong> <span id="transcribe-fmt-badge" style="color: var(--cyan-neon); font-family: var(--font-mono);">MP3</span></div>
                     <div style="flex: 1;"><strong style="color: var(--text);">Bitrate:</strong> <span id="transcribe-bitrate-badge" style="color: var(--primary); font-family: var(--font-mono);">128 kbps</span></div>
                     <div style="flex: 1;"><strong style="color: var(--text);">Status:</strong> <span style="color: var(--emerald-neon);">Ready</span></div>
@@ -204,10 +193,10 @@
                     <label class="form-label">Audio Spoken Language</label>
                     <select id="transcribe-language" class="form-select" style="font-size: 0.85rem;">
                         <option value="en" selected>English (US / UK / Global)</option>
-                        <option value="es">Spanish (EspaÃ±ol)</option>
-                        <option value="fr">French (FranÃ§ais)</option>
+                        <option value="es">Spanish (Español)</option>
+                        <option value="fr">French (Français)</option>
                         <option value="de">German (Deutsch)</option>
-                        <option value="hi">Hindi (à¤¹à¤¿à¤‚à¤¦à¥€)</option>
+                        <option value="hi">Hindi (हिंदी)</option>
                         <option value="auto">Auto-Detect Language</option>
                     </select>
                 </div>
@@ -246,8 +235,16 @@
                 </div>
             </div>
 
+            <!-- Meeting Intelligence Panel -->
+            <div id="panel-meeting-intelligence" class="glass-card cyber-card hidden">
+                <h4 style="font-size: 0.88rem; margin-bottom: 8px;"><i class="fa-solid fa-users" style="color: #F59E0B;"></i> 2. Meeting & Audio Intelligence</h4>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px;">Extract structured meeting summary, key decisions, action items, topics, and participant breakdown.</p>
+                <button id="btn-run-meeting-intelligence" class="btn btn-primary btn-block"><i class="fa-solid fa-wand-magic-sparkles"></i> Analyze Meeting Audio</button>
+                <div id="meeting-intelligence-results" class="hidden card-inner-box" style="margin-top: 12px; border-color: rgba(245, 158, 11, 0.3);"></div>
+            </div>
+
             <!-- Result Card -->
-            <div id="audio-result-card" class="glass-card hidden" style="border-color: var(--success);">
+            <div id="audio-result-card" class="glass-card cyber-card hidden" style="border-color: var(--success); box-shadow: 0 0 16px rgba(16, 185, 129, 0.15);">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                     <h4 style="margin: 0; font-size: 0.9rem; color: var(--success);"><i class="fa-solid fa-circle-check"></i> Audio Processed!</h4>
                     <span id="aud-result-saved" class="savings-badge">0% Saved</span>
@@ -266,13 +263,40 @@
                     </div>
                 </div>
 
-                <div class="media-preview-container" style="background: var(--surface-card);">
+                <div class="media-preview-container">
                     <audio id="aud-result-player" controls style="width: 100%;"></audio>
                 </div>
 
-                <a id="aud-download-link" href="#" class="btn btn-primary btn-block" style="margin-top: 10px;"><i class="fa-solid fa-download"></i> Download Audio</a>
+                <a id="aud-download-link" href="#" class="btn btn-primary btn-block" style="margin-top: 10px; min-height: 48px; font-size: 0.95rem; font-weight: 700;"><i class="fa-solid fa-download"></i> Download Audio</a>
             </div>
+
+            <!-- Bottom Spacer for Navigation Clearance -->
+            <div class="bottom-nav-spacer"></div>
         </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav-bar">
+            <a href="dashboard.html" class="bottom-nav-item">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
+            <a href="tools.html" class="bottom-nav-item active">
+                <i class="fa-solid fa-grip"></i>
+                <span>Tools</span>
+            </a>
+            <a href="convert.html" class="bottom-nav-item">
+                <i class="fa-solid fa-rotate"></i>
+                <span>Convert</span>
+            </a>
+            <a href="files.html" class="bottom-nav-item">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Files</span>
+            </a>
+            <a href="history.html" class="bottom-nav-item">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>History</span>
+            </a>
+        </nav>
     </div>
 
     <script src="js/authGuard.js"></script>
@@ -284,3 +308,4 @@
     <script src="js/audioStudio.js"></script>
 </body>
 </html>
+

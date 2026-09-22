@@ -19,5 +19,8 @@ router.post('/merge-video', mediaController.mergeVideoFiles);
 router.post('/video-to-gif', mediaController.convertVideoToGif);
 router.post('/transcribe-audio', mediaController.transcribeAudio);
 router.post('/export-transcript', mediaController.exportTranscript);
+router.post('/meeting-intelligence', mediaController.meetingIntelligence);
+router.post('/video-intelligence', mediaController.videoIntelligence);
+router.post('/subtitles', mediaController.generateSubtitles);
 
 module.exports = router;

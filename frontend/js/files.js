@@ -17,6 +17,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentSearch = '';
     let currentSort = 'date';
 
+    // 0. Check URL query params for category
+    const urlParams = new URLSearchParams(window.location.search);
+    const initCat = urlParams.get('category') || urlParams.get('cat');
+    if (initCat) {
+        currentCategory = initCat;
+        document.querySelectorAll('.chip[data-category]').forEach(c => {
+            c.classList.toggle('active', c.getAttribute('data-category') === initCat);
+        });
+    }
+
     // 1. Setup Filter Chips
     document.querySelectorAll('.chip[data-category]').forEach(chip => {
         chip.onclick = () => {
@@ -25,6 +35,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentCategory = chip.getAttribute('data-category');
             loadFiles();
         };
+    });
+
+    // Clear Downloaded History Button
+    const btnClearDl = document.getElementById('btn-clear-downloaded');
+    if (btnClearDl) {
+        btnClearDl.onclick = () => {
+            DocholderStorage.clearDownloadedFiles();
+            showToast('Downloaded files list cleared.', 'info');
+            loadFiles();
+        };
+    }
+
+    // Live update when new files are saved to docholder folder
+    window.addEventListener('docholder:file-downloaded', () => {
+        if (currentCategory === 'downloaded' || currentCategory === 'recent') {
+            loadFiles();
+        }
     });
 
     // 2. Setup Live Search with Debounce
@@ -117,25 +144,41 @@ document.addEventListener('DOMContentLoaded', async () => {
                 q: currentSearch
             });
 
-            const res = await apiFetch(`/api/files?${queryParams.toString()}`);
-            let files = res.files || [];
+            let files = [];
 
-            if (currentCategory === 'favorites') {
-                const favIds = DocholderStorage.getFavorites();
-                files = files.filter(f => favIds.has(String(f.id)) || favIds.has(Number(f.id)));
-            } else if (currentCategory === 'recent') {
-                const recentList = DocholderStorage.getRecentFiles();
-                const recentIds = recentList.map(r => Number(r.id));
-                files = files.filter(f => recentIds.includes(Number(f.id)));
-            } else if (currentCategory === 'vault') {
-                const vaultData = JSON.parse(localStorage.getItem('docholder_vault_files') || '[]');
-                const vaultIds = vaultData.map(v => Number(v.fileId));
-                files = files.filter(f => vaultIds.includes(Number(f.id)));
+            // If viewing Downloaded Docholder Files
+            if (currentCategory === 'downloaded') {
+                files = DocholderStorage.getDownloadedFiles();
+                if (currentSearch) {
+                    const qLower = currentSearch.toLowerCase();
+                    files = files.filter(f => (f.original_name || f.name || '').toLowerCase().includes(qLower));
+                }
+            } else {
+                const res = await apiFetch(`/api/files?${queryParams.toString()}`);
+                files = res.files || [];
+
+                if (currentCategory === 'favorites') {
+                    const favIds = DocholderStorage.getFavorites();
+                    files = files.filter(f => favIds.has(String(f.id)) || favIds.has(Number(f.id)));
+                } else if (currentCategory === 'recent') {
+                    const recentList = DocholderStorage.getRecentFiles();
+                    const recentIds = recentList.map(r => Number(r.id));
+                    files = files.filter(f => recentIds.includes(Number(f.id)));
+                } else if (currentCategory === 'vault') {
+                    const vaultData = JSON.parse(localStorage.getItem('docholder_vault_files') || '[]');
+                    const vaultIds = vaultData.map(v => Number(v.fileId));
+                    files = files.filter(f => vaultIds.includes(Number(f.id)));
+                }
             }
 
             const vaultBanner = document.getElementById('vault-banner');
             if (vaultBanner) {
                 vaultBanner.classList.toggle('hidden', currentCategory !== 'vault');
+            }
+
+            const downloadedBanner = document.getElementById('downloaded-banner');
+            if (downloadedBanner) {
+                downloadedBanner.classList.toggle('hidden', currentCategory !== 'downloaded');
             }
 
             currentFilesList = files;
@@ -144,7 +187,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             filesTableBody.innerHTML = '';
             if (currentFilesList.length === 0) {
-                filesTableBody.innerHTML = `<tr><td colspan="4" class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-folder-open"></i></div><div class="empty-state-title">No documents found</div><div class="empty-state-desc">Your workspace is empty or matches no filters.</div><a href="upload.html" class="btn btn-primary btn-sm"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Your First File</a></td></tr>`;
+                const emptyMsg = currentCategory === 'downloaded' 
+                    ? 'No downloaded files found in your Docholder folder yet. Convert or download files to save them directly to your phone storage.'
+                    : 'Your workspace is empty or matches no filters.';
+                filesTableBody.innerHTML = `<tr><td colspan="4" class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-folder-open"></i></div><div class="empty-state-title">No documents found</div><div class="empty-state-desc">${emptyMsg}</div><a href="upload.html" class="btn btn-primary btn-sm"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Your First File</a></td></tr>`;
                 updateBatchUI();
                 return;
             }
@@ -168,41 +214,45 @@ document.addEventListener('DOMContentLoaded', async () => {
                     text: '#0EA5E9'
                 };
 
-                const iconClass = iconMap[f.file_type] || 'fa-solid fa-file';
-                const color = colorMap[f.file_type] || '#64748B';
+                const fileType = f.file_type || f.type || 'doc';
+                const fileName = f.original_name || f.name || 'document';
+                const fileSize = f.file_size || f.size || 0;
+                const iconClass = iconMap[fileType] || 'fa-solid fa-file';
+                const color = colorMap[fileType] || '#64748B';
                 const isSelected = selectedFileIds.has(f.id);
 
                 // Determine studio route
                 let studioUrl = `convert.html?fileId=${f.id}`;
-                if (f.file_type === 'image') studioUrl = `image-tools.html?fileId=${f.id}`;
-                else if (f.file_type === 'video') studioUrl = `video-tools.html?fileId=${f.id}`;
-                else if (f.file_type === 'audio') studioUrl = `audio-tools.html?fileId=${f.id}`;
-                else if (f.file_type === 'doc') studioUrl = `document-tools.html?fileId=${f.id}`;
+                if (fileType === 'image') studioUrl = `image-tools.html?fileId=${f.id}`;
+                else if (fileType === 'video') studioUrl = `video-tools.html?fileId=${f.id}`;
+                else if (fileType === 'audio') studioUrl = `audio-tools.html?fileId=${f.id}`;
+                else if (fileType === 'doc') studioUrl = `document-tools.html?fileId=${f.id}`;
 
                 const isFav = DocholderStorage.isFavorite(f.id);
+                const dlUrl = f.downloadUrl || `/api/files/${f.id}/download`;
 
                 tr.innerHTML = `
                     <td style="width: 32px; vertical-align: middle; padding: 12px 6px;">
                         <input type="checkbox" class="file-row-checkbox" value="${f.id}" ${isSelected ? 'checked' : ''} style="cursor: pointer; width: 22px; height: 22px; accent-color: var(--primary); touch-action: manipulation;">
                     </td>
                     <td style="padding: 10px 8px;">
-                        <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="openPreviewModalFromId(${f.id})">
+                        <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="openPreviewModalFromId('${f.id}')">
                             <i class="${iconClass}" style="color: ${color}; font-size: 1.25rem; min-width: 22px; text-align: center;"></i>
                             <div style="min-width: 0;">
-                                <strong style="font-size: 0.88rem; color: var(--text); display: block; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${f.original_name}</strong>
-                                <span style="font-size: 0.72rem; color: var(--text-secondary);">${new Date(f.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+                                <strong style="font-size: 0.88rem; color: var(--text); display: block; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(fileName)}</strong>
+                                <span style="font-size: 0.72rem; color: var(--text-secondary);">${f.created_at ? new Date(f.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Local'} ${currentCategory === 'downloaded' ? '• <span style="color:#10B981;">in docholder/</span>' : ''}</span>
                             </div>
                         </div>
                     </td>
-                    <td style="font-size: 0.78rem; color: var(--text-secondary); white-space: nowrap; padding: 10px 8px;">${formatBytes(f.file_size)}</td>
+                    <td style="font-size: 0.78rem; color: var(--text-secondary); white-space: nowrap; padding: 10px 8px;">${formatBytes(fileSize)}</td>
                     <td style="text-align: right; white-space: nowrap; padding: 10px 6px;">
                         <div class="file-row-actions" style="display: inline-flex; gap: 5px; flex-wrap: nowrap; justify-content: flex-end; align-items: center;">
                             <button class="icon-btn row-action-btn fav-btn" data-id="${f.id}" title="Toggle Star" style="color: ${isFav ? '#F59E0B' : 'var(--text-muted)'};"><i class="fa-${isFav ? 'solid' : 'regular'} fa-star"></i></button>
                             <button class="icon-btn row-action-btn prop-btn" data-id="${f.id}" title="Properties"><i class="fa-solid fa-circle-info"></i></button>
-                            <button class="icon-btn row-action-btn preview-btn" data-id="${f.id}" title="Preview"><i class="fa-solid fa-eye"></i></button>
+                            <button class="icon-btn row-action-btn preview-btn" data-id="${f.id}" title="In-App Preview"><i class="fa-solid fa-eye"></i></button>
                             <a href="${studioUrl}" class="icon-btn row-action-btn" title="Open in Studio" style="color: var(--primary); text-decoration:none;"><i class="fa-solid fa-wand-magic-sparkles"></i></a>
-                            <button class="icon-btn row-action-btn local-dl-btn" data-url="/api/files/${f.id}/download" data-name="${f.original_name}" data-id="${f.id}" title="Save Locally"><i class="fa-solid fa-download"></i></button>
-                            <button class="icon-btn row-action-btn delete-btn" data-id="${f.id}" data-name="${f.original_name}" data-size="${f.file_size}" title="Delete" style="color: var(--danger);"><i class="fa-solid fa-trash-can"></i></button>
+                            <button class="icon-btn row-action-btn local-dl-btn" data-url="${dlUrl}" data-name="${escapeAttr(fileName)}" data-id="${f.id}" title="Save to Docholder folder"><i class="fa-solid fa-download"></i></button>
+                            <button class="icon-btn row-action-btn delete-btn" data-id="${f.id}" data-name="${escapeAttr(fileName)}" data-size="${fileSize}" title="Delete" style="color: var(--danger);"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                     </td>
                 `;
@@ -220,26 +270,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Row Checkboxes
         document.querySelectorAll('.file-row-checkbox').forEach(cb => {
             cb.onchange = (e) => {
-                const id = parseInt(e.target.value, 10);
+                const id = e.target.value;
                 if (e.target.checked) selectedFileIds.add(id);
                 else selectedFileIds.delete(id);
                 updateBatchUI();
             };
         });
 
-        // Preview
+        // In-App Preview (Uses DocholderPreview)
         document.querySelectorAll('.preview-btn').forEach(btn => {
             btn.onclick = () => {
                 const id = btn.getAttribute('data-id');
                 const file = currentFilesList.find(f => String(f.id) === String(id));
-                if (file) openPreviewModal(file);
+                if (file) {
+                    if (window.DocholderPreview) {
+                        window.DocholderPreview.open(file);
+                    } else {
+                        openPreviewModal(file);
+                    }
+                }
             };
         });
 
         // Favorites toggle
         document.querySelectorAll('.fav-btn').forEach(btn => {
             btn.onclick = () => {
-                const id = Number(btn.getAttribute('data-id'));
+                const id = btn.getAttribute('data-id');
                 const nextFav = DocholderStorage.toggleFavorite(id);
                 showToast(nextFav ? 'Added to Starred files' : 'Removed from Starred', 'info', 1200);
                 loadFiles();
@@ -255,18 +311,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
         });
 
-        // Local Save
+        // Local Save into Docholder folder
         document.querySelectorAll('.local-dl-btn').forEach(btn => {
             btn.onclick = async () => {
-                const permitted = await requestDocholderPermission('storage', 'save files directly to your device');
-                if (!permitted) return;
                 const url = btn.getAttribute('data-url');
                 const name = btn.getAttribute('data-name');
                 const id = btn.getAttribute('data-id');
                 const file = currentFilesList.find(f => String(f.id) === String(id));
                 if (file) DocholderStorage.addRecentFile(file);
-                DocholderStorage.saveFileLocally(url, name);
-                showToast(`Saved "${name}" to device local storage`, 'success');
+                await DocholderStorage.saveFileLocally(url, name);
             };
         });
 
@@ -304,11 +357,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function openPreviewModalFromId(fileId) {
     const file = currentFilesList.find(f => String(f.id) === String(fileId));
-    if (file) openPreviewModal(file);
+    if (file) {
+        if (window.DocholderPreview) {
+            window.DocholderPreview.open(file);
+        } else {
+            openPreviewModal(file);
+        }
+    }
 }
 
 // Universal Media Preview Modal Logic
 async function openPreviewModal(file) {
+    if (window.DocholderPreview) {
+        return window.DocholderPreview.open(file);
+    }
     const modal = document.getElementById('preview-modal');
     const title = document.getElementById('preview-title');
     const body = document.getElementById('preview-body');

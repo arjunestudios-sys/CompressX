@@ -171,8 +171,9 @@ async function loadRecentFiles() {
                     </td>
                     <td style="font-size: 0.76rem; color: var(--text-secondary); white-space: nowrap;">${formatBytes(f.file_size)}</td>
                     <td style="text-align: right; white-space: nowrap;">
+                        <button class="btn btn-secondary btn-sm" onclick="window.DocholderPreview ? window.DocholderPreview.open('/api/files/${f.id}/download?inline=true', '${escapeAttr(f.original_name)}', '${f.mime_type || ''}', ${f.id}) : selectAndInspectFile(${f.id})" style="padding: 2px 6px; font-size: 0.72rem;" title="Preview"><i class="fa-solid fa-eye"></i></button>
                         <button class="btn btn-secondary btn-sm" onclick="openConvertModalForFile(${f.id}, '${escapeAttr(f.original_name)}')" style="padding: 2px 6px; font-size: 0.72rem;" title="Convert"><i class="fa-solid fa-rotate"></i></button>
-                        <button class="btn btn-secondary btn-sm" onclick="DocholderStorage.saveFileLocally('/api/files/${f.id}/download', '${escapeAttr(f.original_name)}')" style="padding: 2px 6px; font-size: 0.72rem;" title="Download"><i class="fa-solid fa-download"></i></button>
+                        <button class="btn btn-secondary btn-sm" onclick="DocholderStorage.saveFileLocally('/api/files/${f.id}/download', '${escapeAttr(f.original_name)}')" style="padding: 2px 6px; font-size: 0.72rem;" title="Save to Docholder"><i class="fa-solid fa-download"></i></button>
                     </td>
                 </tr>
             `;

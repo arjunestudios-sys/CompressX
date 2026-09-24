@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
     <external-path name="my_images" path="." />
+    <external-path name="my_downloads" path="Download/" />
+    <external-path name="my_docholder" path="Download/docholder/" />
     <cache-path name="my_cache_images" path="." />
+    <files-path name="my_files" path="." />
+    <external-files-path name="my_ext_files" path="." />
+    <external-cache-path name="my_ext_cache" path="." />
 </paths>

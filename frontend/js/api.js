@@ -172,7 +172,7 @@ function handleSmartBack(defaultFallback = '/tools.html') {
     window.location.href = defaultFallback.startsWith('/') || defaultFallback.startsWith('http') ? defaultFallback : `/${defaultFallback}`;
 }
 
-// Docholder Local Storage & Recent Files Manager
+// Docholder Local Storage, Download Manager & Recent Files Manager
 const DocholderStorage = {
     getRecentFiles() {
         try {
@@ -189,12 +189,15 @@ const DocholderStorage = {
             list.unshift({
                 id: file.id || String(Date.now()),
                 name: name,
+                original_name: name,
                 size: file.file_size || file.size || file.convertedSize || 0,
+                file_size: file.file_size || file.size || file.convertedSize || 0,
                 type: file.file_type || file.type || 'doc',
+                mime_type: file.mime_type || file.mimetype || 'application/octet-stream',
                 downloadUrl: file.downloadUrl || (file.id ? `/api/files/${file.id}/download` : null),
                 timestamp: Date.now()
             });
-            if (list.length > 20) list = list.slice(0, 20);
+            if (list.length > 25) list = list.slice(0, 25);
             localStorage.setItem('docholder_recent_files', JSON.stringify(list));
         } catch(e) {}
     },
@@ -221,13 +224,59 @@ const DocholderStorage = {
     isFavorite(fileId) {
         return this.getFavorites().has(String(fileId));
     },
+    getDownloadedFiles() {
+        try {
+            return JSON.parse(localStorage.getItem('docholder_downloaded_files') || '[]');
+        } catch(e) {
+            return [];
+        }
+    },
+    addDownloadedFile(file) {
+        if (!file) return;
+        try {
+            const name = file.original_name || file.name || 'download';
+            let list = this.getDownloadedFiles().filter(f => (f.original_name || f.name) !== name);
+            list.unshift({
+                id: file.id || `dl_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+                name: name,
+                original_name: name,
+                file_size: file.file_size || file.size || 0,
+                file_type: file.file_type || file.type || 'doc',
+                mime_type: file.mime_type || file.mimetype || 'application/octet-stream',
+                downloadUrl: file.downloadUrl || null,
+                storage_folder: 'docholder',
+                local_path: file.local_path || `Documents/docholder/${name}`,
+                downloaded_at: Date.now(),
+                created_at: new Date().toISOString()
+            });
+            if (list.length > 50) list = list.slice(0, 50);
+            localStorage.setItem('docholder_downloaded_files', JSON.stringify(list));
+            window.dispatchEvent(new CustomEvent('docholder:file-downloaded', { detail: file }));
+        } catch(e) {}
+    },
+    removeDownloadedFile(fileId) {
+        try {
+            let list = this.getDownloadedFiles().filter(f => String(f.id) !== String(fileId));
+            localStorage.setItem('docholder_downloaded_files', JSON.stringify(list));
+            window.dispatchEvent(new CustomEvent('docholder:file-downloaded'));
+            return true;
+        } catch(e) {
+            return false;
+        }
+    },
+    clearDownloadedFiles() {
+        try {
+            localStorage.removeItem('docholder_downloaded_files');
+            window.dispatchEvent(new CustomEvent('docholder:file-downloaded'));
+        } catch(e) {}
+    },
     async saveFileLocally(url, filename) {
         if (!url) return;
         try {
-            const name = filename || 'download';
+            const name = filename || 'document';
             const fullUrl = (typeof resolveApiUrl === 'function') ? resolveApiUrl(url) : url;
             
-            showToast(`Downloading "${name}"...`, 'info', 1800);
+            showToast(`Saving "${name}" to Docholder storage...`, 'info', 2200);
             
             const authToken = localStorage.getItem('docholder_auth_token') || sessionStorage.getItem('docholder_auth_token');
             const headers = {};
@@ -246,31 +295,574 @@ const DocholderStorage = {
             }
 
             const blob = await response.blob();
-            const blobUrl = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = blobUrl;
-            a.download = name;
-            document.body.appendChild(a);
-            a.click();
-            
-            setTimeout(() => {
-                try {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(blobUrl);
-                } catch(e) {}
-            }, 2000);
+            const ext = name.split('.').pop().toLowerCase();
+            let category = 'doc';
+            if (['jpg','jpeg','png','webp','gif','svg','bmp'].includes(ext)) category = 'image';
+            else if (['mp4','webm','mov','mkv','avi'].includes(ext)) category = 'video';
+            else if (['mp3','wav','aac','ogg','m4a','flac'].includes(ext)) category = 'audio';
+            else if (['zip','tar','gz','rar','7z'].includes(ext)) category = 'archive';
+            else if (['txt','json','js','css','html','py','md','csv'].includes(ext)) category = 'text';
 
-            showToast(`Saved "${name}" to device downloads`, 'success');
+            let savedNative = false;
+            let finalLocalPath = `Documents/docholder/${name}`;
+
+            // 1. Capacitor Native Android Storage: Save directly into "docholder" folder
+            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
+                const { Filesystem } = window.Capacitor.Plugins;
+                try {
+                    const base64Data = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            const res = reader.result;
+                            if (typeof res === 'string') {
+                                resolve(res.includes(',') ? res.split(',')[1] : res);
+                            } else {
+                                resolve('');
+                            }
+                        };
+                        reader.onerror = reject;
+                        reader.readAsDataURL(blob);
+                    });
+
+                    // Save under "docholder" subfolder in DOCUMENTS directory
+                    try {
+                        const writeRes = await Filesystem.writeFile({
+                            path: `docholder/${name}`,
+                            data: base64Data,
+                            directory: 'DOCUMENTS',
+                            recursive: true
+                        });
+                        if (writeRes && writeRes.uri) {
+                            finalLocalPath = writeRes.uri;
+                        }
+                        savedNative = true;
+                    } catch(errDoc) {
+                        // Fallback to EXTERNAL_STORAGE or DATA directory
+                        try {
+                            const writeRes2 = await Filesystem.writeFile({
+                                path: `Download/docholder/${name}`,
+                                data: base64Data,
+                                directory: 'EXTERNAL_STORAGE',
+                                recursive: true
+                            });
+                            if (writeRes2 && writeRes2.uri) finalLocalPath = writeRes2.uri;
+                            savedNative = true;
+                        } catch(errExt) {
+                            const writeRes3 = await Filesystem.writeFile({
+                                path: `docholder/${name}`,
+                                data: base64Data,
+                                directory: 'DATA',
+                                recursive: true
+                            });
+                            if (writeRes3 && writeRes3.uri) finalLocalPath = writeRes3.uri;
+                            savedNative = true;
+                        }
+                    }
+                } catch(nativeErr) {
+                    console.warn('[DocholderStorage] Native write error, falling back to browser download:', nativeErr);
+                }
+            }
+
+            // 2. Web browser download fallback if not native or as secondary
+            if (!savedNative) {
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = blobUrl;
+                a.download = name;
+                document.body.appendChild(a);
+                a.click();
+                
+                setTimeout(() => {
+                    try {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(blobUrl);
+                    } catch(e) {}
+                }, 2000);
+            }
+
+            // 3. Record into Downloaded Files collection
+            const downloadedRecord = {
+                id: `dl_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+                name: name,
+                original_name: name,
+                file_size: blob.size,
+                file_type: category,
+                mime_type: blob.type || 'application/octet-stream',
+                downloadUrl: url,
+                storage_folder: 'docholder',
+                local_path: finalLocalPath,
+                downloaded_at: Date.now()
+            };
+            this.addDownloadedFile(downloadedRecord);
+            this.addRecentFile(downloadedRecord);
+
+            const storageMsg = savedNative 
+                ? `Saved "${name}" to Phone Storage in folder "docholder" ✓`
+                : `Saved "${name}" to docholder downloads ✓`;
+
+            showToast(storageMsg, 'success', 4500, {
+                text: 'View',
+                onClick: () => {
+                    if (window.location.pathname.endsWith('files.html')) {
+                        const chip = document.getElementById('chip-downloaded');
+                        if (chip) chip.click();
+                    } else {
+                        window.location.href = 'files.html?category=downloaded';
+                    }
+                }
+            });
+
+            return downloadedRecord;
         } catch(err) {
             console.error('saveFileLocally error:', err);
             showToast(`Failed to download file: ${err.message}`, 'error');
+            throw err;
         }
     }
 };
 
 window.downloadFile = (url, name) => DocholderStorage.saveFileLocally(url, name);
+
+// ─── Universal High-Fidelity In-App Mobile Preview Engine ─────────────────────
+const DocholderPreview = {
+    modalEl: null,
+    currentDocData: null,
+    pdfInstance: null,
+    pdfPage: 1,
+    pdfTotalPages: 1,
+    pdfScale: 1.0,
+
+    ensureModal() {
+        if (this.modalEl && document.body.contains(this.modalEl)) return this.modalEl;
+        
+        let existing = document.getElementById('docholder-universal-preview-modal');
+        if (existing) {
+            this.modalEl = existing;
+            return this.modalEl;
+        }
+
+        const modal = document.createElement('div');
+        modal.id = 'docholder-universal-preview-modal';
+        modal.className = 'modal-overlay hidden';
+        modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.82); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 12px; box-sizing: border-box;';
+
+        modal.innerHTML = `
+            <div class="docholder-preview-card" style="background: var(--surface-card, #111827); border: 1px solid var(--surface-border, rgba(0,240,255,0.3)); border-radius: 16px; width: 100%; max-width: 600px; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.7); animation: modalScaleIn 0.2s ease;">
+                
+                <!-- Modal Header -->
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--surface-border, rgba(255,255,255,0.1)); background: rgba(0,0,0,0.25);">
+                    <div style="display: flex; align-items: center; gap: 10px; overflow: hidden; flex: 1;">
+                        <i id="preview-modal-icon" class="fa-solid fa-file" style="font-size: 1.25rem; color: var(--primary);"></i>
+                        <div style="overflow: hidden; min-width: 0;">
+                            <h4 id="preview-modal-title" style="margin: 0; font-size: 0.92rem; font-weight: 700; color: var(--text, #fff); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Document Preview</h4>
+                            <span id="preview-modal-meta" style="font-size: 0.72rem; color: var(--text-secondary, #94A3B8);">Loading metadata...</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button type="button" id="preview-btn-share-header" class="icon-btn" style="width: 32px; height: 32px; font-size: 0.85rem; border-radius: 8px;" title="Share"><i class="fa-solid fa-share-nodes"></i></button>
+                        <button type="button" id="preview-btn-close" class="icon-btn" style="width: 32px; height: 32px; font-size: 0.9rem; border-radius: 8px;" title="Close"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                </div>
+
+                <!-- Modal Content Area -->
+                <div id="preview-modal-body" style="flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 260px; background: rgba(0,0,0,0.15);">
+                    <div style="text-align: center; color: var(--text-secondary); padding: 30px;">
+                        <i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color: var(--primary);"></i>
+                        <p style="margin-top: 10px; font-size: 0.85rem;">Loading document preview...</p>
+                    </div>
+                </div>
+
+                <!-- PDF Floating Controls Bar (Hidden for non-PDF) -->
+                <div id="preview-pdf-toolbar" class="hidden" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 14px; background: rgba(15,23,42,0.9); border-top: 1px solid var(--surface-border, rgba(255,255,255,0.08)); font-size: 0.78rem;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <button type="button" id="pdf-prev-page-btn" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 0.75rem;"><i class="fa-solid fa-chevron-left"></i></button>
+                        <span id="pdf-page-indicator" style="font-family: var(--font-mono, monospace); font-weight: 700; color: var(--cyan-neon, #00f0ff);">1 / 1</span>
+                        <button type="button" id="pdf-next-page-btn" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 0.75rem;"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <button type="button" id="pdf-zoom-out-btn" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 0.75rem;"><i class="fa-solid fa-minus"></i></button>
+                        <span id="pdf-zoom-level" style="font-family: var(--font-mono, monospace); font-size: 0.72rem; color: var(--text-secondary);">100%</span>
+                        <button type="button" id="pdf-zoom-in-btn" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 0.75rem;"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                </div>
+
+                <!-- Modal Action Footer -->
+                <div style="display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--surface-border, rgba(255,255,255,0.1)); background: rgba(0,0,0,0.25);">
+                    <button type="button" id="preview-modal-download-btn" class="btn btn-primary" style="flex: 1; font-size: 0.85rem; padding: 10px 14px;">
+                        <i class="fa-solid fa-download"></i> Save to Docholder
+                    </button>
+                    <button type="button" id="preview-modal-open-studio-btn" class="btn btn-secondary" style="font-size: 0.85rem; padding: 10px 14px;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Edit
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        this.modalEl = modal;
+
+        // Wire modal event listeners
+        modal.querySelector('#preview-btn-close').onclick = () => this.close();
+        modal.onclick = (e) => {
+            if (e.target === modal) this.close();
+        };
+
+        return modal;
+    },
+
+    close() {
+        if (this.modalEl) {
+            this.modalEl.classList.add('hidden');
+            this.modalEl.style.display = 'none';
+        }
+        this.currentDocData = null;
+        this.pdfInstance = null;
+    },
+
+    async open(fileOrUrl, originalName = null, mimeType = null, fileId = null) {
+        const modal = this.ensureModal();
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+
+        let targetUrl = '';
+        let name = originalName || 'document';
+        let mime = mimeType || '';
+        let id = fileId || null;
+        let size = 0;
+
+        if (typeof fileOrUrl === 'object' && fileOrUrl !== null) {
+            id = fileOrUrl.id || id;
+            name = fileOrUrl.original_name || fileOrUrl.originalName || fileOrUrl.name || name;
+            mime = fileOrUrl.mime_type || fileOrUrl.mimetype || mime;
+            size = fileOrUrl.file_size || fileOrUrl.size || fileOrUrl.convertedSize || size;
+            targetUrl = fileOrUrl.downloadUrl || (id ? `/api/files/${id}/download?inline=true` : '');
+        } else if (typeof fileOrUrl === 'string') {
+            targetUrl = fileOrUrl;
+        }
+
+        if (!targetUrl && id) {
+            targetUrl = `/api/files/${id}/download?inline=true`;
+        }
+
+        const fullDownloadUrl = (typeof resolveApiUrl === 'function') ? resolveApiUrl(targetUrl) : targetUrl;
+        this.currentDocData = { id, name, mime, size, url: fullDownloadUrl };
+
+        const ext = name.split('.').pop().toLowerCase();
+        const iconMap = {
+            pdf: 'fa-solid fa-file-pdf',
+            doc: 'fa-solid fa-file-word',
+            docx: 'fa-solid fa-file-word',
+            xls: 'fa-solid fa-file-excel',
+            xlsx: 'fa-solid fa-file-excel',
+            csv: 'fa-solid fa-file-csv',
+            jpg: 'fa-solid fa-file-image',
+            jpeg: 'fa-solid fa-file-image',
+            png: 'fa-solid fa-file-image',
+            webp: 'fa-solid fa-file-image',
+            mp4: 'fa-solid fa-file-video',
+            mp3: 'fa-solid fa-file-audio',
+            wav: 'fa-solid fa-file-audio',
+            zip: 'fa-solid fa-file-zipper'
+        };
+
+        const iconEl = modal.querySelector('#preview-modal-icon');
+        const titleEl = modal.querySelector('#preview-modal-title');
+        const metaEl = modal.querySelector('#preview-modal-meta');
+        const bodyEl = modal.querySelector('#preview-modal-body');
+        const pdfToolbar = modal.querySelector('#preview-pdf-toolbar');
+        const dlBtn = modal.querySelector('#preview-modal-download-btn');
+        const studioBtn = modal.querySelector('#preview-modal-open-studio-btn');
+        const shareBtn = modal.querySelector('#preview-btn-share-header');
+
+        if (iconEl) iconEl.className = iconMap[ext] || 'fa-solid fa-file';
+        if (titleEl) titleEl.textContent = name;
+        if (metaEl) metaEl.textContent = `${ext.toUpperCase()} Document • ${formatBytes(size)}`;
+        if (pdfToolbar) pdfToolbar.classList.add('hidden');
+
+        // Setup Download & Share Actions
+        if (dlBtn) {
+            dlBtn.onclick = () => {
+                DocholderStorage.saveFileLocally(fullDownloadUrl, name);
+            };
+        }
+
+        if (shareBtn) {
+            shareBtn.onclick = async () => {
+                if (navigator.share) {
+                    try {
+                        await navigator.share({ title: name, url: fullDownloadUrl });
+                    } catch(e) {}
+                } else {
+                    await navigator.clipboard.writeText(fullDownloadUrl);
+                    showToast('Direct link copied to clipboard!', 'info');
+                }
+            };
+        }
+
+        if (studioBtn) {
+            let studioUrl = `convert.html${id ? '?fileId=' + id : ''}`;
+            if (['jpg','jpeg','png','webp','gif'].includes(ext)) studioUrl = `image-tools.html${id ? '?fileId=' + id : ''}`;
+            else if (['mp4','webm','mov'].includes(ext)) studioUrl = `video-tools.html${id ? '?fileId=' + id : ''}`;
+            else if (['mp3','wav','aac'].includes(ext)) studioUrl = `audio-tools.html${id ? '?fileId=' + id : ''}`;
+            else if (['pdf'].includes(ext)) studioUrl = `document-tools.html${id ? '?fileId=' + id : ''}`;
+            else if (['doc','docx'].includes(ext)) studioUrl = `word-tools.html${id ? '?fileId=' + id : ''}`;
+            
+            studioBtn.onclick = () => {
+                window.location.href = studioUrl;
+            };
+        }
+
+        // Render appropriate media viewer
+        bodyEl.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 30px;"><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color: var(--primary);"></i><p style="margin-top: 10px; font-size: 0.85rem;">Rendering document...</p></div>';
+
+        try {
+            const authToken = localStorage.getItem('docholder_auth_token') || sessionStorage.getItem('docholder_auth_token');
+            const headers = {};
+            if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+            // 1. PDF Preview with PDF.js Canvas Rendering (100% Mobile Compatible)
+            if (ext === 'pdf' || (mime && mime.includes('pdf'))) {
+                await this.renderPdfPreview(bodyEl, fullDownloadUrl, headers, pdfToolbar);
+            }
+            // 2. Image Preview
+            else if (['jpg','jpeg','png','webp','gif','svg','bmp','ico'].includes(ext) || (mime && mime.startsWith('image/'))) {
+                const imgRes = await fetch(fullDownloadUrl, { headers, credentials: 'include' });
+                const blob = await imgRes.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                bodyEl.innerHTML = `
+                    <div style="width: 100%; display: flex; align-items: center; justify-content: center; background: #000; border-radius: 10px; overflow: hidden; padding: 8px;">
+                        <img src="${blobUrl}" alt="${escapeAttr(name)}" style="max-width: 100%; max-height: 55vh; object-fit: contain; border-radius: 6px;">
+                    </div>
+                `;
+            }
+            // 3. Audio Preview
+            else if (['mp3','wav','aac','ogg','m4a','flac'].includes(ext) || (mime && mime.startsWith('audio/'))) {
+                const audRes = await fetch(fullDownloadUrl, { headers, credentials: 'include' });
+                const blob = await audRes.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                bodyEl.innerHTML = `
+                    <div style="width: 100%; background: var(--surface, #1e293b); padding: 24px 16px; border-radius: 12px; border: 1px solid var(--surface-border); text-align: center;">
+                        <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--primary-light, rgba(0,240,255,0.15)); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; font-size: 1.6rem;">
+                            <i class="fa-solid fa-music"></i>
+                        </div>
+                        <h4 style="font-size: 0.9rem; margin-bottom: 12px;">${name}</h4>
+                        <audio controls autoplay style="width: 100%;">
+                            <source src="${blobUrl}">
+                            Your browser does not support audio playback.
+                        </audio>
+                    </div>
+                `;
+            }
+            // 4. Video Preview
+            else if (['mp4','webm','mov','mkv','avi'].includes(ext) || (mime && mime.startsWith('video/'))) {
+                const vidRes = await fetch(fullDownloadUrl, { headers, credentials: 'include' });
+                const blob = await vidRes.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                bodyEl.innerHTML = `
+                    <div style="width: 100%; background: #000; border-radius: 10px; overflow: hidden;">
+                        <video controls playsinline autoplay muted style="width: 100%; max-height: 50vh; display: block;">
+                            <source src="${blobUrl}">
+                            Your browser does not support video playback.
+                        </video>
+                    </div>
+                `;
+            }
+            // 5. Spreadsheets (XLSX, XLS, CSV)
+            else if (['xlsx','xls','csv'].includes(ext)) {
+                await this.renderSpreadsheetPreview(bodyEl, fullDownloadUrl, headers);
+            }
+            // 6. Word Documents (DOCX)
+            else if (['docx','doc'].includes(ext)) {
+                await this.renderWordDocPreview(bodyEl, fullDownloadUrl, headers, name);
+            }
+            // 7. Code & Text
+            else if (['txt','json','js','css','html','py','md','xml','log'].includes(ext) || (mime && mime.startsWith('text/'))) {
+                const textRes = await fetch(fullDownloadUrl, { headers, credentials: 'include' });
+                const text = await textRes.text();
+                bodyEl.innerHTML = `
+                    <div style="width: 100%; max-height: 55vh; overflow-y: auto; background: #0f172a; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); padding: 12px;">
+                        <pre style="font-family: monospace; font-size: 0.78rem; line-height: 1.5; color: #e2e8f0; margin: 0; white-space: pre-wrap; word-break: break-all;">${escapeHtml(text.slice(0, 50000))}</pre>
+                    </div>
+                `;
+            }
+            // 8. Default Generic File Card
+            else {
+                bodyEl.innerHTML = `
+                    <div style="text-align: center; padding: 24px 12px;">
+                        <i class="fa-solid fa-file-circle-check fa-3x" style="color: var(--primary); margin-bottom: 12px;"></i>
+                        <h4 style="font-size: 0.95rem; margin-bottom: 6px;">${name}</h4>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); max-width: 320px; margin: 0 auto 16px auto;">
+                            Direct inline preview is not supported for this format. You can save it directly to your Docholder folder or open it in Studio.
+                        </p>
+                    </div>
+                `;
+            }
+        } catch(err) {
+            console.error('DocholderPreview error:', err);
+            bodyEl.innerHTML = `
+                <div style="text-align: center; padding: 24px; color: var(--danger);">
+                    <i class="fa-solid fa-triangle-exclamation fa-2x"></i>
+                    <p style="margin-top: 8px; font-size: 0.85rem;">Preview unavailable: ${err.message}</p>
+                    <button class="btn btn-secondary btn-sm" onclick="DocholderStorage.saveFileLocally('${fullDownloadUrl}', '${escapeAttr(name)}')" style="margin-top: 10px;">
+                        <i class="fa-solid fa-download"></i> Download File
+                    </button>
+                </div>
+            `;
+        }
+    },
+
+    async renderPdfPreview(containerEl, url, headers, toolbarEl) {
+        // Load PDF.js dynamically if not present
+        if (typeof window.pdfjsLib === 'undefined') {
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js';
+                script.onload = () => {
+                    if (window.pdfjsLib) {
+                        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+                    }
+                    resolve();
+                };
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        const res = await fetch(url, { headers, credentials: 'include' });
+        const arrayBuffer = await res.arrayBuffer();
+
+        const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        this.pdfInstance = pdf;
+        this.pdfPage = 1;
+        this.pdfTotalPages = pdf.numPages;
+        this.pdfScale = 1.15;
+
+        containerEl.innerHTML = `
+            <div id="pdf-preview-scroll-container" style="width: 100%; max-height: 55vh; overflow: auto; display: flex; justify-content: center; background: #334155; border-radius: 8px; padding: 8px; box-sizing: border-box;">
+                <canvas id="docholder-pdf-preview-canvas" style="box-shadow: 0 4px 20px rgba(0,0,0,0.4); max-width: 100%; height: auto;"></canvas>
+            </div>
+        `;
+
+        if (toolbarEl) {
+            toolbarEl.classList.remove('hidden');
+            const pageIndicator = toolbarEl.querySelector('#pdf-page-indicator');
+            const zoomIndicator = toolbarEl.querySelector('#pdf-zoom-level');
+            const prevBtn = toolbarEl.querySelector('#pdf-prev-page-btn');
+            const nextBtn = toolbarEl.querySelector('#pdf-next-page-btn');
+            const zoomInBtn = toolbarEl.querySelector('#pdf-zoom-in-btn');
+            const zoomOutBtn = toolbarEl.querySelector('#pdf-zoom-out-btn');
+
+            const renderCurrentPage = async () => {
+                const canvas = document.getElementById('docholder-pdf-preview-canvas');
+                if (!canvas || !this.pdfInstance) return;
+                const page = await this.pdfInstance.getPage(this.pdfPage);
+                const viewport = page.getViewport({ scale: this.pdfScale });
+                const ctx = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                await page.render({ canvasContext: ctx, viewport }).promise;
+
+                if (pageIndicator) pageIndicator.textContent = `${this.pdfPage} / ${this.pdfTotalPages}`;
+                if (zoomIndicator) zoomIndicator.textContent = `${Math.round(this.pdfScale * 100)}%`;
+            };
+
+            prevBtn.onclick = () => {
+                if (this.pdfPage > 1) {
+                    this.pdfPage--;
+                    renderCurrentPage();
+                }
+            };
+            nextBtn.onclick = () => {
+                if (this.pdfPage < this.pdfTotalPages) {
+                    this.pdfPage++;
+                    renderCurrentPage();
+                }
+            };
+            zoomInBtn.onclick = () => {
+                if (this.pdfScale < 2.5) {
+                    this.pdfScale += 0.2;
+                    renderCurrentPage();
+                }
+            };
+            zoomOutBtn.onclick = () => {
+                if (this.pdfScale > 0.6) {
+                    this.pdfScale -= 0.2;
+                    renderCurrentPage();
+                }
+            };
+
+            await renderCurrentPage();
+        }
+    },
+
+    async renderSpreadsheetPreview(containerEl, url, headers) {
+        if (typeof window.XLSX === 'undefined') {
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        const res = await fetch(url, { headers, credentials: 'include' });
+        const arrayBuffer = await res.arrayBuffer();
+        const workbook = window.XLSX.read(arrayBuffer, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[firstSheetName];
+        const htmlTable = window.XLSX.utils.sheet_to_html(sheet);
+
+        containerEl.innerHTML = `
+            <div style="width: 100%; max-height: 55vh; overflow: auto; background: var(--surface); border-radius: 8px; border: 1px solid var(--surface-border); padding: 6px;">
+                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 6px; font-weight: 700;">Sheet: ${firstSheetName}</div>
+                <div class="table-container" style="font-size: 0.75rem;">
+                    ${htmlTable}
+                </div>
+            </div>
+        `;
+    },
+
+    async renderWordDocPreview(containerEl, url, headers, filename) {
+        if (typeof window.mammoth === 'undefined') {
+            try {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+            } catch(e) {}
+        }
+
+        const res = await fetch(url, { headers, credentials: 'include' });
+        const arrayBuffer = await res.arrayBuffer();
+
+        if (window.mammoth && typeof window.mammoth.convertToHtml === 'function') {
+            const result = await window.mammoth.convertToHtml({ arrayBuffer });
+            containerEl.innerHTML = `
+                <div style="width: 100%; max-height: 55vh; overflow-y: auto; background: var(--surface-card, #fff); color: var(--text, #000); border-radius: 8px; border: 1px solid var(--surface-border); padding: 16px; font-size: 0.85rem; line-height: 1.6;">
+                    ${result.value || '<p style="color:var(--text-secondary);">No readable text found in document.</p>'}
+                </div>
+            `;
+        } else {
+            containerEl.innerHTML = `
+                <div style="text-align: center; padding: 24px;">
+                    <i class="fa-solid fa-file-word fa-3x" style="color: #3B82F6; margin-bottom: 12px;"></i>
+                    <h4 style="font-size: 0.95rem;">${filename}</h4>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Word document ready. You can convert to PDF or save to Docholder storage.</p>
+                </div>
+            `;
+        }
+    }
+};
+
+window.DocholderStorage = DocholderStorage;
+window.DocholderPreview = DocholderPreview;
+window.openUniversalPreview = (fileOrUrl, originalName, mimeType, fileId) => DocholderPreview.open(fileOrUrl, originalName, mimeType, fileId);
 
 // File & Folder Permission Manager
 async function requestDocholderPermission(type = 'storage', reason = 'access your local files and media') {

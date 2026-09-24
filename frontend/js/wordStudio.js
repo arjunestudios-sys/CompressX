@@ -741,6 +741,9 @@ function setupResultCardActions() {
 }
 
 function openWordPdfPreviewModal(url, filename) {
+    if (window.DocholderPreview) {
+        return window.DocholderPreview.open(url, filename);
+    }
     const modal = document.getElementById('word-preview-modal');
     const iframe = document.getElementById('word-preview-iframe');
     const title = document.getElementById('word-preview-modal-title');

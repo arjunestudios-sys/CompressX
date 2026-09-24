@@ -1976,7 +1976,12 @@ function displayDocResult(result, title = 'Operation Completed!', noticeText = n
     const dlLink = document.getElementById('doc-download-link');
 
     if (prevLink) {
-        prevLink.href = `${result.downloadUrl}?inline=true`;
+        prevLink.onclick = (e) => {
+            e.preventDefault();
+            if (window.DocholderPreview) {
+                window.DocholderPreview.open(result.downloadUrl, result.originalName, result.mimeType || result.mime_type || 'application/pdf', result.id);
+            }
+        };
     }
     if (dlLink) {
         dlLink.href = result.downloadUrl;

@@ -597,21 +597,30 @@ function displayResult(result, originalSize = 0) {
     const fileNameEl = document.getElementById('res-file-name');
     if (fileNameEl) fileNameEl.textContent = result.originalName || 'output.zip';
 
-    const dl = document.getElementById('res-download-btn');
-    if (dl) {
-        dl.href = result.downloadUrl;
-        dl.download = result.originalName;
+    const prevBtn = document.getElementById('res-preview-btn');
+    if (prevBtn) {
+        prevBtn.onclick = () => {
+            if (window.DocholderPreview) {
+                window.DocholderPreview.open(result.downloadUrl, result.originalName, result.mimeType || result.mime_type, result.id);
+            }
+        };
     }
+
+    const dlBtn = document.getElementById('res-download-btn');
+    if (dlBtn) {
+        dlBtn.onclick = (e) => {
+            e.preventDefault();
+            DocholderStorage.saveFileLocally(result.downloadUrl, result.originalName);
+        };
+    }
+
+    // Auto-save to recent files
+    DocholderStorage.addRecentFile(result);
 
     // Respect auto-download setting
     const settings = getDocholderSettings();
-    if (settings.autoDownload && dl && dl.href) {
-        const autoLink = document.createElement('a');
-        autoLink.href = dl.href;
-        autoLink.download = result.originalName;
-        document.body.appendChild(autoLink);
-        autoLink.click();
-        autoLink.remove();
+    if (settings.autoDownload && result.downloadUrl) {
+        DocholderStorage.saveFileLocally(result.downloadUrl, result.originalName);
     }
 
     card.scrollIntoView({ behavior: 'smooth' });

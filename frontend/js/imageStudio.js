@@ -1137,7 +1137,12 @@ function displayImageResult(result, title = 'Image Processed!') {
         prevImg.src = `${result.downloadUrl}?inline=true`;
     }
     if (prevLink) {
-        prevLink.href = `${result.downloadUrl}?inline=true`;
+        prevLink.onclick = (e) => {
+            e.preventDefault();
+            if (window.DocholderPreview) {
+                window.DocholderPreview.open(result.downloadUrl, result.originalName, result.mimeType || 'image/jpeg', result.id);
+            }
+        };
     }
     if (dlLink) {
         dlLink.href = result.downloadUrl;

@@ -59,6 +59,7 @@
             <!-- Filter Chips (Horizontally Scrollable) -->
             <div class="filter-chips">
                 <button class="chip active" data-category="all">All</button>
+                <button class="chip" data-category="downloaded" id="chip-downloaded"><i class="fa-solid fa-circle-down" style="color: #10B981;"></i> Downloaded</button>
                 <button class="chip" data-category="favorites"><i class="fa-solid fa-star" style="color: #F59E0B;"></i> Starred</button>
                 <button class="chip" data-category="recent"><i class="fa-solid fa-clock-rotate-left" style="color: var(--cyan-neon);"></i> Recent</button>
                 <button class="chip" data-category="vault" id="chip-vault"><i class="fa-solid fa-vault" style="color: #EC4899;"></i> Vault</button>
@@ -68,6 +69,17 @@
                 <button class="chip" data-category="audio"><i class="fa-solid fa-file-audio"></i> Audio</button>
                 <button class="chip" data-category="archive"><i class="fa-solid fa-file-zipper"></i> Zip</button>
                 <button class="chip" data-category="text"><i class="fa-solid fa-file-code"></i> Code</button>
+            </div>
+
+            <!-- Downloaded Storage Folder Banner -->
+            <div id="downloaded-banner" class="glass-card hidden" style="background: rgba(16, 185, 129, 0.1); border-color: #10B981; padding: 12px; margin-bottom: 10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h4 style="margin:0; font-size:0.88rem; color:#10B981;"><i class="fa-solid fa-folder-arrow-down"></i> Phone Storage Folder: <code style="font-size:0.82rem; background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px;">docholder/</code></h4>
+                        <p style="margin:3px 0 0 0; font-size:0.75rem; color:var(--text-secondary);">Direct offline storage on your device. All saved files are preserved locally in your Docholder directory.</p>
+                    </div>
+                    <button id="btn-clear-downloaded" class="btn btn-secondary btn-sm" style="font-size:0.72rem; padding:4px 8px; color:var(--text-secondary);" title="Clear download history"><i class="fa-solid fa-broom"></i> Clear List</button>
+                </div>
             </div>
 
             <!-- Vault Banner -->
@@ -274,6 +286,16 @@
         </nav>
     </div>
 
+
+    <!-- CDN Libraries for High-Fidelity Mobile Previews -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        if (window.pdfjsLib) {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 
     <script src="js/authGuard.js"></script>
     <script src="js/pageTransition.js"></script>

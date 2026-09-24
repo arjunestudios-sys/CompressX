@@ -781,6 +781,10 @@ function displayWordResult(result) {
     if (dlLink) {
         dlLink.href = result.downloadUrl;
         dlLink.download = result.originalName;
+        dlLink.onclick = (e) => {
+            e.preventDefault();
+            DocholderStorage.saveFileLocally(result.downloadUrl, result.originalName);
+        };
     }
 
     card.scrollIntoView({ behavior: 'smooth' });

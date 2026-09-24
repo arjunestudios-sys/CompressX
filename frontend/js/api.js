@@ -6,6 +6,62 @@
         if (document.body) document.body.classList.add('is-native-app');
         else document.addEventListener('DOMContentLoaded', () => document.body.classList.add('is-native-app'));
     }
+
+    // Native Capacitor Plugins Lifecycle Hook
+    if (window.Capacitor && window.Capacitor.Plugins) {
+        const { StatusBar, SplashScreen, App, Network } = window.Capacitor.Plugins;
+
+        // 1. Hide Splash Screen smoothly once UI starts
+        if (SplashScreen && typeof SplashScreen.hide === 'function') {
+            setTimeout(() => {
+                SplashScreen.hide().catch(() => {});
+            }, 600);
+        }
+
+        // 2. Set Status Bar Theme
+        if (StatusBar && typeof StatusBar.setStyle === 'function') {
+            StatusBar.setStyle({ style: 'DARK' }).catch(() => {});
+            if (typeof StatusBar.setBackgroundColor === 'function') {
+                StatusBar.setBackgroundColor({ color: '#0b0f19' }).catch(() => {});
+            }
+        }
+
+        // 3. Android Hardware Back Button Handling
+        if (App && typeof App.addListener === 'function') {
+            App.addListener('backButton', ({ canGoBack }) => {
+                const openModal = document.querySelector('.modal-backdrop[style*="display: flex"], .modal-dialog-visible, #preview-modal:not(.hidden), #docholder-operation-modal.visible');
+                if (openModal) {
+                    if (openModal.id === 'preview-modal') openModal.classList.add('hidden');
+                    else if (openModal.id === 'docholder-operation-modal') openModal.classList.remove('visible');
+                    else openModal.style.display = 'none';
+                    return;
+                }
+
+                const path = window.location.pathname;
+                const isRoot = path.endsWith('dashboard.html') || path.endsWith('welcome.html') || path === '/' || path.endsWith('index.html');
+                if (isRoot || !canGoBack) {
+                    App.exitApp();
+                } else {
+                    window.history.back();
+                }
+            });
+        }
+
+        // 4. Offline / Online Network Monitoring
+        if (Network && typeof Network.addListener === 'function') {
+            Network.addListener('networkStatusChange', status => {
+                if (!status.connected) {
+                    if (typeof showToast === 'function') {
+                        showToast('Internet disconnected. Some cloud operations may be unavailable.', 'warning', 5000);
+                    }
+                } else {
+                    if (typeof showToast === 'function') {
+                        showToast('Connected to cloud services.', 'success', 2500);
+                    }
+                }
+            });
+        }
+    }
 })();
 
 // Initialize Theme
@@ -76,24 +132,44 @@ function updateThemeIcons(theme) {
     });
 }
 
+// Path recovery: If WebView accidentally lands in an API subpath (e.g. /api/files/...)
+(function recoverCorruptedPath() {
+    if (window.location.pathname.includes('/api/')) {
+        window.location.replace('/dashboard.html');
+    }
+})();
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+function escapeAttr(str) {
+    return escapeHtml(str);
+}
+
 // Smart Navigation Preserving Tool Categories
-function handleSmartBack(defaultFallback = 'tools.html') {
+function handleSmartBack(defaultFallback = '/tools.html') {
     const params = new URLSearchParams(window.location.search);
     const from = params.get('from');
     if (from) {
-        window.location.href = from;
+        window.location.href = from.startsWith('/') || from.startsWith('http') ? from : `/${from}`;
         return;
     }
     const lastCat = sessionStorage.getItem('last_tool_category');
     if (lastCat && defaultFallback.includes('tools.html')) {
-        window.location.href = `tools.html?cat=${encodeURIComponent(lastCat)}`;
+        window.location.href = `/tools.html?cat=${encodeURIComponent(lastCat)}`;
         return;
     }
     if (document.referrer && document.referrer.includes(window.location.host) && !document.referrer.endsWith(window.location.pathname)) {
         window.history.back();
         return;
     }
-    window.location.href = defaultFallback;
+    window.location.href = defaultFallback.startsWith('/') || defaultFallback.startsWith('http') ? defaultFallback : `/${defaultFallback}`;
 }
 
 // Docholder Local Storage & Recent Files Manager
@@ -145,16 +221,56 @@ const DocholderStorage = {
     isFavorite(fileId) {
         return this.getFavorites().has(String(fileId));
     },
-    saveFileLocally(url, filename) {
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename || 'download';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        showToast(`Saved ${filename || 'file'} to device downloads`, 'success');
+    async saveFileLocally(url, filename) {
+        if (!url) return;
+        try {
+            const name = filename || 'download';
+            const fullUrl = (typeof resolveApiUrl === 'function') ? resolveApiUrl(url) : url;
+            
+            showToast(`Downloading "${name}"...`, 'info', 1800);
+            
+            const authToken = localStorage.getItem('docholder_auth_token') || sessionStorage.getItem('docholder_auth_token');
+            const headers = {};
+            if (authToken) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+            }
+
+            const response = await fetch(fullUrl, {
+                method: 'GET',
+                headers,
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server returned HTTP ${response.status}`);
+            }
+
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = blobUrl;
+            a.download = name;
+            document.body.appendChild(a);
+            a.click();
+            
+            setTimeout(() => {
+                try {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(blobUrl);
+                } catch(e) {}
+            }, 2000);
+
+            showToast(`Saved "${name}" to device downloads`, 'success');
+        } catch(err) {
+            console.error('saveFileLocally error:', err);
+            showToast(`Failed to download file: ${err.message}`, 'error');
+        }
     }
 };
+
+window.downloadFile = (url, name) => DocholderStorage.saveFileLocally(url, name);
 
 // File & Folder Permission Manager
 async function requestDocholderPermission(type = 'storage', reason = 'access your local files and media') {
@@ -525,40 +641,43 @@ const CLOUD_API_HOST = 'https://compressx-backend.onrender.com';
 window.API_BASE_URL = window.API_BASE_URL || CLOUD_API_HOST;
 
 // Resolves an API endpoint URL for any runtime context:
-//   1. Custom host saved in Settings  (overrides everything)
-//   2. Web browser served by the Express server  (uses relative path)
-//   3. Capacitor native app / file://  (uses CLOUD_API_HOST)
+//   1. Custom host saved in Settings (overrides if valid external URL)
+//   2. Web browser served by Express on PC (e.g., http://localhost:5000)
+//   3. Capacitor native app / Android WebView / mobile (always uses CLOUD_API_HOST)
 function resolveApiUrl(endpoint) {
     if (!endpoint || endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
         return endpoint;
     }
 
-    // 1. Custom host configured by the user in Settings
+    const isNativeApp = (window.Capacitor && (window.Capacitor.isNativePlatform?.() || window.Capacitor.getPlatform() === 'android' || window.Capacitor.getPlatform() === 'ios')) ||
+                        window.location.protocol === 'file:' ||
+                        window.location.origin === 'https://localhost' ||
+                        window.location.origin === 'capacitor://localhost' ||
+                        window.location.origin === 'ionic://localhost' ||
+                        (window.location.hostname === 'localhost' && (!window.location.port || window.location.port === '' || window.location.port === '80' || window.location.port === '443'));
+
+    // 1. Custom host configured in Settings
     let customHost = localStorage.getItem('docholder_api_host');
     if (customHost && customHost.trim() !== '') {
         let host = customHost.trim();
-        // Remap localhost → Android emulator loopback only when using a local address
-        const isNativeCtx = window.Capacitor?.isNativePlatform?.() ||
-                            window.Capacitor?.getPlatform() === 'android' ||
-                            window.Capacitor?.getPlatform() === 'ios' ||
-                            window.location.protocol === 'file:';
-        if (isNativeCtx && (host.includes('localhost') || host.includes('127.0.0.1'))) {
-            host = host.replace('localhost', '10.0.2.2').replace('127.0.0.1', '10.0.2.2');
+        // If native app and user left/selected localhost, map to cloud backend
+        if (isNativeApp && (host.includes('localhost') || host.includes('127.0.0.1'))) {
+            return `${CLOUD_API_HOST}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
         }
         return `${host.replace(/\/+$/, '')}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
     }
 
-    // 2. Running as a standard web page served by Express (same-origin)
-    const isNative = window.Capacitor?.isNativePlatform?.() ||
-                     window.Capacitor?.getPlatform() === 'android' ||
-                     window.Capacitor?.getPlatform() === 'ios' ||
-                     window.location.protocol === 'file:';
+    // 2. Mobile/Capacitor Native App Context → ALWAYS use Cloud Backend
+    if (isNativeApp) {
+        return `${CLOUD_API_HOST}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+    }
 
-    if (!isNative && window.location.origin && window.location.origin !== 'null') {
+    // 3. Desktop browser served by Express (e.g. running on localhost:5000)
+    if (window.location.origin && window.location.origin !== 'null' && !window.location.origin.includes('localhost')) {
         return `${window.location.origin}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
     }
 
-    // 3. Capacitor native app or file:// context → always use cloud backend
+    // Default to cloud backend
     return `${CLOUD_API_HOST}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
 }
 

@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 </td>
                                 <td style="text-align: right;">${formatBytes(f.size)}</td>
                                 <td style="text-align: right;">
-                                    <a href="${f.downloadUrl}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-download"></i> Get</a>
+                                    <button onclick="DocholderStorage.saveFileLocally('${f.downloadUrl}', '${escapeAttr(f.name)}')" class="btn btn-secondary btn-sm" title="Download"><i class="fa-solid fa-download"></i> Get</button>
                                 </td>
                             `;
                             fileListTbody.appendChild(tr);

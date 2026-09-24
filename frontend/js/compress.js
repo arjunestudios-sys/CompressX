@@ -96,6 +96,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const downloadBtn = document.getElementById('res-download-btn');
                     if (downloadBtn) {
                         downloadBtn.href = result.downloadUrl;
+                        downloadBtn.onclick = (e) => {
+                            e.preventDefault();
+                            DocholderStorage.saveFileLocally(result.downloadUrl, result.originalName || 'compressed_file');
+                        };
                     }
 
                     resultCard.scrollIntoView({ behavior: 'smooth' });

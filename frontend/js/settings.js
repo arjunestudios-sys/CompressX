@@ -236,6 +236,47 @@ function setupEventListeners() {
         });
     }
 
+    // Test API Connection Button
+    const btnTestApi = document.getElementById('btn-test-api-connection');
+    const statusLabel = document.getElementById('api-connection-status');
+    if (btnTestApi) {
+        btnTestApi.addEventListener('click', async () => {
+            btnTestApi.disabled = true;
+            btnTestApi.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Testing...';
+            if (statusLabel) statusLabel.textContent = '';
+
+            const candidateHost = apiHostUrl?.value?.trim() || 'https://compressx-backend.onrender.com';
+            const checkUrl = candidateHost.replace(/\/+$/, '') + '/health';
+
+            const start = performance.now();
+            try {
+                const res = await fetch(checkUrl, { method: 'GET', cache: 'no-cache' });
+                const elapsed = Math.round(performance.now() - start);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (statusLabel) {
+                        statusLabel.innerHTML = `<span style="color:var(--success); font-weight:600;"><i class="fa-solid fa-circle-check"></i> Connected (${elapsed}ms)</span>`;
+                    }
+                    showToast(`Backend connection successful! Latency: ${elapsed}ms`, 'success');
+                } else {
+                    if (statusLabel) {
+                        statusLabel.innerHTML = `<span style="color:var(--danger); font-weight:600;"><i class="fa-solid fa-circle-xmark"></i> HTTP ${res.status}</span>`;
+                    }
+                    showToast(`Server replied with HTTP ${res.status}`, 'warning');
+                }
+            } catch(e) {
+                const elapsed = Math.round(performance.now() - start);
+                if (statusLabel) {
+                    statusLabel.innerHTML = `<span style="color:var(--danger); font-weight:600;"><i class="fa-solid fa-circle-xmark"></i> Unreachable (${elapsed}ms)</span>`;
+                }
+                showToast(`Failed to connect to ${candidateHost}: ${e.message}`, 'error', 4500);
+            } finally {
+                btnTestApi.disabled = false;
+                btnTestApi.innerHTML = '<i class="fa-solid fa-satellite-dish"></i> Test Connection';
+            }
+        });
+    }
+
     // Save All Settings Button
     const btnSave = document.getElementById('btn-save-settings');
     if (btnSave) {

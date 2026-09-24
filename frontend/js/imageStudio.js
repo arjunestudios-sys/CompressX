@@ -1142,16 +1142,15 @@ function displayImageResult(result, title = 'Image Processed!') {
     if (dlLink) {
         dlLink.href = result.downloadUrl;
         dlLink.download = result.originalName;
+        dlLink.onclick = (e) => {
+            e.preventDefault();
+            DocholderStorage.saveFileLocally(result.downloadUrl, result.originalName);
+        };
     }
 
     const settings = getDocholderSettings();
-    if (settings.autoDownload && dlLink && dlLink.href) {
-        const autoLink = document.createElement('a');
-        autoLink.href = dlLink.href;
-        autoLink.download = result.originalName;
-        document.body.appendChild(autoLink);
-        autoLink.click();
-        autoLink.remove();
+    if (settings.autoDownload && result.downloadUrl) {
+        DocholderStorage.saveFileLocally(result.downloadUrl, result.originalName);
     }
 
     card.scrollIntoView({ behavior: 'smooth' });

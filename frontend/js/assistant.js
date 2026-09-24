@@ -228,7 +228,7 @@ class DocholderAssistant {
                     <span style="color: var(--text-secondary);">${formatBytes(resultData.convertedSize || resultData.fileSize)}</span>
                     ${resultData.percentageSaved > 0 ? `<span class="savings-badge" style="font-size: 0.68rem; padding: 2px 6px;">${resultData.percentageSaved}% Saved</span>` : ''}
                 </div>
-                <a href="${resultData.downloadUrl}" class="btn btn-primary btn-sm" style="width: 100%; font-size: 0.75rem; padding: 4px 8px;"><i class="fa-solid fa-download"></i> Download</a>
+                <button onclick="DocholderStorage.saveFileLocally('${resultData.downloadUrl}', '${escapeAttr(resultData.originalName || 'file')}')" class="btn btn-primary btn-sm" style="width: 100%; font-size: 0.75rem; padding: 4px 8px;" title="Download"><i class="fa-solid fa-download"></i> Download</button>
             `;
 
             bubble.appendChild(card);

@@ -33,9 +33,10 @@
   },
   "server": {
     "androidScheme": "https",
-    "cleartext": false,
+    "cleartext": true,
     "allowNavigation": [
-      "compressx-backend.onrender.com"
+      "compressx-backend.onrender.com",
+      "*.onrender.com"
     ]
   }
 }

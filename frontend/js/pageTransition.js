@@ -27,35 +27,46 @@
         const anchor = e.target.closest('a[href]');
         if (!anchor) return;
 
-        const href = anchor.getAttribute('href');
-        if (!href) return;
-
-        // Skip: external links, hash-only links, mailto/tel, JS links
+        // Skip: external links, hash-only links, mailto/tel, JS links, API endpoints, download links
         if (
-            href.startsWith('http') ||
+            href.startsWith('http://') ||
+            href.startsWith('https://') ||
+            href.startsWith('blob:') ||
+            href.startsWith('data:') ||
             href.startsWith('#') ||
             href.startsWith('mailto:') ||
             href.startsWith('tel:') ||
             href.startsWith('javascript:') ||
+            href.startsWith('/api/') ||
+            href.startsWith('api/') ||
+            anchor.hasAttribute('download') ||
             anchor.target === '_blank'
         ) return;
 
         e.preventDefault();
 
+        // Always resolve internal HTML pages to the root of the app
+        const targetPath = href.startsWith('/') ? href : `/${href}`;
+
         const ov = getOverlay();
         if (ov) ov.classList.add('active');
         setTimeout(() => {
-            window.location.href = href;
+            window.location.href = targetPath;
         }, 160);
     });
 
     // Also intercept programmatic JS navigations via a helper
     window.__navigateTo = function (href) {
         if (!href) return;
+        if (href.startsWith('/api/') || href.startsWith('api/')) {
+            window.location.href = href;
+            return;
+        }
+        const targetPath = href.startsWith('/') || href.startsWith('http') ? href : `/${href}`;
         const ov = getOverlay();
         if (ov) ov.classList.add('active');
         setTimeout(() => {
-            window.location.href = href;
+            window.location.href = targetPath;
         }, 160);
     };
 })();

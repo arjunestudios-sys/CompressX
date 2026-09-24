@@ -15,8 +15,8 @@
         ? document.currentScript.getAttribute('data-mode')
         : null;
 
-    const LOGIN_PAGE = 'login.html';
-    const DASHBOARD_PAGE = 'dashboard.html';
+    const LOGIN_PAGE = '/login.html';
+    const DASHBOARD_PAGE = '/dashboard.html';
 
     // Store resolved user globally so pages can use it
     window.__authUser = null;

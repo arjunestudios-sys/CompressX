@@ -42,7 +42,7 @@ app.use(helmet({
 //   • Local dev servers
 const DEFAULT_ALLOWED_ORIGINS = [
     'https://compressx-backend.onrender.com',
-    // Capacitor native apps use these origins in their WebView
+    'https://localhost',
     'capacitor://localhost',
     'ionic://localhost',
     'http://localhost',
@@ -52,9 +52,10 @@ const DEFAULT_ALLOWED_ORIGINS = [
     'null',                    // file:// origin (Capacitor file-served mode)
 ];
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-    : DEFAULT_ALLOWED_ORIGINS;
+const customOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()).filter(Boolean)
+    : [];
+const allowedOrigins = Array.from(new Set([...DEFAULT_ALLOWED_ORIGINS, ...customOrigins]));
 
 app.use(cors({
     origin: (origin, callback) => {
@@ -146,7 +147,16 @@ app.use(errorHandler);
 
 // Start Server & Cleanup Job
 app.listen(PORT, () => {
-    console.log(`\n🚀 Docholder Universal File Processing Platform Server running on http://localhost:${PORT}`);
-    console.log(`💻 Serving Frontend directly on http://localhost:${PORT}\n`);
+    const isCloud = isProd || process.env.RENDER || process.env.RENDER_EXTERNAL_URL;
+    const cloudUrl = process.env.RENDER_EXTERNAL_URL || 'https://compressx-backend.onrender.com';
+    
+    if (isCloud) {
+        console.log(`\n🚀 Docholder Universal File Processing Server RUNNING [PRODUCTION]`);
+        console.log(`☁️ Cloud Endpoint: ${cloudUrl}`);
+        console.log(`🔌 Internal Binding: Port ${PORT}\n`);
+    } else {
+        console.log(`\n🚀 Docholder Server running on http://localhost:${PORT}`);
+        console.log(`💻 Serving Frontend directly on http://localhost:${PORT}\n`);
+    }
     cleanupService.startCleanupJob();
 });

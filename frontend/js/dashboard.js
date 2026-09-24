@@ -171,8 +171,8 @@ async function loadRecentFiles() {
                     </td>
                     <td style="font-size: 0.76rem; color: var(--text-secondary); white-space: nowrap;">${formatBytes(f.file_size)}</td>
                     <td style="text-align: right; white-space: nowrap;">
-                        <button class="btn btn-secondary btn-sm" onclick="openConvertModalForFile(${f.id}, '${f.original_name}')" style="padding: 2px 6px; font-size: 0.72rem;" title="Convert"><i class="fa-solid fa-rotate"></i></button>
-                        <a href="/api/files/${f.id}/download" class="btn btn-secondary btn-sm" style="padding: 2px 6px; font-size: 0.72rem;" title="Download"><i class="fa-solid fa-download"></i></a>
+                        <button class="btn btn-secondary btn-sm" onclick="openConvertModalForFile(${f.id}, '${escapeAttr(f.original_name)}')" style="padding: 2px 6px; font-size: 0.72rem;" title="Convert"><i class="fa-solid fa-rotate"></i></button>
+                        <button class="btn btn-secondary btn-sm" onclick="DocholderStorage.saveFileLocally('/api/files/${f.id}/download', '${escapeAttr(f.original_name)}')" style="padding: 2px 6px; font-size: 0.72rem;" title="Download"><i class="fa-solid fa-download"></i></button>
                     </td>
                 </tr>
             `;
@@ -198,10 +198,10 @@ async function loadTransformationHistory() {
         list.innerHTML = history.map(h => `
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: var(--surface-hover); border-radius: var(--radius-xs); font-size: 0.78rem;">
                 <div style="overflow: hidden;">
-                    <div style="font-weight: 700; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${h.result_name || h.original_name}</div>
-                    <span style="color: var(--text-secondary); font-size: 0.7rem;">${h.action_type} • ${formatBytes(h.result_size)}</span>
+                    <div style="font-weight: 700; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(h.result_name || h.original_name)}</div>
+                    <span style="color: var(--text-secondary); font-size: 0.7rem;">${escapeHtml(h.action_type)} • ${formatBytes(h.result_size)}</span>
                 </div>
-                ${h.download_url ? `<a href="${h.download_url}" class="btn btn-primary btn-sm" style="padding: 2px 8px; font-size: 0.72rem;"><i class="fa-solid fa-download"></i></a>` : ''}
+                ${h.download_url ? `<button onclick="DocholderStorage.saveFileLocally('${h.download_url}', '${escapeAttr(h.result_name || h.original_name || 'file')}')" class="btn btn-primary btn-sm" style="padding: 2px 8px; font-size: 0.72rem;" title="Download"><i class="fa-solid fa-download"></i></button>` : ''}
             </div>
         `).join('');
     } catch(e) {}
@@ -434,7 +434,7 @@ function setupModals() {
                         ? `Optimized! Reduced to ${formatBytes(_optResult.convertedSize)} (${_optResult.percentageSaved}% saved)`
                         : 'File optimized successfully!',
                     'success', 5000,
-                    _optResult && _optResult.downloadUrl ? { text: 'Download', onClick: () => window.location.href = _optResult.downloadUrl } : undefined
+                    _optResult && _optResult.downloadUrl ? { text: 'Download', onClick: () => DocholderStorage.saveFileLocally(_optResult.downloadUrl, _optResult.originalName || 'compressed') } : undefined
                 );
                 await loadDashboardStats();
                 await loadTransformationHistory();
@@ -470,7 +470,7 @@ function setupModals() {
                     ? res.zipResult.downloadUrl
                     : (_files.length > 0 && _files[0].downloadUrl ? _files[0].downloadUrl : null);
                 showToast(`Successfully created ${_files.length} output files!`, 'success', 6000,
-                    _dlUrl ? { text: res.zipResult ? 'Download ZIP' : 'Download', onClick: () => window.location.href = _dlUrl } : undefined
+                    _dlUrl ? { text: res.zipResult ? 'Download ZIP' : 'Download', onClick: () => DocholderStorage.saveFileLocally(_dlUrl, res.zipResult ? 'export_package.zip' : 'converted_file') } : undefined
                 );
 
                 await loadDashboardStats();

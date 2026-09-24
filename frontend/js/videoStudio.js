@@ -610,17 +610,16 @@ function displayResult(result) {
     if (dl) {
         dl.href = result.downloadUrl;
         dl.download = result.originalName;
+        dl.onclick = (e) => {
+            e.preventDefault();
+            DocholderStorage.saveFileLocally(result.downloadUrl, result.originalName);
+        };
     }
 
     // Respect auto-download setting
     const settings = getDocholderSettings();
-    if (settings.autoDownload && dl && dl.href) {
-        const autoLink = document.createElement('a');
-        autoLink.href = dl.href;
-        autoLink.download = result.originalName;
-        document.body.appendChild(autoLink);
-        autoLink.click();
-        autoLink.remove();
+    if (settings.autoDownload && dl && result.downloadUrl) {
+        DocholderStorage.saveFileLocally(result.downloadUrl, result.originalName);
     }
 
     card.scrollIntoView({ behavior: 'smooth' });

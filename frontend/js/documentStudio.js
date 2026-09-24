@@ -1286,9 +1286,9 @@ function setupControls() {
                     resBox.innerHTML = `
                         <strong style="color: var(--emerald-neon); font-size: 0.88rem; display: block; margin-bottom: 6px;">✓ 5 Improvements Applied Successfully</strong>
                         <div style="font-size: 0.78rem; display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px;">
-                            ${(data.pipelineSteps || []).map(st => `<div><i class="fa-solid fa-check" style="color: var(--emerald-neon);"></i> ${st.name}: ${st.message}</div>`).join('')}
+                            ${(data.pipelineSteps || []).map(st => `<div><i class="fa-solid fa-check" style="color: var(--emerald-neon);"></i> ${escapeHtml(st.name)}: ${escapeHtml(st.message)}</div>`).join('')}
                         </div>
-                        <a href="${data.outputPath}" download class="btn btn-primary btn-sm"><i class="fa-solid fa-download"></i> Download Fixed File</a>
+                        <button onclick="DocholderStorage.saveFileLocally('${data.outputPath}', 'fixed_${escapeAttr(currentDocFile.original_name)}')" class="btn btn-primary btn-sm" style="width: 100%;"><i class="fa-solid fa-download"></i> Download Fixed File</button>
                     `;
                 }
                 DocholderUI?.setButtonState(btnFixEverything, 'enabled', '<i class="fa-solid fa-wand-magic-sparkles"></i> Fix Everything Now');
@@ -1315,9 +1315,9 @@ function setupControls() {
                     resBox.classList.remove('hidden');
                     resBox.innerHTML = `
                         <div style="padding: 10px; border-radius: 6px; background: rgba(16,185,129,0.15); border: 1px solid #10B981;">
-                            <strong style="color: #34D399; font-size: 0.85rem;">Optimized for ${data.goalLabel}</strong>
+                            <strong style="color: #34D399; font-size: 0.85rem;">Optimized for ${escapeHtml(data.goalLabel)}</strong>
                             <div style="font-size: 0.78rem; margin: 4px 0 8px 0;">Original: ${formatBytes(data.originalSize)} → Output: ${formatBytes(data.optimizedSize)} (${data.percentageSaved}% saved)</div>
-                            <a href="${data.outputPath}" download class="btn btn-primary btn-sm"><i class="fa-solid fa-download"></i> Download Optimized File</a>
+                            <button onclick="DocholderStorage.saveFileLocally('${data.outputPath}', 'optimized_${escapeAttr(currentDocFile.original_name)}')" class="btn btn-primary btn-sm" style="width: 100%;"><i class="fa-solid fa-download"></i> Download Optimized File</button>
                         </div>
                     `;
                 }
@@ -1811,7 +1811,7 @@ function setupControls() {
                     resBox.innerHTML = `
                         <div style="font-weight: 700; color: #F59E0B; margin-bottom: 6px; font-size: 0.85rem;"><i class="fa-solid fa-box-archive"></i> Submission Package Ready</div>
                         <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px;">Packaged ${selectedMergeFiles.length || 'workspace'} documents with automated index manifest and checksum verification.</p>
-                        <a href="${data.downloadUrl || '#'}" class="btn btn-primary btn-sm btn-block"><i class="fa-solid fa-download"></i> Download Submission Package (.zip)</a>
+                        <button onclick="DocholderStorage.saveFileLocally('${data.downloadUrl || ''}', 'submission_package.zip')" class="btn btn-primary btn-sm btn-block"><i class="fa-solid fa-download"></i> Download Submission Package (.zip)</button>
                     `;
                 }
                 showToast('Smart package created!', 'success');
@@ -1981,10 +1981,10 @@ function displayDocResult(result, title = 'Operation Completed!', noticeText = n
     if (dlLink) {
         dlLink.href = result.downloadUrl;
         dlLink.download = result.originalName;
-        dlLink.onclick = () => {
+        dlLink.onclick = (e) => {
+            e.preventDefault();
             if (typeof DocholderStorage !== 'undefined') {
                 DocholderStorage.saveFileLocally(result.downloadUrl, result.originalName);
-                showToast(`Saved "${result.originalName}" to local device storage`, 'success');
             }
         };
     }

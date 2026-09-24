@@ -511,11 +511,11 @@ function setupControls() {
                             <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.78rem; background:var(--surface); padding:6px 10px; border-radius:var(--radius-xs); border:1px solid var(--surface-border);">
                                 <div style="display:flex; align-items:center; gap:6px; overflow:hidden; max-width:75%;">
                                     <i class="fa-solid fa-circle-check" style="color:var(--success);"></i>
-                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text);">${r.originalName || r.filename}</span>
+                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text);">${escapeHtml(r.originalName || r.filename)}</span>
                                 </div>
-                                <a href="${r.downloadUrl}" download="${r.originalName || r.filename}" class="btn btn-secondary btn-sm" style="font-size:0.7rem; padding:2px 8px;">
+                                <button onclick="DocholderStorage.saveFileLocally('${r.downloadUrl}', '${escapeAttr(r.originalName || r.filename)}')" class="btn btn-secondary btn-sm" style="font-size:0.7rem; padding:2px 8px;" title="Download">
                                     <i class="fa-solid fa-download"></i>
-                                </a>
+                                </button>
                             </div>
                         `).join('');
                     }
@@ -528,7 +528,7 @@ function setupControls() {
                     if (res.failed && res.failed.length > 0) {
                         if (failedSec) failedSec.classList.remove('hidden');
                         if (failedList) {
-                            failedList.innerHTML = res.failed.map(f => `<div>• <strong>${f.filename || 'File'}</strong>: ${f.error || 'Conversion failed'}</div>`).join('');
+                            failedList.innerHTML = res.failed.map(f => `<div>• <strong>${escapeHtml(f.filename || 'File')}</strong>: ${escapeHtml(f.error || 'Conversion failed')}</div>`).join('');
                         }
                         if (retryBtn) {
                             retryBtn.onclick = () => {
@@ -548,12 +548,16 @@ function setupControls() {
                     const zipBtn = document.getElementById('btn-batch-download-zip');
                     if (zipBtn) {
                         if (res.zipResult && res.zipResult.downloadUrl) {
-                            zipBtn.href = res.zipResult.downloadUrl;
-                            zipBtn.download = res.zipResult.originalName || 'batch_converted.zip';
+                            zipBtn.onclick = (e) => {
+                                e.preventDefault();
+                                DocholderStorage.saveFileLocally(res.zipResult.downloadUrl, res.zipResult.originalName || 'batch_converted.zip');
+                            };
                             zipBtn.classList.remove('hidden');
                         } else if (res.results && res.results.length > 0) {
-                            zipBtn.href = res.results[0].downloadUrl;
-                            zipBtn.download = res.results[0].originalName || res.results[0].filename;
+                            zipBtn.onclick = (e) => {
+                                e.preventDefault();
+                                DocholderStorage.saveFileLocally(res.results[0].downloadUrl, res.results[0].originalName || res.results[0].filename);
+                            };
                             zipBtn.classList.remove('hidden');
                         } else {
                             zipBtn.classList.add('hidden');

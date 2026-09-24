@@ -72,7 +72,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     body: { fileIds: Array.from(selectedFileIds) }
                 });
                 showToast('ZIP archive created!', 'success');
-                window.location.href = res.downloadUrl;
+                if (res.downloadUrl) {
+                    await DocholderStorage.saveFileLocally(res.downloadUrl, 'selected_files.zip');
+                }
             } catch(e) {
                 showToast(e.message || 'ZIP creation failed', 'error');
             } finally {
@@ -316,7 +318,9 @@ async function openPreviewModal(file) {
     body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><p style="margin-top:10px;">Loading preview...</p></div>';
     modal.classList.remove('hidden');
 
-    const downloadUrl = `/api/files/${file.id}/download?inline=true`;
+    const downloadUrl = (typeof resolveApiUrl === 'function')
+        ? resolveApiUrl(`/api/files/${file.id}/download?inline=true`)
+        : `/api/files/${file.id}/download?inline=true`;
     const ext = file.original_name.split('.').pop().toLowerCase();
 
     if (file.mime_type.startsWith('image/')) {
@@ -326,7 +330,7 @@ async function openPreviewModal(file) {
             </div>
             <div style="display:flex; gap:8px; margin-top:10px;">
                 <a href="image-tools.html?fileId=${file.id}" class="btn btn-primary btn-sm" style="flex:1;"><i class="fa-solid fa-wand-magic-sparkles"></i> Open in Image Studio</a>
-                <a href="${downloadUrl}" download="${file.original_name}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-download"></i></a>
+                <button onclick="DocholderStorage.saveFileLocally('${downloadUrl}', '${escapeAttr(file.original_name)}')" class="btn btn-secondary btn-sm" title="Download"><i class="fa-solid fa-download"></i></button>
             </div>
         `;
     } else if (file.mime_type.startsWith('video/')) {
@@ -339,7 +343,7 @@ async function openPreviewModal(file) {
             </div>
             <div style="display:flex; gap:8px; margin-top:10px;">
                 <a href="video-tools.html?fileId=${file.id}" class="btn btn-primary btn-sm" style="flex:1;"><i class="fa-solid fa-wand-magic-sparkles"></i> Open in Video Studio</a>
-                <a href="${downloadUrl}" download="${file.original_name}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-download"></i></a>
+                <button onclick="DocholderStorage.saveFileLocally('${downloadUrl}', '${escapeAttr(file.original_name)}')" class="btn btn-secondary btn-sm" title="Download"><i class="fa-solid fa-download"></i></button>
             </div>
         `;
     } else if (file.mime_type.startsWith('audio/')) {
@@ -352,7 +356,7 @@ async function openPreviewModal(file) {
             </div>
             <div style="display:flex; gap:8px; margin-top:10px;">
                 <a href="audio-tools.html?fileId=${file.id}" class="btn btn-primary btn-sm" style="flex:1;"><i class="fa-solid fa-wand-magic-sparkles"></i> Open in Audio Studio</a>
-                <a href="${downloadUrl}" download="${file.original_name}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-download"></i></a>
+                <button onclick="DocholderStorage.saveFileLocally('${downloadUrl}', '${escapeAttr(file.original_name)}')" class="btn btn-secondary btn-sm" title="Download"><i class="fa-solid fa-download"></i></button>
             </div>
         `;
     } else if (file.mime_type.includes('pdf') || ext === 'pdf') {
@@ -360,7 +364,7 @@ async function openPreviewModal(file) {
             <iframe src="${downloadUrl}" style="width:100%; height:380px; border:none; border-radius:8px;"></iframe>
             <div style="display:flex; gap:8px; margin-top:10px;">
                 <a href="document-tools.html?fileId=${file.id}" class="btn btn-primary btn-sm" style="flex:1;"><i class="fa-solid fa-file-pdf"></i> Open in Document Studio</a>
-                <a href="${downloadUrl}" download="${file.original_name}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-download"></i></a>
+                <button onclick="DocholderStorage.saveFileLocally('${downloadUrl}', '${escapeAttr(file.original_name)}')" class="btn btn-secondary btn-sm" title="Download"><i class="fa-solid fa-download"></i></button>
             </div>
         `;
     } else if (['xlsx', 'xls', 'csv'].includes(ext)) {
@@ -376,7 +380,7 @@ async function openPreviewModal(file) {
                 </div>
                 <div style="display:flex; gap:8px; margin-top:10px;">
                     <a href="convert.html?fileId=${file.id}" class="btn btn-primary btn-sm" style="flex:1;"><i class="fa-solid fa-rotate"></i> Convert Table</a>
-                    <a href="${downloadUrl}" download="${file.original_name}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-download"></i></a>
+                    <button onclick="DocholderStorage.saveFileLocally('${downloadUrl}', '${escapeAttr(file.original_name)}')" class="btn btn-secondary btn-sm" title="Download"><i class="fa-solid fa-download"></i></button>
                 </div>
             `;
         } catch(e) {
@@ -391,7 +395,7 @@ async function openPreviewModal(file) {
                 <pre style="font-family:monospace; white-space:pre-wrap; padding:12px; background:var(--surface-hover); border-radius:6px; font-size:0.8rem; max-height:280px; overflow-y:auto;">${escaped}</pre>
                 <div style="display:flex; gap:8px; margin-top:10px;">
                     <a href="convert.html?fileId=${file.id}" class="btn btn-primary btn-sm" style="flex:1;"><i class="fa-solid fa-rotate"></i> Convert to PDF / Word</a>
-                    <a href="${downloadUrl}" download="${file.original_name}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-download"></i></a>
+                    <button onclick="DocholderStorage.saveFileLocally('${downloadUrl}', '${escapeAttr(file.original_name)}')" class="btn btn-secondary btn-sm" title="Download"><i class="fa-solid fa-download"></i></button>
                 </div>
             `;
         } catch(e) {
@@ -405,7 +409,7 @@ async function openPreviewModal(file) {
                 <p style="color:var(--text-secondary); font-size:0.78rem; margin-top:4px;">Direct inline preview not supported for this binary format.</p>
                 <div style="display:flex; gap:8px; margin-top:14px;">
                     <a href="convert.html?fileId=${file.id}" class="btn btn-primary btn-sm" style="flex:1;"><i class="fa-solid fa-rotate"></i> Convert File</a>
-                    <a href="${downloadUrl}" download="${file.original_name}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-download"></i> Download</a>
+                    <button onclick="DocholderStorage.saveFileLocally('${downloadUrl}', '${escapeAttr(file.original_name)}')" class="btn btn-secondary btn-sm" style="flex:1;" title="Download"><i class="fa-solid fa-download"></i> Download</button>
                 </div>
             </div>
         `;

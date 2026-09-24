@@ -82,9 +82,9 @@ function renderHistory(searchQuery = '') {
 
                 <div style="display: flex; gap: 6px; justify-content: flex-end; margin-top: 2px;">
                     ${item.download_url ? `
-                        <a href="${item.download_url}" class="btn btn-primary btn-sm" style="padding: 4px 10px; font-size: 0.75rem;">
+                        <button onclick="DocholderStorage.saveFileLocally('${item.download_url}', '${escapeAttr(item.result_name || item.original_name || 'file')}')" class="btn btn-primary btn-sm" style="padding: 4px 10px; font-size: 0.75rem;" title="Download">
                             <i class="fa-solid fa-download"></i> Download
-                        </a>
+                        </button>
                     ` : ''}
                     <button class="btn btn-secondary btn-sm" onclick="repeatTransformation('${item.action_type}', '${item.original_name}')" style="padding: 4px 8px; font-size: 0.75rem;" title="Repeat in Studio">
                         <i class="fa-solid fa-rotate-right"></i> Repeat

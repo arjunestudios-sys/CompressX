@@ -236,6 +236,11 @@ async function handleLogout() {
     try {
         await apiFetch('/api/auth/logout', { method: 'POST' });
     } catch (e) { /* ignore */ }
+    try {
+        localStorage.removeItem('docholder_auth_token');
+        localStorage.removeItem('docholder_user_cache');
+        sessionStorage.clear();
+    } catch(e) {}
     if (typeof showToast === 'function') showToast('Signed out successfully.', 'info');
     setTimeout(() => { window.location.href = 'login.html'; }, 400);
 }

@@ -699,18 +699,8 @@ function setupResultCardActions() {
     document.getElementById('btn-word-res-share')?.addEventListener('click', async () => {
         const link = document.getElementById('word-download-link');
         if (!link || !link.href) return;
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: link.download,
-                    text: `Converted Document: ${link.download}`,
-                    url: link.href
-                });
-                showToast('Share dialog opened', 'success');
-            } catch(e) {}
-        } else {
-            await navigator.clipboard.writeText(link.href);
-            showToast('Download link copied to clipboard!', 'success');
+        if (typeof DocholderStorage !== 'undefined' && DocholderStorage.shareFile) {
+            await DocholderStorage.shareFile(link.href, link.download || 'document.pdf', 'application/pdf');
         }
     });
 

@@ -3,6 +3,9 @@
     <external-path name="my_images" path="." />
     <external-path name="my_downloads" path="Download/" />
     <external-path name="my_docholder" path="Download/docholder/" />
+    <external-path name="my_documents" path="Documents/" />
+    <external-path name="my_doc_docholder" path="Documents/docholder/" />
+    <external-path name="my_doc_docholder_cap" path="Documents/Docholder/" />
     <cache-path name="my_cache_images" path="." />
     <files-path name="my_files" path="." />
     <external-files-path name="my_ext_files" path="." />

@@ -504,9 +504,15 @@ document.getElementById('exec-delete-confirm-btn')?.addEventListener('click', as
     if (!pendingDeleteId) return;
     const modal = document.getElementById('delete-confirm-modal');
     try {
-        await apiFetch(`/api/files/${pendingDeleteId}`, { method: 'DELETE' });
-        showToast('File permanently deleted.', 'success');
+        if (currentCategory === 'downloaded' || String(pendingDeleteId).startsWith('dl_')) {
+            DocholderStorage.removeDownloadedFile(pendingDeleteId);
+            showToast('Downloaded file removed.', 'success');
+        } else {
+            await apiFetch(`/api/files/${pendingDeleteId}`, { method: 'DELETE' });
+            showToast('File permanently deleted.', 'success');
+        }
         if (modal) modal.classList.add('hidden');
+        selectedFileIds.delete(pendingDeleteId);
         selectedFileIds.delete(parseInt(pendingDeleteId, 10));
         pendingDeleteId = null;
         await loadFiles();
@@ -560,31 +566,13 @@ document.getElementById('close-properties-btn')?.addEventListener('click', () =>
 
 document.getElementById('btn-prop-share')?.addEventListener('click', async () => {
     if (!currentPropertyFile) return;
-    const downloadUrl = (typeof resolveApiUrl === 'function') 
-        ? resolveApiUrl(`/api/files/${currentPropertyFile.id}/download`)
-        : `${window.location.origin}/api/files/${currentPropertyFile.id}/download`;
-    if (navigator.share) {
-        try {
-            await navigator.share({
-                title: currentPropertyFile.original_name,
-                text: `Docholder Asset: ${currentPropertyFile.original_name} (${formatBytes(currentPropertyFile.file_size)})`,
-                url: downloadUrl
-            });
-            showToast('Share dialog opened', 'success');
-        } catch(e) {}
-    } else {
-        await navigator.clipboard.writeText(downloadUrl);
-        showToast('Download link copied to clipboard!', 'success');
-    }
+    const downloadUrl = `/api/files/${currentPropertyFile.id}/download`;
+    await DocholderStorage.shareFile(downloadUrl, currentPropertyFile.original_name, currentPropertyFile.mime_type);
 });
 
 document.getElementById('btn-prop-local-save')?.addEventListener('click', async () => {
     if (!currentPropertyFile) return;
-    const permitted = await requestDocholderPermission('storage', 'save files to your device');
-    if (!permitted) return;
     DocholderStorage.saveFileLocally(`/api/files/${currentPropertyFile.id}/download`, currentPropertyFile.original_name);
-    DocholderStorage.addRecentFile(currentPropertyFile);
-    showToast(`Saved "${currentPropertyFile.original_name}" to local storage`, 'success');
 });
 
 // ── Smart Share Link Logic ──────────────────────────────────────────

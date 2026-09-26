@@ -1996,18 +1996,9 @@ function displayDocResult(result, title = 'Operation Completed!', noticeText = n
 
     const shareBtn = document.getElementById('doc-share-btn');
     if (shareBtn) {
-        shareBtn.onclick = async () => {
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: result.originalName,
-                        text: `Check out ${result.originalName} generated with Docholder`,
-                        url: window.location.origin + result.downloadUrl
-                    });
-                } catch(err) {}
-            } else {
-                navigator.clipboard.writeText(window.location.origin + result.downloadUrl);
-                showToast('Download link copied to clipboard!', 'info');
+        shareBtn.onclick = () => {
+            if (typeof DocholderStorage !== 'undefined' && DocholderStorage.shareFile) {
+                DocholderStorage.shareFile(result.downloadUrl, result.originalName, 'application/pdf');
             }
         };
     }

@@ -1,6 +1,6 @@
 /**
  * Docholder Privacy Policy & Data Safety Module
- * Version: 1.1.0
+ * Version: 1.5.0
  * Updated: September 2026
  * 
  * Supports:
@@ -25,7 +25,7 @@
             appName: "Docholder",
             companyName: "Docholder Open Source Project / Arjun Studios",
             appId: "com.docholder.app",
-            version: "1.1.0",
+            version: "1.5.0",
             effectiveDate: "September 22, 2026",
             lastUpdated: "September 22, 2026",
             contactEmail: "privacy@docholder.app",

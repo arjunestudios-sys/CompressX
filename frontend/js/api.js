@@ -9,7 +9,7 @@
 
     // Native Capacitor Plugins Lifecycle Hook
     if (window.Capacitor && window.Capacitor.Plugins) {
-        const { StatusBar, SplashScreen, App, Network } = window.Capacitor.Plugins;
+        const { StatusBar, SplashScreen, App, Network, LocalNotifications, Toast } = window.Capacitor.Plugins;
 
         // 1. Hide Splash Screen smoothly once UI starts
         if (SplashScreen && typeof SplashScreen.hide === 'function') {
@@ -61,8 +61,140 @@
                 }
             });
         }
+
+        // 5. Local Notifications — Create channel + request permissions (Android 13+)
+        if (LocalNotifications && typeof LocalNotifications.createChannel === 'function') {
+            // Create notification channel for file operations
+            LocalNotifications.createChannel({
+                id: 'docholder_conversions',
+                name: 'File Conversions',
+                description: 'Notifications when file conversions and downloads are complete',
+                importance: 3, // IMPORTANCE_DEFAULT
+                visibility: 1,
+                sound: 'default',
+                lights: true,
+                lightColor: '#4f8bff',
+                vibration: true
+            }).catch(() => {});
+
+            // Request POST_NOTIFICATIONS permission (required Android 13+)
+            LocalNotifications.checkPermissions().then(status => {
+                if (status && status.display !== 'granted') {
+                    LocalNotifications.requestPermissions().catch(() => {});
+                }
+            }).catch(() => {});
+
+            // Handle notification tap — open file if downloadUrl is in extra data
+            if (typeof LocalNotifications.addListener === 'function') {
+                LocalNotifications.addListener('localNotificationActionPerformed', (action) => {
+                    try {
+                        const extra = action.notification && action.notification.extra;
+                        if (extra && extra.downloadUrl) {
+                            const fullUrl = (typeof resolveApiUrl === 'function') ? resolveApiUrl(extra.downloadUrl) : extra.downloadUrl;
+                            window.location.href = `files.html?category=downloaded`;
+                        }
+                    } catch(e) {}
+                });
+            }
+        }
     }
 })();
+
+// ─── DocholderNative: Native Plugin Wrappers ──────────────────────────────────
+// Centralised access to @capacitor/toast, @capacitor/local-notifications,
+// and @capacitor-community/file-opener so any page can call these features
+// without worrying about plugin availability checks.
+const DocholderNative = {
+
+    /**
+     * Show a native Android OS Toast (bottom of screen, no custom styling).
+     * Falls back to the app's web showToast() on web/desktop.
+     * @param {string} message
+     * @param {'short'|'long'} duration
+     */
+    async nativeToast(message, duration = 'short') {
+        try {
+            const Toast = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Toast;
+            if (Toast && typeof Toast.show === 'function') {
+                await Toast.show({ text: message, duration });
+                return;
+            }
+        } catch(e) {}
+        // Web fallback
+        if (typeof showToast === 'function') showToast(message, 'info', duration === 'long' ? 4000 : 2000);
+    },
+
+    /**
+     * Fire a local push notification (works even when app is minimised).
+     * Ideal for "Conversion complete" or "Download ready" alerts.
+     * @param {object} opts
+     * @param {string} opts.title     - Notification title
+     * @param {string} opts.body      - Notification body text
+     * @param {string} [opts.downloadUrl] - Stored in extra so tapping opens files
+     * @param {number} [opts.delayMs] - Optional delay in ms before showing (default: 400ms)
+     */
+    async localNotify({ title, body, downloadUrl = null, delayMs = 400 } = {}) {
+        try {
+            const LocalNotifications = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
+            if (!LocalNotifications || typeof LocalNotifications.schedule !== 'function') return;
+
+            // Check permission before scheduling
+            let status = { display: 'granted' };
+            try { status = await LocalNotifications.checkPermissions(); } catch(e) {}
+
+            if (status.display !== 'granted') {
+                try { await LocalNotifications.requestPermissions(); } catch(e) { return; }
+            }
+
+            const notifId = Math.floor(Math.random() * 2147483647);
+            await LocalNotifications.schedule({
+                notifications: [{
+                    id: notifId,
+                    title: title || 'Docholder',
+                    body: body || 'Your file is ready.',
+                    channelId: 'docholder_conversions',
+                    schedule: { at: new Date(Date.now() + delayMs) },
+                    sound: 'default',
+                    smallIcon: 'ic_stat_icon_config_sample',
+                    iconColor: '#4f8bff',
+                    actionTypeId: '',
+                    extra: { downloadUrl }
+                }]
+            });
+        } catch(err) {
+            console.warn('[DocholderNative] localNotify error:', err);
+        }
+    },
+
+    /**
+     * Open a saved file in the device's default native app
+     * (e.g. PDF → Google PDF Viewer, JPEG → Gallery).
+     * Uses @capacitor-community/file-opener.
+     * @param {string} filePath   - Native file URI (e.g. file:///data/user/...)
+     * @param {string} mimeType   - MIME type string (e.g. 'application/pdf')
+     */
+    async openFileNative(filePath, mimeType = 'application/octet-stream') {
+        try {
+            const FileOpener = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.FileOpener;
+            if (FileOpener && typeof FileOpener.open === 'function') {
+                await FileOpener.open({ filePath, contentType: mimeType });
+                return;
+            }
+            // Fallback: try Capacitor Share plugin
+            const SharePlugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share;
+            if (SharePlugin && typeof SharePlugin.share === 'function') {
+                await SharePlugin.share({ title: 'Open File', url: filePath, dialogTitle: 'Open with' });
+                return;
+            }
+        } catch(err) {
+            console.warn('[DocholderNative] openFileNative error:', err);
+        }
+        // Web fallback \u2014 open in new tab
+        try { window.open(filePath, '_blank'); } catch(e) {}
+    }
+};
+
+window.DocholderNative = DocholderNative;
 
 // Initialize Theme
 const savedTheme = localStorage.getItem('docholder_theme') || 'light';
@@ -174,9 +306,20 @@ function handleSmartBack(defaultFallback = '/tools.html') {
 
 // Docholder Local Storage, Download Manager & Recent Files Manager
 const DocholderStorage = {
+    _getUserKey(prefix) {
+        try {
+            const userStr = localStorage.getItem('docholder_user_cache') || sessionStorage.getItem('docholder_user');
+            if (userStr) {
+                const u = JSON.parse(userStr);
+                const uid = u.id || u.user_id || u.email;
+                if (uid) return `${prefix}_${uid}`;
+            }
+        } catch(e) {}
+        return prefix;
+    },
     getRecentFiles() {
         try {
-            return JSON.parse(localStorage.getItem('docholder_recent_files') || '[]');
+            return JSON.parse(localStorage.getItem(this._getUserKey('docholder_recent_files')) || '[]');
         } catch(e) {
             return [];
         }
@@ -198,12 +341,12 @@ const DocholderStorage = {
                 timestamp: Date.now()
             });
             if (list.length > 25) list = list.slice(0, 25);
-            localStorage.setItem('docholder_recent_files', JSON.stringify(list));
+            localStorage.setItem(this._getUserKey('docholder_recent_files'), JSON.stringify(list));
         } catch(e) {}
     },
     getFavorites() {
         try {
-            return new Set(JSON.parse(localStorage.getItem('docholder_favorites') || '[]'));
+            return new Set(JSON.parse(localStorage.getItem(this._getUserKey('docholder_favorites')) || '[]'));
         } catch(e) {
             return new Set();
         }
@@ -218,7 +361,7 @@ const DocholderStorage = {
             favs.add(idStr);
             isNowFav = true;
         }
-        localStorage.setItem('docholder_favorites', JSON.stringify(Array.from(favs)));
+        localStorage.setItem(this._getUserKey('docholder_favorites'), JSON.stringify(Array.from(favs)));
         return isNowFav;
     },
     isFavorite(fileId) {
@@ -226,38 +369,45 @@ const DocholderStorage = {
     },
     getDownloadedFiles() {
         try {
-            return JSON.parse(localStorage.getItem('docholder_downloaded_files') || '[]');
+            const raw = JSON.parse(localStorage.getItem(this._getUserKey('docholder_downloaded_files')) || '[]');
+            return raw.filter(f => f && (f.name || f.original_name) && f.file_size !== undefined);
         } catch(e) {
             return [];
         }
     },
     addDownloadedFile(file) {
-        if (!file) return;
+        if (!file || !(file.name || file.original_name)) return;
         try {
-            const name = file.original_name || file.name || 'download';
-            let list = this.getDownloadedFiles().filter(f => (f.original_name || f.name) !== name);
-            list.unshift({
-                id: file.id || `dl_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+            const name = file.original_name || file.name;
+            let list = this.getDownloadedFiles();
+            const existingIdx = list.findIndex(f => (f.original_name || f.name) === name);
+            const record = {
+                id: file.id || (existingIdx >= 0 ? list[existingIdx].id : `dl_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`),
                 name: name,
                 original_name: name,
                 file_size: file.file_size || file.size || 0,
                 file_type: file.file_type || file.type || 'doc',
                 mime_type: file.mime_type || file.mimetype || 'application/octet-stream',
                 downloadUrl: file.downloadUrl || null,
-                storage_folder: 'docholder',
-                local_path: file.local_path || `Documents/docholder/${name}`,
+                storage_folder: 'Docholder',
+                local_path: file.local_path || `Documents/Docholder/${name}`,
                 downloaded_at: Date.now(),
                 created_at: new Date().toISOString()
-            });
+            };
+            if (existingIdx >= 0) {
+                list[existingIdx] = record;
+            } else {
+                list.unshift(record);
+            }
             if (list.length > 50) list = list.slice(0, 50);
-            localStorage.setItem('docholder_downloaded_files', JSON.stringify(list));
-            window.dispatchEvent(new CustomEvent('docholder:file-downloaded', { detail: file }));
+            localStorage.setItem(this._getUserKey('docholder_downloaded_files'), JSON.stringify(list));
+            window.dispatchEvent(new CustomEvent('docholder:file-downloaded', { detail: record }));
         } catch(e) {}
     },
     removeDownloadedFile(fileId) {
         try {
             let list = this.getDownloadedFiles().filter(f => String(f.id) !== String(fileId));
-            localStorage.setItem('docholder_downloaded_files', JSON.stringify(list));
+            localStorage.setItem(this._getUserKey('docholder_downloaded_files'), JSON.stringify(list));
             window.dispatchEvent(new CustomEvent('docholder:file-downloaded'));
             return true;
         } catch(e) {
@@ -266,17 +416,24 @@ const DocholderStorage = {
     },
     clearDownloadedFiles() {
         try {
-            localStorage.removeItem('docholder_downloaded_files');
+            localStorage.removeItem(this._getUserKey('docholder_downloaded_files'));
             window.dispatchEvent(new CustomEvent('docholder:file-downloaded'));
         } catch(e) {}
     },
+
+    /**
+     * Real File Download Mechanism with Storage Verification:
+     * 1. Download file content from server.
+     * 2. Save actual file to accessible device storage (Public Documents/Docholder or Download/Docholder).
+     * 3. Verify file exists and size > 0 on device storage.
+     * 4. Only display "Download completed: <filename>" after verified write.
+     * 5. If write or verification fails, display "Download failed – Please try again."
+     */
     async saveFileLocally(url, filename) {
         if (!url) return;
+        const name = filename || 'document';
         try {
-            const name = filename || 'document';
             const fullUrl = (typeof resolveApiUrl === 'function') ? resolveApiUrl(url) : url;
-            
-            showToast(`Saving "${name}" to Docholder storage...`, 'info', 2200);
             
             const authToken = localStorage.getItem('docholder_auth_token') || sessionStorage.getItem('docholder_auth_token');
             const headers = {};
@@ -295,6 +452,10 @@ const DocholderStorage = {
             }
 
             const blob = await response.blob();
+            if (!blob || blob.size === 0) {
+                throw new Error('Downloaded file payload is empty (0 bytes).');
+            }
+
             const ext = name.split('.').pop().toLowerCase();
             let category = 'doc';
             if (['jpg','jpeg','png','webp','gif','svg','bmp'].includes(ext)) category = 'image';
@@ -303,13 +464,23 @@ const DocholderStorage = {
             else if (['zip','tar','gz','rar','7z'].includes(ext)) category = 'archive';
             else if (['txt','json','js','css','html','py','md','csv'].includes(ext)) category = 'text';
 
+            const isNative = (window.Capacitor && (window.Capacitor.isNativePlatform?.() || window.Capacitor.getPlatform() === 'android' || window.Capacitor.getPlatform() === 'ios'));
             let savedNative = false;
-            let finalLocalPath = `Documents/docholder/${name}`;
+            let verified = false;
+            let finalLocalPath = `Documents/Docholder/${name}`;
+            let verifiedSize = blob.size;
 
-            // 1. Capacitor Native Android Storage: Save directly into "docholder" folder
+            // 1. Native Mobile Storage Write Flow (Accessible in File Manager)
             if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
                 const { Filesystem } = window.Capacitor.Plugins;
                 try {
+                    // Request runtime storage permissions
+                    try {
+                        await Filesystem.requestPermissions();
+                    } catch(permErr) {
+                        console.warn('[DocholderStorage] Permission request notice:', permErr);
+                    }
+
                     const base64Data = await new Promise((resolve, reject) => {
                         const reader = new FileReader();
                         reader.onloadend = () => {
@@ -324,47 +495,73 @@ const DocholderStorage = {
                         reader.readAsDataURL(blob);
                     });
 
-                    // Save under "docholder" subfolder in DOCUMENTS directory
-                    try {
-                        const writeRes = await Filesystem.writeFile({
-                            path: `docholder/${name}`,
-                            data: base64Data,
-                            directory: 'DOCUMENTS',
-                            recursive: true
-                        });
-                        if (writeRes && writeRes.uri) {
-                            finalLocalPath = writeRes.uri;
-                        }
-                        savedNative = true;
-                    } catch(errDoc) {
-                        // Fallback to EXTERNAL_STORAGE or DATA directory
+                    if (!base64Data) {
+                        throw new Error('Could not convert file data to binary buffer.');
+                    }
+
+                    // Storage targets in order of accessibility to the device's File Manager:
+                    const storageTargets = [
+                        { directory: 'DOCUMENTS', path: `Docholder/${name}` },
+                        { directory: 'EXTERNAL_STORAGE', path: `Download/Docholder/${name}` },
+                        { directory: 'EXTERNAL', path: `Docholder/${name}` },
+                        { directory: 'DATA', path: `docholder/${name}` }
+                    ];
+
+                    let writtenTarget = null;
+                    for (const target of storageTargets) {
                         try {
-                            const writeRes2 = await Filesystem.writeFile({
-                                path: `Download/docholder/${name}`,
+                            const writeRes = await Filesystem.writeFile({
+                                path: target.path,
                                 data: base64Data,
-                                directory: 'EXTERNAL_STORAGE',
+                                directory: target.directory,
                                 recursive: true
                             });
-                            if (writeRes2 && writeRes2.uri) finalLocalPath = writeRes2.uri;
-                            savedNative = true;
-                        } catch(errExt) {
-                            const writeRes3 = await Filesystem.writeFile({
-                                path: `docholder/${name}`,
-                                data: base64Data,
-                                directory: 'DATA',
-                                recursive: true
-                            });
-                            if (writeRes3 && writeRes3.uri) finalLocalPath = writeRes3.uri;
-                            savedNative = true;
+                            if (writeRes) {
+                                writtenTarget = target;
+                                break;
+                            }
+                        } catch(targetErr) {
+                            console.warn(`[DocholderStorage] Write failed for directory ${target.directory}:`, targetErr.message);
                         }
                     }
+
+                    if (writtenTarget) {
+                        // 2. Strict Verification: stat file to ensure it physically exists and size > 0
+                        const statRes = await Filesystem.stat({
+                            path: writtenTarget.path,
+                            directory: writtenTarget.directory
+                        });
+
+                        if (statRes && statRes.size > 0) {
+                            verified = true;
+                            savedNative = true;
+                            verifiedSize = statRes.size;
+
+                            try {
+                                const uriRes = await Filesystem.getUri({
+                                    path: writtenTarget.path,
+                                    directory: writtenTarget.directory
+                                });
+                                finalLocalPath = (uriRes && uriRes.uri) ? uriRes.uri : writtenTarget.path;
+                            } catch(uErr) {
+                                finalLocalPath = writtenTarget.path;
+                            }
+                        } else {
+                            throw new Error('File existence check returned 0 bytes.');
+                        }
+                    } else {
+                        throw new Error('Unable to write to any accessible storage directory.');
+                    }
                 } catch(nativeErr) {
-                    console.warn('[DocholderStorage] Native write error, falling back to browser download:', nativeErr);
+                    console.error('[DocholderStorage] Native write/verify error:', nativeErr);
+                    if (isNative) {
+                        throw nativeErr; // On native app, fail explicitly if storage write was not verified
+                    }
                 }
             }
 
-            // 2. Web browser download fallback if not native or as secondary
-            if (!savedNative) {
+            // 2. Web Browser Fallback (When not on native Android)
+            if (!isNative && !savedNative) {
                 const blobUrl = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.style.display = 'none';
@@ -379,50 +576,188 @@ const DocholderStorage = {
                         URL.revokeObjectURL(blobUrl);
                     } catch(e) {}
                 }, 2000);
+                verified = true;
             }
 
-            // 3. Record into Downloaded Files collection
+            if (!verified) {
+                throw new Error('File could not be verified in device storage.');
+            }
+
+            // 3. Record into Verified Downloaded Files collection
             const downloadedRecord = {
                 id: `dl_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
                 name: name,
                 original_name: name,
-                file_size: blob.size,
+                file_size: verifiedSize,
                 file_type: category,
                 mime_type: blob.type || 'application/octet-stream',
                 downloadUrl: url,
-                storage_folder: 'docholder',
+                storage_folder: 'Docholder',
                 local_path: finalLocalPath,
                 downloaded_at: Date.now()
             };
             this.addDownloadedFile(downloadedRecord);
             this.addRecentFile(downloadedRecord);
 
-            const storageMsg = savedNative 
-                ? `Saved "${name}" to Phone Storage in folder "docholder" ✓`
-                : `Saved "${name}" to docholder downloads ✓`;
+            // 4. In-App Notification: Only display after physical save and verification
+            const successMsg = `Download completed: ${name}`;
+            if (typeof showToast === 'function') {
+                showToast(successMsg, 'success', 3500);
+            }
 
-            showToast(storageMsg, 'success', 4500, {
-                text: 'View',
-                onClick: () => {
-                    if (window.location.pathname.endsWith('files.html')) {
-                        const chip = document.getElementById('chip-downloaded');
-                        if (chip) chip.click();
-                    } else {
-                        window.location.href = 'files.html?category=downloaded';
-                    }
+            // Native OS Toast & Notification if on device
+            if (typeof DocholderNative !== 'undefined') {
+                if (DocholderNative.nativeToast) {
+                    DocholderNative.nativeToast(successMsg, 'short').catch(() => {});
                 }
-            });
+                if (DocholderNative.localNotify) {
+                    DocholderNative.localNotify({
+                        title: `Download completed: ${name}`,
+                        body: 'Saved to device storage. Tap to view.',
+                        downloadUrl: url,
+                        filePath: finalLocalPath,
+                        mimeType: blob.type || 'application/octet-stream',
+                        delayMs: 250
+                    }).catch(() => {});
+                }
+            }
 
+            // 5. STOP — Download completed and verified
             return downloadedRecord;
         } catch(err) {
-            console.error('saveFileLocally error:', err);
-            showToast(`Failed to download file: ${err.message}`, 'error');
+            console.error('saveFileLocally failure:', err);
+            const failMsg = `Download failed: ${name}`;
+            if (typeof showToast === 'function') {
+                showToast(failMsg, 'error', 4000);
+                setTimeout(() => {
+                    showToast('Download failed – Please try again.', 'warning', 3000);
+                }, 1000);
+            }
+            if (typeof DocholderNative !== 'undefined' && DocholderNative.nativeToast) {
+                DocholderNative.nativeToast(failMsg, 'long').catch(() => {});
+            }
             throw err;
+        }
+    },
+
+    /**
+     * Share functionality (Completely separate from download):
+     * 1. Prepare the selected user-uploaded file.
+     * 2. Attach the file to the Share Intent.
+     * 3. Open the Android Share Sheet.
+     * 4. Allow the user to select an available sharing application.
+     * (NEVER triggers download)
+     */
+    async shareFile(url, filename, mimeType = 'application/octet-stream') {
+        if (!url) return;
+        try {
+            const name = filename || 'document';
+            const fullUrl = (typeof resolveApiUrl === 'function') ? resolveApiUrl(url) : url;
+
+            // Strategy A: Capacitor Native Share Plugin (Mobile Android / iOS)
+            const SharePlugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share;
+            const Filesystem = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem;
+
+            if (SharePlugin && typeof SharePlugin.share === 'function') {
+                let shareUri = fullUrl;
+
+                // Try to write file to cache to get a local shareable content URI
+                if (Filesystem) {
+                    try {
+                        const authToken = localStorage.getItem('docholder_auth_token') || sessionStorage.getItem('docholder_auth_token');
+                        const headers = {};
+                        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+                        
+                        const response = await fetch(fullUrl, { method: 'GET', headers, credentials: 'include' });
+                        if (response.ok) {
+                            const blob = await response.blob();
+                            const base64Data = await new Promise((resolve, reject) => {
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                    const res = reader.result;
+                                    resolve(typeof res === 'string' && res.includes(',') ? res.split(',')[1] : res);
+                                };
+                                reader.onerror = reject;
+                                reader.readAsDataURL(blob);
+                            });
+
+                            const writeRes = await Filesystem.writeFile({
+                                path: `docholder_share/${name}`,
+                                data: base64Data,
+                                directory: 'CACHE',
+                                recursive: true
+                            });
+                            if (writeRes && writeRes.uri) {
+                                shareUri = writeRes.uri;
+                            }
+                        }
+                    } catch(prepErr) {
+                        console.warn('[DocholderStorage] Preparing share file cached URI failed, using URL:', prepErr);
+                    }
+                }
+
+                await SharePlugin.share({
+                    title: name,
+                    text: `Shared from Docholder: ${name}`,
+                    url: shareUri,
+                    dialogTitle: `Share "${name}"`
+                });
+                return;
+            }
+
+            // Strategy B: Web Share API (Desktop / Mobile Browser)
+            if (navigator.share) {
+                try {
+                    // Try sharing file blob if supported
+                    const authToken = localStorage.getItem('docholder_auth_token') || sessionStorage.getItem('docholder_auth_token');
+                    const headers = {};
+                    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+                    
+                    const response = await fetch(fullUrl, { method: 'GET', headers, credentials: 'include' });
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const fileObj = new File([blob], name, { type: mimeType || blob.type || 'application/octet-stream' });
+                        if (navigator.canShare && navigator.canShare({ files: [fileObj] })) {
+                            await navigator.share({
+                                title: name,
+                                text: `Shared from Docholder: ${name}`,
+                                files: [fileObj]
+                            });
+                            return;
+                        }
+                    }
+                } catch(fileShareErr) {}
+
+                // Fallback to URL sharing
+                await navigator.share({
+                    title: name,
+                    text: `Shared from Docholder: ${name}`,
+                    url: fullUrl
+                });
+                return;
+            }
+
+            // Strategy C: Clipboard fallback
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(fullUrl);
+                if (typeof showToast === 'function') {
+                    showToast('Link copied to clipboard for sharing', 'info');
+                }
+            }
+        } catch(err) {
+            // Ignore user cancellation in Share Sheet
+            if (err && err.message && !err.message.toLowerCase().includes('cancel') && !err.message.toLowerCase().includes('abort')) {
+                console.warn('Share error:', err);
+                if (typeof showToast === 'function') {
+                    showToast(`Share failed: ${err.message}`, 'error');
+                }
+            }
         }
     }
 };
 
 window.downloadFile = (url, name) => DocholderStorage.saveFileLocally(url, name);
+window.shareFile = (url, name, mime) => DocholderStorage.shareFile(url, name, mime);
 
 // ─── Universal High-Fidelity In-App Mobile Preview Engine ─────────────────────
 const DocholderPreview = {
@@ -588,15 +923,8 @@ const DocholderPreview = {
         }
 
         if (shareBtn) {
-            shareBtn.onclick = async () => {
-                if (navigator.share) {
-                    try {
-                        await navigator.share({ title: name, url: fullDownloadUrl });
-                    } catch(e) {}
-                } else {
-                    await navigator.clipboard.writeText(fullDownloadUrl);
-                    showToast('Direct link copied to clipboard!', 'info');
-                }
+            shareBtn.onclick = () => {
+                DocholderStorage.shareFile(fullDownloadUrl, name, mime);
             };
         }
 
